@@ -1,28 +1,19 @@
 {
-    "dailyGoals": "Finish the blog builder app, and study algorithms.",
+    "daily_goals": "My main goals for today are to finish flushing out the Daily Blog Builder, as well as implement the ability to showcase my daily blogs on my website. I spent a little bit of time working on the NextJS website, but I really want to start getting into actually writing blogs. Kind of a catch 22, I have to have blogs in order to start posting on my website, but I need the website up before I can start posting blogs. Morale is high, very excited to work on this project. Going to try and go for a lightweight (ish) implementation of blog uploading, and then work on AI integration with Dave later. Most importantly, get blogs up and running.",
     "enthusiasm": 80,
     "burnout": 30,
-    "leetcodeHatred": 60,
+    "leetcode_hatred": 60,
     "tasks": [
         {
-            "taskDescription": "Implement Quill Editor integration for notes.",
+            "task_description": "Build out the infrastructure for uploading blogs. I wasn't quite sure what format I wanted for blogs, but I had a couple requirements. 1. I had to be able to have something easy that I could write notes on during the day when I work. 2. It had to be local, I wasn't going to build this into the nextJS website (although I could, it would be painful and take awhile). 3. I had to be able to format my blogs into some kind of structure. I wanted to be able to start my day off with an initial \"goals\", have some kind of way of tracking the tasks I worked on, and then have some kind of reflection at the end. 4. This had to be easy to use. Simplicity is going to be king here. I don't expect this to be too difficult, although most of the difficulty will be with using the Flask python library. I have some experience, and have used similar frameworks (such as FastAPI) but I'm by no means great at it. Also, I'll be building HTML in pure Javascript, which will be a small challenge. All of my frontend web development has mostly been focused around the Vercel Stack of NextJS, React, Typescript, and TailwindCSS. And my biggest challenge today will be avoiding the absolute tar pit which is spending too much time fucking around with CSS.",
             "difficulty": 7,
             "notes": "<p>Started integrating the Quill editor, faced some challenges with toolbar customization.</p>",
             "reflection": "Quill was more challenging than expected, but it's working now.",
-            "timeSpent": "2 hours",
-            "distractionMeter": 3,
-            "nextSteps": "Test integration with other parts of the blog builder."
-        },
-        {
-            "taskDescription": "Refactor the exportBlog function.",
-            "difficulty": 5,
-            "notes": "<p>Cleaned up the JavaScript code, streamlined the process for gathering blog data.</p>",
-            "reflection": "Refactoring made the code much cleaner and easier to maintain.",
-            "timeSpent": "1.5 hours",
-            "distractionMeter": 2,
-            "nextSteps": "Add more tasks and test the export functionality with a larger dataset."
+            "time_spent": "2 hours",
+            "distraction_meter": 3,
+            "next_steps": "Test integration with other parts of the blog builder."
         }
     ],
-    "dailyReflection": "Today was productive, though Quill integration took more time than expected.",
-    "nextSteps": "Test the app, improve UI, and start working on database integration."
+    "daily_reflection": "Today was productive, though Quill integration took more time than expected.",
+    "next_steps": "Test the app, improve UI, and start working on database integration."
 }

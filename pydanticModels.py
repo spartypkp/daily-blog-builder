@@ -167,26 +167,26 @@ pricing_data = {
 
 # Submodel for Task
 class Task(BaseModel):
-    taskDescription: Optional[str] = Field(None, description="Task description.")
-    difficulty: Optional[int] = Field(None, description="Task difficulty level.", ge=1, le=10)
-    notes: Optional[str] = Field(None, description="Notes taken for the task, HTML formatted.")
-    reflection: Optional[str] = Field(None, description="Reflections on the task.")
-    timeSpent: Optional[str] = Field(None, description="Time spent on the task, e.g., '2 hours'.")
-    distractionMeter: Optional[int] = Field(None, description="Distraction level (1-10).", ge=1, le=10)
-    nextSteps: Optional[str] = Field(None, description="Next steps for this task.")
+    task_description: Optional[str] = Field("", description="Task description.")
+    difficulty: Optional[int] = Field(5, description="Task difficulty level.", ge=1, le=10)
+    notes: Optional[str] = Field("", description="Notes taken for the task, HTML formatted.")
+    reflection: Optional[str] = Field("", description="Reflections on the task.")
+    time_spent: Optional[str] = Field("", description="Time spent on the task, e.g., '2 hours'.")
+    distraction_meter: Optional[int] = Field(5, description="Distraction level (1-10).", ge=1, le=10)
+    next_steps: Optional[str] = Field("", description="Next steps for this task.")
 
 # Main model for the Daily Blog
 class DailyBlog(BaseModel):
     date: datetime.date = Field(..., description="Date of the blog entry.")
-    dailyGoals: Optional[str] = Field(None, description="Daily goals for the day.")
-    enthusiasm: Optional[int] = Field(None, description="Enthusiasm meter (0-100).", ge=0, le=100)
-    burnout: Optional[int] = Field(None, description="Burnout meter (0-100).", ge=0, le=100)
-    leetcodeHatred: Optional[int] = Field(None, description="Leetcode hatred meter (0-100).", ge=0, le=100)
-    tasks: Optional[List[Task]] = Field(default=None, description="List of tasks for the day.")
-    dailyReflection: Optional[str] = Field(None, description="Reflection on how the day went.")
-    nextSteps: Optional[str] = Field(None, description="Next steps after the day.")
-    created_at: Optional[str] = Field(default=None, description="Timestamp for when the blog was created.")
-    updated_at: Optional[str] = Field(default=None, description="Timestamp for the last update.")
+    daily_goals: Optional[str] = Field("", description="Daily goals for the day.")
+    enthusiasm: Optional[int] = Field(50, description="Enthusiasm meter (0-100).", ge=0, le=100)
+    burnout: Optional[int] = Field(50, description="Burnout meter (0-100).", ge=0, le=100)
+    leetcode_hatred: Optional[int] = Field(99, description="Leetcode hatred meter (0-100).", ge=0, le=100)
+    tasks: Optional[List[Task]] = Field(default="", description="List of tasks for the day.")
+    daily_reflection: Optional[str] = Field("", description="Reflection on how the day went.")
+    next_steps: Optional[str] = Field("", description="Next steps after the day.")
+    created_at: Optional[datetime.datetime] = Field(default=None, description="Timestamp for when the blog was created.")
+    updated_at: Optional[datetime.datetime] = Field(default=None, description="Timestamp for the last update.")
 
 
 # ===== API Models =====
@@ -228,7 +228,7 @@ class APIParameters(BaseModel):
 
 class APIUsage(BaseModel):
     response_id: str = Field(..., description="Unique identifier for the record. Primary key.")
-    session_id: Optional[str] = Field(default=None, description="Unique identifier for the session.")
+    session_id: Optional[str] = Field(default="", description="Unique identifier for the session.")
     calling_function: str = Field(..., description="Name of the Python function that initiated the request")
     vendor: str = Field(..., description="The vendor used for the request")
     model: str = Field(..., description="The LLM model used for the request")
@@ -244,12 +244,12 @@ class APIUsage(BaseModel):
     output_cost: Optional[float] = None
     total_cost: Optional[float] = None
 
-    request_status: Optional[int] = Field(None, description="Status of the API request")
-    error_message: Optional[str] = Field(None, description="Error message if the request failed")
-    duration: Optional[float] = Field(None, description="Duration of the API request in seconds")
+    request_status: Optional[int] = Field("", description="Status of the API request")
+    error_message: Optional[str] = Field("", description="Error message if the request failed")
+    duration: Optional[float] = Field("", description="Duration of the API request in seconds")
 
-    api_key_name: Optional[str] = Field(None, description="Name of the API key used for the request")
-    timestamp: datetime.datetime = Field(default=None, description="Timestamp of the API request")
+    api_key_name: Optional[str] = Field("", description="Name of the API key used for the request")
+    timestamp: datetime.datetime = Field(default="", description="Timestamp of the API request")
 
     @model_validator(mode='after')
     def compute_cost(self) -> 'APIUsage':

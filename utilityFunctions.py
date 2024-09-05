@@ -27,7 +27,7 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 from dotenv import load_dotenv
 import os
 
-
+load_dotenv()
 # ==== Set API Keys ====
 
 api_key_openai_name = "Personal Key"
@@ -482,7 +482,8 @@ def pydantic_insert(table_name: str, models: List[Any]):
             model_dict = model.model_dump(mode="json",exclude_defaults=True)
 
             for key, value in model_dict.items():
-                if type(value) == dict:
+                
+                if type(value) == dict or type(value) == list:
                     model_dict[key] = json.dumps(value)
 
             # 
@@ -569,7 +570,7 @@ def pydantic_update(table_name: str, models: List[Any], where_field: str, update
                 model_dict = model.model_dump(mode="json",exclude_defaults=True)
 
             for key, value in model_dict.items():
-                if type(value) == dict:
+                if type(value) == dict or type(value) == list:
                     model_dict[key] = json.dumps(value)
             
             where_value = model_dict[where_field]

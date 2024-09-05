@@ -164,6 +164,36 @@ pricing_data = {
   }
 
 
+class RequestType(Enum):
+    CLARIFICATION = "clarification"
+    EXPANSION = "expansion"
+    EXAMPLE = "example"
+
+class RemarkForImprovement(BaseModel):
+    location: str = Field(..., description="Identifies the location or context of the remark within the blog post.")
+    comment: str = Field(..., description="Detailed comment suggesting how to improve or clarify the blog content. Make Will really describe technical challenges.")
+
+class InteractiveRequest(BaseModel):
+    request_type: RequestType = Field(..., description="Type of request to improve the content: clarification, expansion, or example.")
+    description: str = Field(..., description="Detailed description of what is being requested for improvement or clarification.")
+
+class IntroductionContent(BaseModel):
+    remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the introduction's clarity or depth.")
+    dave_summary: str = Field(..., description="A more detailed summary of Will's original writing for the introduction.")
+    dave_commentary: str = Field(..., description="Dave's humorous or insightful commentary on the day's planned activities. Use creativity and humor here, while also providing a lengthy summary of Will's writing from the perspective of Dave. How is Will's starting mood?")
+    mood_analysis: str = Field(..., description="A humorous analysis of Will's mood indicated by the mood bar values.")
+    interactive_requests: List[InteractiveRequest] = Field(default_factory=list, description="Interactive elements where Dave asks for further details or clarifications from Will. ")
+
+class DailyReflectionContent(BaseModel):
+    remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Areas identified by Dave for additional detail or clarification in the reflection.")
+    dave_summary: str = Field(..., description="A more detailed summary of Will's original writing for the reflection.")
+    dave_commentary: str = Field(..., description="Dave's concluding thoughts or humorous take on the day's outcomes. A detailed summary of challenges faced (maybe overcame, as well as a summary of technical challenges. What did Will accomplish? How is his mood?")
+    technical_highlights: List[str] = Field(default_factory=list, description="Key technical accomplishments or challenges highlighted in the reflection.")
+    interactive_requests: List[InteractiveRequest] = Field(default_factory=list, description="Interactive elements where Dave asks for further details or clarifications from Will. ")
+class DaveResponse(BaseModel):
+    introduction: IntroductionContent = Field(..., description="Detailed content for the blog's introduction section.")
+    daily_reflection: DailyReflectionContent = Field(..., description="Content for reflecting on the day's work and progress.")
+    additional_comments: Optional[str] = Field(None, description="Additional general comments from Dave that might not fit directly into other sections.")
 
 # Submodel for Task
 class Task(BaseModel):

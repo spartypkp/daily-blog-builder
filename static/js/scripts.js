@@ -46,8 +46,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function setupInitialTask(taskData) {
-    console.log("In setupInitialTask")
-    console.log(JSON.stringify(taskData))
     const initialTabButton = document.createElement('button');
     initialTabButton.textContent = 'Task 1';
     initialTabButton.dataset.taskId = 1;
@@ -176,7 +174,43 @@ function removeTask(taskId) {
     }
 }
 
+var BaseImageFormat = Quill.import('formats/image');
+const ImageFormatAttributesList = [
+    'alt',
+    'height',
+    'width',
+    'style'
+];
+
+class ImageFormat extends BaseImageFormat {
+  static formats(domNode) {
+    return ImageFormatAttributesList.reduce(function(formats, attribute) {
+      if (domNode.hasAttribute(attribute)) {
+        formats[attribute] = domNode.getAttribute(attribute);
+      }
+      return formats;
+    }, {});
+  }
+  format(name, value) {
+    if (ImageFormatAttributesList.indexOf(name) > -1) {
+      if (value) {
+        this.domNode.setAttribute(name, value);
+      } else {
+        this.domNode.removeAttribute(name);
+      }
+    } else {
+      super.format(name, value);
+    }
+  }
+}
+
+
+                
+                
+
+
 function initializeEditor(editorId, notes) {
+    Quill.register(ImageFormat, true);
     var toolbarOptions = [
         ['bold', 'italic', 'underline', 'strike'],
         ['blockquote', 'code-block'],
@@ -188,22 +222,11 @@ function initializeEditor(editorId, notes) {
 
     var editor = new Quill(`#${editorId}`, {
         modules: {
-            toolbar: toolbarOptions,
+            toolbar: toolbarOptions
         },
         placeholder: 'How goes the grinding?',
-        theme: 'snow',
-        formats: ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'list', 'bullet', 'indent', 'link', 'image', 'header', 'size', 'class']
+        theme: 'snow'
     });
-
-    Quill.import('attributors/class/size');
-    Quill.import('attributors/style/align');
-    Quill.import('attributors/style/direction');
-
-    // Custom configuration to allow classes in <img> tags
-    let Image = Quill.import('formats/image');
-    Image.attributes.class = true;  // Allow class attribute on image
-    Quill.register(Image, true);
-
     if (notes && notes.trim() !== "") {
         editor.clipboard.dangerouslyPasteHTML(notes);
     }
@@ -260,23 +283,23 @@ function insertToEditor(url, editor) {
     const range = editor.getSelection();
     if (range) {
         editor.insertEmbed(range.index, 'image', url);
-
+        
         // Wait for the DOM update
         setTimeout(() => {
             const images = editor.container.getElementsByTagName('img');
             if (images.length) {
                 Array.from(images).forEach(img => {
+                    
                     if (img.src.includes(url)) {
-                        // Remove any previously added size classes
-                        img.classList.remove('w-full', 'w-1/2', 'w-1/3', 'w-1/4', 'w-auto'); // Add all potential width classes you use elsewhere to reset properly
-                        img.classList.add('w-1/3'); // Tailwind class for 33% width
-                        img.classList.add('h-auto'); // Tailwind class for auto height
+                        img.style.width = '30%';  // Set image width to 50%
+                        img.style.height = 'auto'; // Maintain aspect ratio
                     }
                 });
             }
         }, 10); // Short delay to ensure the image element is rendered in the DOM
     }
 }
+
 function exportBlog() {
     // Get daily goals and meters
     const daily_goals = (document.getElementById('daily-goals').value).trim();

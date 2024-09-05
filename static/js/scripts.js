@@ -2,10 +2,11 @@ let currentTaskId = 1; // Start from 1 because the initial task is already there
 
 // Function to handle blog initialization
 function initializeBlog(blogData) {
-    console.log("Inside initializeBlog!")
-    console.log(JSON.stringify(blogData))
+    
+    let notes = null;
     if (blogData && blogData.tasks && blogData.tasks.length > 0) {
         setupInitialTask(blogData.tasks[0]); // Prepopulate the first task with existing data
+        notes = blogData.tasks[0].notes
         console.log("Called setupInitialTask!")
         for (let i = 1; i < blogData.tasks.length; i++) {
             addTask(blogData.tasks[i]); // Add additional tasks
@@ -15,10 +16,13 @@ function initializeBlog(blogData) {
         setupInitialTask(null);
     }
     selectTab(1); // Ensure this is called after the DOM is fully loaded
-    initializeEditor("editor-container1");
+    initializeEditor("editor-container1", notes);
 }
 
-
+function autoResizeTextArea(event) {
+    event.target.style.height = 'auto';  // Reset the height
+    event.target.style.height = event.target.scrollHeight + 'px';  // Set the height based on scroll height
+}
 
 // Fetch today's blog data using AJAX
 document.addEventListener('DOMContentLoaded', function () {
@@ -31,9 +35,19 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error fetching blog data:', error);
             initializeBlog(null); // Initialize with no blog data
         });
+
+
+    // Add the event listener to textareas
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('input', autoResizeTextArea);
+        // Initialize each textarea to resize on page load
+        autoResizeTextArea({ target: textarea });
+    });
 });
 
 function setupInitialTask(taskData) {
+    console.log("In setupInitialTask")
+    console.log(JSON.stringify(taskData))
     const initialTabButton = document.createElement('button');
     initialTabButton.textContent = 'Task 1';
     initialTabButton.dataset.taskId = 1;
@@ -56,11 +70,11 @@ function setupInitialTask(taskData) {
     initialTabContent.querySelector('input[type="text"]').value = time_spent;
     initialTabContent.querySelector('input[type="range"][min="1"]').value = distraction_meter;
     initialTabContent.querySelector('textarea[placeholder="What\'s next?"]').value = next_steps;
+
 }
 
 function addTask(taskData) {
-    console.log("AddTask called!")
-    console.log(JSON.stringify(taskData))
+    
     currentTaskId++;
     const newTaskId = currentTaskId;
     const tabButton = document.createElement('button');
@@ -76,43 +90,54 @@ function addTask(taskData) {
     const time_spent = taskData ? taskData.time_spent : '';
     const distraction_meter = taskData ? taskData.distraction_meter : 5;
     const next_steps = taskData ? taskData.next_steps : '';
+    const notes = taskData ? taskData.notes : '';
 
     const tabContent = document.createElement('div');
     tabContent.className = 'task-content p-4 border rounded hidden';
     tabContent.id = `taskContent${newTaskId}`;
+    
     tabContent.innerHTML = `
     <div class="task-start mb-4 bg-white p-4 border rounded">
         <h3 class="font-bold">Start</h3>
         <label>What I want to do:</label>
-        <textarea class="w-full p-2 border border-gray-300 rounded"
-            placeholder="Task description...">${task_description}</textarea>
+        <!-- Task Description -->
+        <textarea class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
+            placeholder="Task description..." oninput="autoResizeTextArea(event)">${task_description}</textarea>
         <label>Expected Difficulty:</label>
         <input type="range" min="1" max="10" value="${difficulty}" class="w-full">
     </div>
     <div class="task-work mb-4 bg-white p-4 border rounded">
         <h3 class="font-bold">Work</h3>
         <label>Notes:</label>
-        <div id="editor-container${newTaskId}" style="height: 300px;"></div>
+        <div id="editor-container${newTaskId}" class="min-h-[300px]">
+            <!-- Notes are handled by Quill -->
+        </div>
     </div>
     <div class="task-reflection mb-4 bg-white p-4 border rounded">
         <h3 class="font-bold">Reflection</h3>
         <label>General Thoughts:</label>
-        <textarea class="w-full p-2 border border-gray-300 rounded"
-            placeholder="Reflections on the task...">${reflection}</textarea>
+        <!-- Reflection on the Task -->
+        <textarea class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
+            placeholder="Reflections on the task..." oninput="autoResizeTextArea(event)">${reflection}</textarea>
         <label>Time Spent:</label>
         <input type="text" class="w-full p-2 border border-gray-300 rounded" value="${time_spent}">
         <label>Distraction Meter:</label>
         <input type="range" min="1" max="10" value="${distraction_meter}" class="w-full">
         <label>Next Steps:</label>
-        <textarea class="w-full p-2 border border-gray-300 rounded" placeholder="What's next?">${next_steps}</textarea>
+        <!-- Next Steps -->
+        <textarea class="w-full p-2 border border-gray-300 rounded min-h-[150px]" placeholder="What's next?"
+            oninput="autoResizeTextArea(event)">${next_steps}</textarea>
     </div>
     <button type="button" onclick="removeTask(${newTaskId})"
         class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Remove Task</button>
     `;
     document.getElementById('tabContent').appendChild(tabContent);
-    initializeEditor(`editor-container${newTaskId}`);
-
+    initializeEditor(`editor-container${newTaskId}`, notes);
     selectTab(newTaskId); // Automatically select the new task
+    // Resize all newly added textAreas
+    document.querySelectorAll('textarea').forEach(textarea => {
+        autoResizeTextArea({ target: textarea });
+    });
 }
 
 function selectTab(taskId) {
@@ -151,30 +176,37 @@ function removeTask(taskId) {
     }
 }
 
-function initializeEditor(editorId) {
+function initializeEditor(editorId, notes) {
     var toolbarOptions = [
         ['bold', 'italic', 'underline', 'strike'],
         ['blockquote', 'code-block'],
-        [{ 'header': 1 }, { 'header': 2 }],
         [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-        [{ 'script': 'sub' }, { 'script': 'super' }],
         [{ 'indent': '-1' }, { 'indent': '+1' }],
-        [{ 'direction': 'rtl' }],
         [{ 'size': ['small', false, 'large', 'huge'] }],
-        [{ 'color': [] }, { 'background': [] }],
-        [{ 'font': [] }],
-        [{ 'align': [] }],
-        ['clean'],
         ['image']
     ];
 
     var editor = new Quill(`#${editorId}`, {
         modules: {
-            toolbar: toolbarOptions
+            toolbar: toolbarOptions,
         },
         placeholder: 'How goes the grinding?',
-        theme: 'snow'
+        theme: 'snow',
+        formats: ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'list', 'bullet', 'indent', 'link', 'image', 'header', 'size', 'class']
     });
+
+    Quill.import('attributors/class/size');
+    Quill.import('attributors/style/align');
+    Quill.import('attributors/style/direction');
+
+    // Custom configuration to allow classes in <img> tags
+    let Image = Quill.import('formats/image');
+    Image.attributes.class = true;  // Allow class attribute on image
+    Quill.register(Image, true);
+
+    if (notes && notes.trim() !== "") {
+        editor.clipboard.dangerouslyPasteHTML(notes);
+    }
 
     // Simplify image handling
     editor.getModule('toolbar').addHandler('image', function () {
@@ -228,31 +260,45 @@ function insertToEditor(url, editor) {
     const range = editor.getSelection();
     if (range) {
         editor.insertEmbed(range.index, 'image', url);
+
+        // Wait for the DOM update
+        setTimeout(() => {
+            const images = editor.container.getElementsByTagName('img');
+            if (images.length) {
+                Array.from(images).forEach(img => {
+                    if (img.src.includes(url)) {
+                        // Remove any previously added size classes
+                        img.classList.remove('w-full', 'w-1/2', 'w-1/3', 'w-1/4', 'w-auto'); // Add all potential width classes you use elsewhere to reset properly
+                        img.classList.add('w-1/3'); // Tailwind class for 33% width
+                        img.classList.add('h-auto'); // Tailwind class for auto height
+                    }
+                });
+            }
+        }, 10); // Short delay to ensure the image element is rendered in the DOM
     }
 }
-
 function exportBlog() {
     // Get daily goals and meters
-    const daily_goals = document.getElementById('daily-goals').value;
+    const daily_goals = (document.getElementById('daily-goals').value).trim();
     const enthusiasm = parseInt(document.getElementById('enthusiasm-meter').value);  // Convert to integer
     const burnout = parseInt(document.getElementById('burnout-meter').value);  // Convert to integer
     const leetcode_hatred = parseInt(document.getElementById('leetcode-meter').value);  // Convert to integer
 
     // Get reflection fields
-    const daily_reflection = document.getElementById('daily-reflection').value;
-    const next_steps = document.getElementById('next-steps').value;
+    const daily_reflection = document.getElementById('daily-reflection').value.trim();
+    const next_steps = document.getElementById('next-steps').value.trim();
 
     // Gather task data
     const tasks = [];
     document.querySelectorAll('.task-content').forEach((taskElement, index) => {
-        const task_description = taskElement.querySelector('textarea').value; // Task description
+        const task_description = taskElement.querySelector('textarea').value.trim(); // Task description
         const difficulty = parseInt(taskElement.querySelector('input[type="range"]').value); // Expected Difficulty
         const quillEditor = document.querySelector(`#editor-container${index + 1}`).__quill; // Access Quill
-        const notes = quillEditor.root.innerHTML; // Get Quill editor content
-        const reflection = taskElement.querySelector('textarea[placeholder="Reflections on the task..."]').value; // Task reflection
-        const time_spent = taskElement.querySelector('input[type="text"]').value; // Time Spent
+        const notes = quillEditor.root.innerHTML.trim(); // Get Quill editor content
+        const reflection = taskElement.querySelector('textarea[placeholder="Reflections on the task..."]').value.trim(); // Task reflection
+        const time_spent = taskElement.querySelector('input[type="text"]').value.trim(); // Time Spent
         const distraction_meter = parseInt(taskElement.querySelector('input[type="range"][min="1"]').value); // Distraction meter
-        const next_stepsTask = taskElement.querySelector('textarea[placeholder="What\'s next?"]').value; // Next steps
+        const next_stepsTask = taskElement.querySelector('textarea[placeholder="What\'s next?"]').value.trim(); // Next steps
 
         // Push structured task data to array
         tasks.push({
@@ -285,11 +331,11 @@ function exportBlog() {
         },
         body: JSON.stringify(today_blog),
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Success:', data);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
 }

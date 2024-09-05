@@ -557,7 +557,6 @@ def pydantic_update(table_name: str, models: List[Any], where_field: str, update
         nodes (List[PydanticModel]): The nodes to use for the update.
         where_field (str): The field to use in the WHERE clause of the update statement.
         update_columns (Optional[List[str]]): The columns to include in the update. If None, all fields are included. Defaults to None.
-        user (Optional[str]): The user making the request. Defaults to None.
     """
     conn = db_connect()
 
@@ -643,7 +642,7 @@ def pydantic_upsert(table_name: str, models: List[Any], where_field: str):
         table_name (str): The name of the table to upsert into.
         nodes (List[PydanticModels]): The list of pydantic models to use for the upsert.
         where_field (str): The field to use in the WHERE clause of the update statement.
-        user (Optional[str]): The user making the request. 
+         
     """
     for model in models:
         try:

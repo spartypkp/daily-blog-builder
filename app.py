@@ -16,7 +16,7 @@ app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'static/uploads/')
 def home():
     today_date = date.today().strftime("%B %d, %Y")
     today_blog = get_blog_for_today()
-    today_date = "TEST"
+    
 
     if today_blog:
         print(f"Today's blog already exists!")
@@ -64,7 +64,7 @@ def submit_blog():
         daily_blog = DailyBlog(**data)
 
         # Log the parsed data for debugging (Optional)
-        print(f"Parsed DailyBlog: {daily_blog}")
+        
         daily_blog.updated_at = datetime.datetime.now()
         # Perform the upsert operation on the 'daily_blogs' table
         pydantic_upsert(
@@ -86,15 +86,7 @@ def submit_blog():
         print(f"Error: {e}")
         return jsonify({"error": "An error occurred while saving the blog"}), 500
 
-    except ValidationError as e:
-        # If the data is not valid, return an error response
-        print(f"Validation Error: {e}")
-        return jsonify({"error": "Invalid data", "details": e.errors()}), 400
-
-    except Exception as e:
-        # Catch all other exceptions and return a server error response
-        print(f"Error: {e}")
-        return jsonify({"error": "An error occurred while saving the blog"}), 500
+    
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():

@@ -1,26 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog Builder</title>
-    <link href="/static/css/style.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script>
 
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4">
-        <h1 class="text-xl font-bold text-center my-4">Daily Blog Builder</h1>
-        <form action="/submit-blog" method="post">
-            <div class="mb-4">
-                <label for="task" class="block text-gray-700 text-sm font-bold mb-2">Task:</label>
-                <input type="text" name="task" id="task" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+
+<body class="bg-white p-4">
+    <header class="text-center mb-6">
+        <h1 class="text-5xl font-bold">Daily Blog Builder</h1>
+        <p class="text-sm">Date: {{ today_date }}</p>
+    </header>
+
+    <!-- Goals Section -->
+    <section class="goals mb-8 bg-gray-200 shadow-md rounded-lg p-6">
+        <h1 class="text-xl font-semibold text-center mb-4">Daily Goals</h2>
+            <div class="max-w-4xl mx-auto bg-white p-4 border rounded">
+                <textarea id="daily-goals" class="w-full p-2 border border-gray-300 rounded"
+                    placeholder="Enter your main goals for today..."></textarea>
+                <label for="enthusiasm-meter" class="block mt-2">Enthusiasm:</label>
+                <input type="range" id="enthusiasm-meter" min="0" max="100" value="50" class="w-full">
+
+                <label for="burnout-meter" class="block mt-2">Burnout:</label>
+                <input type="range" id="burnout-meter" min="0" max="100" value="50" class="w-full">
+
+                <label for="leetcode-meter" class="block mt-2">Leetcode Hatred:</label>
+                <input type="range" id="leetcode-meter" min="0" max="100" value="50" class="w-full">
             </div>
-            <div class="mb-4">
-                <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Description:</label>
-                <textarea name="description" id="description" rows="4" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+    </section>
+
+    <!-- Tasks Section -->
+    <section class="tasks mb-8 bg-gray-200 shadow-md rounded-lg p-6">
+        <h1 class="text-2xl font-semibold text-center mb-4">Tasks</h1>
+        <div class="tab-buttons flex justify-center mb-2 space-x-2">
+            <!-- Initial Task Button -->
+
+        </div>
+        <div class="text-center">
+            <button type="button" onclick="addTask()"
+                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">+ Add Task</button>
+        </div>
+        <div class="tab-content mt-4" id="tabContent">
+            <!-- Initial Task Content -->
+            <div class="task-content p-4 border rounded" id="taskContent1">
+                <div class="task-start mb-4 bg-white p-4 border rounded">
+                    <h3 class="font-bold">Start</h3>
+                    <label>What I want to do:</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded"
+                        placeholder="Task description..."></textarea>
+                    <label>Expected Difficulty:</label>
+                    <input type="range" min="1" max="10" class="w-full">
+                </div>
+                <div class="task-work mb-4 bg-white p-4 border rounded">
+                    <h3 class="font-bold">Work</h3>
+                    <label>Notes:</label>
+                    <div id="editor-container1" style="height: 300px;"></div>
+                </div>
+                <div class="task-reflection mb-4 bg-white p-4 border rounded">
+                    <h3 class="font-bold">Reflection</h3>
+                    <label>General Thoughts:</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded"
+                        placeholder="Reflections on the task..."></textarea>
+                    <label>Time Spent:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded">
+                    <label>Distraction Meter:</label>
+                    <input type="range" min="1" max="10" class="w-full">
+                    <label>Next Steps:</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded" placeholder="What's next?"></textarea>
+                </div>
+                <button type="button" onclick="removeTask(1)"
+                    class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Remove Task</button>
             </div>
-            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Submit</button>
-        </form>
-    </div>
+        </div>
+    </section>
+
+
+    <!-- Reflection Section -->
+    <section class="reflection mb-6 bg-gray-200 shadow-md rounded-lg p-6">
+        <h1 class="text-xl font-semibold text-center mb-4">Daily Reflection</h1>
+        <div class="mb-4 bg-white p-4 border rounded">
+            <h3 class="font-bold">Daily Vibes</h3>
+            <textarea id="daily-reflection" class="w-full p-4 mt-4 rounded-lg border border-gray-300 "
+                placeholder="How did the day go?"></textarea>
+            <h3 class="font-bold">Next Steps</h3>
+            <textarea id="next-steps" class="w-full p-4 mt-4 rounded-lg border border-gray-300"
+                placeholder="What are the next steps?"></textarea>
+        </div>
+    </section>
+
+    <footer class="text-center">
+        <button type="button" onclick="exportBlog()"
+            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Export Blog</button>
+    </footer>
 </body>
+
 </html>

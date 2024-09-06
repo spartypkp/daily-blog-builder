@@ -248,9 +248,9 @@ class Reflection(BaseModel):
 # Main model for the Daily Blog
 class DailyBlog(BaseModel):
     date: datetime.date = Field(..., description="Date of the blog entry.")
-    introduction: Optional[Introduction] = Field(default=None, description="The introduction to Will's daily blog.")
-    tasks: Optional[List[Task]] = Field(default="", description="List of technical tasks Will completed for the day.")
-    reflection: Optional[Reflection] = Field(default=None, description="The reflection portion of Will's daily blog")
+    introduction: Optional[Introduction] = Field(default=Introduction(), description="The introduction to Will's daily blog.")
+    tasks: List[Task] = Field(default_factory=lambda: [Task()], description="List of technical tasks Will completed for the day.")
+    reflection: Optional[Reflection] = Field(default=Reflection(), description="The reflection portion of Will's daily blog")
     created_at: Optional[datetime.datetime] = Field(default=None, description="Timestamp for when the blog was created.")
     updated_at: Optional[datetime.datetime] = Field(default=None, description="Timestamp for the last update.")
 

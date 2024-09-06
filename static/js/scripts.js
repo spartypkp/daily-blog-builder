@@ -1,4 +1,4 @@
-let currentTaskId = 1; // Start from 1 because the initial task is already there
+let currentTaskId = 0; // Start from 1 because the initial task is already there
 
 function initializeBlog(blogData) {
     
@@ -32,6 +32,7 @@ function initializeBlog(blogData) {
         document.getElementById('desire_to_play_steam_games_level').value = blogData.reflection.desire_to_play_steam_games_level || 50;
         document.getElementById('overall_frustration_level').value = blogData.reflection.overall_frustration_level || 50;
     }
+    console.log(`Blog Data: ${JSON.stringify(blogData, null, 2)}`)
     // Add a new task for however many tasks there are
     for (let i = 0; i < blogData.tasks.length; i++) {
         addTask(blogData.tasks[i]); // Add additional tasks
@@ -55,7 +56,6 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(error => {
             console.error('Error fetching blog data:', error);
-            initializeBlog(null); // Initialize with no blog data
         });
 
 
@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function addTask(taskData) {
     currentTaskId++;
     const newTaskId = currentTaskId;
+    console.log(`Current newTaskId: ${newTaskId}`)
 
     // Create the tab button for the new task
     const tabButton = document.createElement('button');
@@ -185,7 +186,7 @@ function addTask(taskData) {
     document.getElementById('tabContent').appendChild(tabContent);
     
     // Initialize the Quill editor for the task progress notes
-    initializeEditor(`task_progress_notes${newTaskId}`, task_progress_notes);
+    initializeEditor(newTaskId, task_progress_notes);
 
     // Select the new task tab
     selectTab(newTaskId);
@@ -202,6 +203,7 @@ function selectTab(taskId) {
 
     // Hide all task contents and reset tab styles
     allTabs.forEach(tab => {
+        console.log(tab)
         tab.classList.remove('bg-blue-100', 'font-bold');
         tab.classList.add('text-blue-700', 'hover:text-blue-900');
     });
@@ -273,7 +275,7 @@ function initializeEditor(editorId, notes) {
         ['image']
     ];
 
-    var editor = new Quill(`task_progress_notes#${editorId}`, {
+    var editor = new Quill(`#task_progress_notes${editorId}`, {
         modules: {
             toolbar: toolbarOptions
         },

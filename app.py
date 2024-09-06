@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from flask import jsonify
 import os
 from pydantic import ValidationError
-from pydanticModels import DailyBlog, Task
+from pydanticModels import DailyBlog, Task, Introduction, Reflection
 from utilityFunctions import pydantic_upsert, pydantic_select
 from typing import List, Optional
 
@@ -30,6 +30,8 @@ def home():
 @app.route('/api/today_blog')
 def get_today_blog():
     today_blog = get_blog_for_today()
+    if today_blog.tasks == []:
+        today_blog.tasks.append(Task())
     return jsonify(today_blog.dict())
    
     
@@ -46,7 +48,10 @@ def get_blog_for_today() -> DailyBlog:
         return results[0]
     else:
         # Return None if no blog entry for today is found
-        return DailyBlog(date=today)
+        empty_blog = DailyBlog(date=today)
+        
+        return empty_blog
+
     
 @app.route('/submit-blog', methods=['POST'])
 def submit_blog():

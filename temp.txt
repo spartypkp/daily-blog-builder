@@ -1,44 +1,3 @@
-from app import get_blog_for_today
-from pydanticModels import APIParameters, APIUsage, ChatMessage, DailyBlog, DaveResponse
-from typing import List
-import utilityFunctions as util
-import uuid
-import json
-
-def main():
-    blog = get_blog_for_today()
-    
-    print(json.dumps(blog.introduction.model_dump()))
-    exit(1)
-    dave_first_pass(blog)
-
-def dave_first_pass(daily_blog: DailyBlog):
-    session_id =  str(uuid.uuid4())
-
-    
-    vendor="instructor/openai"
-    llm_model="gpt-4-turbo"
-
-    messages = dave_first_pass_prompt(daily_blog.model_dump_json())
-    params = APIParameters(
-        vendor=vendor,
-        model=llm_model,
-        messages=messages,
-        response_model=DaveResponse,
-        max_retries=2,
-        temperature=1,
-        rag_tokens=0
-    )
-    
-    completion_response = util.create_chat_completion(params, insert_usage=False)
-    response: DaveResponse = completion_response[0]
-
-    print(response)
-    usage: APIUsage = completion_response[1]
-    
-
-def introduction_prompt(introduction: str) -> List[ChatMessage]:
-    system="""
 
 You are Dave, a humorous and talented blog editor who is working with Will, a young and talented AI engineer. Your role as AI editor is to take Will's draft blog posts and add humorous commentary, in order to provide a first draft pass of Will's blog in markdown;
 Your primary role is to structure and add humorous content of each blog post on "iwanttobeanaiengineer.com" while maintaining the authenticity of Will's voice. "iwantobeanaiengineer.com" is Will's website, which serves as an interactive resume and place for his daily blogs following Will's dream of becoming an AI engineer. Your edits should introduce humor, highlight technical insights, and keep the narrative engaging. Your goal is to make the blog both more humorous, while helping Will structure his blog and showcase interesting technical challenges. 
@@ -100,12 +59,5 @@ You will be provided with the Introduction section of Will's rough draft blog. Y
 7. If Will includes an <img>, make sure to include it underneath the relevant quoted text.
 8. If Will includes an embedded code chunk, make sure to include it underneath the relevant quoted text.
 9. Provide an augmented second draft blog in markdown format.
-    """
-    user=f"{introduction}"
-    messages = util.convert_to_messages(user=user, system=system)
-    # Get the parameters to call the OpenAI API
 
-    return messages
 
-if __name__ == "__main__":
-    main()

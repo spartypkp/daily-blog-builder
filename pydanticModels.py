@@ -178,43 +178,79 @@ class InteractiveRequest(BaseModel):
     description: str = Field(..., description="Detailed description of what is being requested for improvement or clarification.")
 
 class IntroductionContent(BaseModel):
-    remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the introduction's clarity or depth.")
     dave_summary: str = Field(..., description="A more detailed summary of Will's original writing for the introduction.")
-    dave_commentary: str = Field(..., description="Dave's humorous or insightful commentary on the day's planned activities. Use creativity and humor here, while also providing a lengthy summary of Will's writing from the perspective of Dave. How is Will's starting mood?")
-    mood_analysis: str = Field(..., description="A humorous analysis of Will's mood indicated by the mood bar values.")
-    interactive_requests: List[InteractiveRequest] = Field(default_factory=list, description="Interactive elements where Dave asks for further details or clarifications from Will. ")
+    remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the introduction's clarity or depth. What major themes did Will leave out?")
+    interactive_requests: List[InteractiveRequest] = Field(default_factory=list, description="Interactive elements where Dave asks for further details or clarifications from Will, specifically about explaining technical matters ")
 
 class DailyReflectionContent(BaseModel):
-    remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Areas identified by Dave for additional detail or clarification in the reflection.")
     dave_summary: str = Field(..., description="A more detailed summary of Will's original writing for the reflection.")
-    dave_commentary: str = Field(..., description="Dave's concluding thoughts or humorous take on the day's outcomes. A detailed summary of challenges faced (maybe overcame, as well as a summary of technical challenges. What did Will accomplish? How is his mood?")
+    remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Areas identified by Dave for additional detail or clarification in the reflection.")
     technical_highlights: List[str] = Field(default_factory=list, description="Key technical accomplishments or challenges highlighted in the reflection.")
-    interactive_requests: List[InteractiveRequest] = Field(default_factory=list, description="Interactive elements where Dave asks for further details or clarifications from Will. ")
+    interactive_requests: List[InteractiveRequest] = Field(default_factory=list, description="Interactive elements where Dave asks for further details or clarifications from Will, specifically about explaining technical matters")
 class DaveResponse(BaseModel):
     introduction: IntroductionContent = Field(..., description="Detailed content for the blog's introduction section.")
     daily_reflection: DailyReflectionContent = Field(..., description="Content for reflecting on the day's work and progress.")
-    additional_comments: Optional[str] = Field(None, description="Additional general comments from Dave that might not fit directly into other sections.")
 
 # Submodel for Task
 class Task(BaseModel):
-    task_description: Optional[str] = Field("", description="Task description.")
-    difficulty: Optional[int] = Field(5, description="Task difficulty level.", ge=1, le=10)
-    notes: Optional[str] = Field("", description="Notes taken for the task, HTML formatted.")
-    reflection: Optional[str] = Field("", description="Reflections on the task.")
-    time_spent: Optional[str] = Field("", description="Time spent on the task, e.g., '2 hours'.")
-    distraction_meter: Optional[int] = Field(5, description="Distraction level (1-10).", ge=1, le=10)
-    next_steps: Optional[str] = Field("", description="Next steps for this task.")
+    # Task Start - filled out at start of task
+    task_goal: Optional[str] = Field("", description="Desired outcome or goal for the task.")
+    task_description: Optional[str] = Field("", description="Description of the task or problem.")
+    task_expected_difficulty: Optional[int] = Field(50, description="Focus level (0-100).", ge=0, le=100)
+    task_planned_approach: Optional[str] = Field("", description="Method or strategy Will plans to use to tackle the problem.")
+
+    # Task Work - Ongoing throughout day
+    task_progress_notes: Optional[str] = Field("", description="Main writing area for Will to document  his progress.")
+    challenges_encountered: Optional[str] = Field("", description="Key challenges or bugs encountered.")
+    research_questions: Optional[str] = Field("", description="An always updated list of research questions Will had while working on the task")
+    
+    
+    # Task Reflection - filled out after task completion
+    tools_used: Optional[str] = Field("", description="Key tools, libraries, or frameworks used during the task.")
+    reflection_successes: Optional[str] = Field("", description="What worked well during the task?")
+    reflection_failures: Optional[str] = Field("", description="What didn't work, and why?")
+    output_or_result: Optional[str] = Field("", description="The outcome or deliverable from this task (e.g., code, documentation).")
+    time_spent_coding: Optional[str] = Field("", description="Time spent actively coding (e.g., '2 hours').")
+    time_spent_researching: Optional[str] = Field("", description="Time spent researching (e.g., '30 minutes').")
+    time_spent_debugging: Optional[str] = Field("", description="Time spent debugging (e.g., '45 minutes').")
+    follow_up_tasks: Optional[str] = Field("", description="Immediate next steps or follow-up tasks.")
+
+class Introduction(BaseModel):
+    personal_context: Optional[str] = Field("", description="Additional context for the day (e.g., external factors).")
+    daily_goals: Optional[str] = Field("", description="Main tasks or goals for the day.")
+    learning_focus: Optional[str] = Field("", description="What Will wants to learn or improve on today.")
+    challenges: Optional[str] = Field("", description="Known challenges or experiments for the day.")
+    plan_of_action: Optional[str] = Field("", description="Will's initial plan for tackling the daily_goals and challenges today.")
+
+    focus_level: Optional[int] = Field(50, description="Focus level (0-100).", ge=0, le=100)
+    enthusiasm_level: Optional[int] = Field(50, description="Enthusiasm meter (0-100).", ge=0, le=100)
+    burnout_level: Optional[int] = Field(50, description="Burnout meter (0-100).", ge=0, le=100)
+    leetcode_hatred_level: Optional[int] = Field(99, description="LeetCode hatred meter (0-100).", ge=0, le=100)
+    
+    
+
+class Reflection(BaseModel):
+    technical_challenges: Optional[str] = Field("", description="Notable technical challenges or obstacles faced.")
+    interesting_bugs: Optional[str] = Field("", description="Details of any interesting bugs encountered.")
+    unanswered_questions: Optional[str] = Field("", description="Unanswered technical questions or topics for further research.")
+    learning_outcomes: Optional[str] = Field("", description="Key takeaways and things learned during the day.")
+    next_steps_short_term: Optional[str] = Field("", description="Immediate next steps or tasks for tomorrow.")
+    next_steps_long_term: Optional[str] = Field("", description="Long-term goals or ongoing technical objectives.")
+    
+    # Humorous & Self-Reflective Mood Sliders
+    productivity_level: Optional[int] = Field(50, description="Self-evaluation: Productivity (0-100).", ge=0, le=100)
+    distraction_level: Optional[int] = Field(50, description="Self-evaluation: How Distracted were you (0-100).", ge=0, le=100)
+    desire_to_play_steam_games_level: Optional[int] = Field(50, description="Desire to play Steam games (0-100). It's always Europa Universalis IV", ge=0, le=100)
+    overall_frustration_level: Optional[int] = Field(50, description="Frustration level (0-100).", ge=0, le=100)
+
+    
 
 # Main model for the Daily Blog
 class DailyBlog(BaseModel):
     date: datetime.date = Field(..., description="Date of the blog entry.")
-    daily_goals: Optional[str] = Field("", description="Daily goals for the day.")
-    enthusiasm: Optional[int] = Field(50, description="Enthusiasm meter (0-100).", ge=0, le=100)
-    burnout: Optional[int] = Field(50, description="Burnout meter (0-100).", ge=0, le=100)
-    leetcode_hatred: Optional[int] = Field(99, description="Leetcode hatred meter (0-100).", ge=0, le=100)
-    tasks: Optional[List[Task]] = Field(default="", description="List of tasks for the day.")
-    daily_reflection: Optional[str] = Field("", description="Reflection on how the day went.")
-    next_steps: Optional[str] = Field("", description="Next steps after the day.")
+    introduction: Optional[Introduction] = Field(default=None, description="The introduction to Will's daily blog.")
+    tasks: Optional[List[Task]] = Field(default="", description="List of technical tasks Will completed for the day.")
+    reflection: Optional[Reflection] = Field(default=None, description="The reflection portion of Will's daily blog")
     created_at: Optional[datetime.datetime] = Field(default=None, description="Timestamp for when the blog was created.")
     updated_at: Optional[datetime.datetime] = Field(default=None, description="Timestamp for the last update.")
 

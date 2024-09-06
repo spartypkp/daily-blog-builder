@@ -11,35 +11,67 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
-    
+
 </head>
 
 <body class="bg-white p-4">
     <header class="text-center mb-6">
         <h1 class="text-5xl font-bold">Daily Blog Builder</h1>
-        <p class="text-sm">Date: {{ today_date }}</p>
+        <p id="date" class="text-sm">Date: {{ today_date }}</p>
     </header>
-
-    <!-- Goals Section -->
+    <!-- Introduction Section -->
     <section class="goals mb-8 bg-gray-200 shadow-md rounded-lg p-6">
-        <h1 class="text-xl font-semibold text-center mb-4">Daily Goals</h2>
-            <div class="mx-auto bg-white p-4 border rounded">
-                <h3 class="font-bold">Description</h3>
-                <textarea id="daily-goals" class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-                    placeholder="Enter your main goals for today..." oninput="autoResizeTextArea(event)">{{ today_blog.daily_goals if today_blog else '' }}</textarea>
+        <h1 class="text-xl font-semibold text-center mb-4">Morning Pregame</h1>
+        <div class="mx-auto bg-white p-4 border rounded">
 
-                <label for="enthusiasm-meter" class="block mt-2">Enthusiasm:</label>
-                <input type="range" id="enthusiasm-meter" min="0" max="100"
-                    value="{{ today_blog.enthusiasm if today_blog else 50 }}" class="w-full">
+            <!-- Context for the Day -->
+            <label for="personal_context" class="block mt-4 font-bold">Context for the Day</label>
+            <textarea id="personal_context" class="w-full p-2 border border-gray-300 rounded min-h-[100px]"
+                placeholder="Anything impacting your day? (e.g., mood, external factors)"
+                oninput="autoResizeTextArea(event)"></textarea>
 
-                <label for="burnout-meter" class="block mt-2">Burnout:</label>
-                <input type="range" id="burnout-meter" min="0" max="100"
-                    value="{{ today_blog.burnout if today_blog else 50 }}" class="w-full">
+            <!-- Daily Goals -->
+            <label for="daily_goals" class="block mt-4 font-bold">Daily Goals</label>
+            <textarea id="daily_goals" class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
+                placeholder="Enter your main goals for today..." oninput="autoResizeTextArea(event)"></textarea>
 
-                <label for="leetcode-meter" class="block mt-2">Leetcode Hatred:</label>
-                <input type="range" id="leetcode-meter" min="0" max="100"
-                    value="{{ today_blog.leetcode_hatred if today_blog else 50 }}" class="w-full">
-            </div>
+            <!-- Learning Focus -->
+            <label for="learning_focus" class="block mt-4 font-bold">Learning Focus</label>
+            <textarea id="learning_focus" class="w-full p-2 border border-gray-300 rounded min-h-[100px]"
+                placeholder="What do you want to learn or improve on today?"
+                oninput="autoResizeTextArea(event)"></textarea>
+
+            <!-- Challenges -->
+            <label for="challenges" class="block mt-4 font-bold">Anticipated Challenges</label>
+            <textarea id="challenges" class="w-full p-2 border border-gray-300 rounded min-h-[100px]"
+                placeholder="Describe any challenges or experiments you want to focus on today."
+                oninput="autoResizeTextArea(event)"></textarea>
+
+            <!-- Plan of Action -->
+            <label for="plan_of_action" class="block mt-4 font-bold">Plan of Action</label>
+            <textarea id="plan_of_action" class="w-full p-2 border border-gray-300 rounded min-h-[100px]"
+                placeholder="Describe your plan for completing the goal for today and how you plan to deal with challenges."
+                oninput="autoResizeTextArea(event)"></textarea>
+
+
+            <!-- Mood Sliders -->
+            <label for="enthusiasm_level" class="block mt-4">Enthusiasm Level:</label>
+            <input type="range" id="enthusiasm_level" min="0" max="100"
+                value="{{ today_blog.enthusiasm_level if today_blog else 50 }}" class="w-full">
+
+            <label for="burnout_level" class="block mt-2">Burnout Level:</label>
+            <input type="range" id="burnout_level" min="0" max="100"
+                value="{{ today_blog.burnout_level if today_blog else 50 }}" class="w-full">
+
+            <label for="leetcode_hatred_level" class="block mt-2">LeetCode Hatred:</label>
+            <input type="range" id="leetcode_hatred_level" min="0" max="100"
+                value="{{ today_blog.leetcode_hatred_level if today_blog else 50 }}" class="w-full">
+
+            <label for="focus_level" class="block mt-2">Focus Level:</label>
+            <input type="range" id="focus_level" min="0" max="100"
+                value="{{ today_blog.focus_level if today_blog else 50 }}" class="w-full">
+
+        </div>
     </section>
 
     <!-- Tasks Section -->
@@ -47,67 +79,76 @@
         <h1 class="text-2xl font-semibold text-center mb-4">Tasks</h1>
         <div class="tab-buttons flex justify-center mb-2 space-x-2">
             <!-- Task Tabs can be dynamically populated if needed -->
-
         </div>
         <div class="text-center">
             <button type="button" onclick="addTask()"
                 class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">+ Add Task</button>
         </div>
         <div class="tab-content mt-4" id="tabContent">
-            <!-- Initial Task Content -->
-            <div class="task-content p-4 border rounded" id="taskContent1">
-                <div class="task-start mb-4 bg-white p-4 border rounded">
-                    <h3 class="font-bold">Start</h3>
-                    <label>What I want to do:</label>
-                    <!-- Task Description -->
-                    <textarea class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-                        placeholder="Task description..." oninput="autoResizeTextArea(event)"></textarea>
-                    <label>Expected Difficulty:</label>
-                    <input type="range" min="1" max="10" value="5" class="w-full">
-                </div>
-                <div class="task-work mb-4 bg-white p-4 border rounded">
-                    <h3 class="font-bold">Work</h3>
-                    <label>Notes:</label>
-                    <div id="editor-container1" class="min-h-[300px]">
-                        <!-- Notes are handled by Quill -->
-                    </div>
-                </div>
-                <div class="task-reflection mb-4 bg-white p-4 border rounded">
-                    <h3 class="font-bold">Reflection</h3>
-                    <label>General Thoughts:</label>
-                    <!-- Reflection on the Task -->
-                    <textarea class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-                        placeholder="Reflections on the task..." oninput="autoResizeTextArea(event)"></textarea>
-                    <label>Time Spent:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded" value="">
-                    <label>Distraction Meter:</label>
-                    <input type="range" min="1" max="10" value="5" class="w-full">
-                    <label>Next Steps:</label>
-                    <!-- Next Steps -->
-                    <textarea class="w-full p-2 border border-gray-300 rounded min-h-[150px]" placeholder="What's next?"
-                        oninput="autoResizeTextArea(event)"></textarea>
-                </div>
-                <button type="button" onclick="removeTask(1)"
-                    class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Remove Task</button>
-            </div>
+            
         </div>
     </section>
+
 
 
     <!-- Reflection Section -->
     <section class="reflection mb-6 bg-gray-200 shadow-md rounded-lg p-6">
         <h1 class="text-xl font-semibold text-center mb-4">Daily Reflection</h1>
+
         <div class="mb-4 bg-white p-4 border rounded">
-            <h3 class="font-bold">Daily Vibes</h3>
-            <!-- Daily Vibes Reflection -->
-            <textarea id="daily-reflection" class="w-full p-4 mt-4 rounded-lg border border-gray-300 min-h-[150px]"
-                placeholder="How did the day go?" oninput="autoResizeTextArea(event)">{{ today_blog.daily_reflection if today_blog else '' }}</textarea>
-            <h3 class="font-bold">Next Steps</h3>
-            <!-- Next Steps -->
-            <textarea id="next-steps" class="w-full p-4 mt-4 rounded-lg border border-gray-300 min-h-[150px]"
-            placeholder="What are the next steps?" oninput="autoResizeTextArea(event)">{{ today_blog.next_steps if today_blog else '' }}</textarea>
+            <!-- Technical Challenges -->
+            <h3 class="font-bold">Technical Challenges</h3>
+            <textarea id="technical_challenges" class="w-full p-4 mt-4 rounded-lg border border-gray-300 min-h-[150px]"
+                placeholder="Describe the technical challenges or obstacles faced..."
+                oninput="autoResizeTextArea(event)"></textarea>
+
+            <!-- Interesting Bugs -->
+            <h3 class="font-bold mt-4">Interesting Bugs</h3>
+            <textarea id="interesting_bugs" class="w-full p-4 mt-4 rounded-lg border border-gray-300 min-h-[150px]"
+                placeholder="Describe any interesting bugs encountered..."
+                oninput="autoResizeTextArea(event)"></textarea>
+
+            <!-- Unanswered Questions -->
+            <h3 class="font-bold mt-4">Unanswered Questions</h3>
+            <textarea id="unanswered_questions" class="w-full p-4 mt-4 rounded-lg border border-gray-300 min-h-[150px]"
+                placeholder="List any unanswered technical questions or topics for further research..."
+                oninput="autoResizeTextArea(event)"></textarea>
+
+            <!-- Learning Outcomes -->
+            <h3 class="font-bold mt-4">Learning Outcomes</h3>
+            <textarea id="learning_outcomes" class="w-full p-4 mt-4 rounded-lg border border-gray-300 min-h-[150px]"
+                placeholder="Summarize key takeaways or things learned during the day..."
+                oninput="autoResizeTextArea(event)"></textarea>
+
+            <!-- Short-Term Next Steps -->
+            <h3 class="font-bold mt-4">Short-Term Next Steps</h3>
+            <textarea id="next_steps_short_term" class="w-full p-4 mt-4 rounded-lg border border-gray-300 min-h-[150px]"
+                placeholder="Immediate next steps or tasks for tomorrow..."
+                oninput="autoResizeTextArea(event)"></textarea>
+
+            <!-- Long-Term Next Steps -->
+            <h3 class="font-bold mt-4">Long-Term Next Steps</h3>
+            <textarea id="next_steps_long_term" class="w-full p-4 mt-4 rounded-lg border border-gray-300 min-h-[150px]"
+                placeholder="Long-term goals or ongoing technical objectives..."
+                oninput="autoResizeTextArea(event)"></textarea>
+
+            <!-- Mood Sliders (Self-Reflective & Humorous) -->
+            <h3 class="font-bold mt-4">Mood & Self-Reflection</h3>
+
+            <label for="productivity_level" class="block mt-4">Productivity Level:</label>
+            <input type="range" id="productivity_level" min="0" max="100" value="50" class="w-full">
+
+            <label for="distraction_level" class="block mt-4">Distraction Level:</label>
+            <input type="range" id="distraction_level" min="0" max="100" value="50" class="w-full">
+
+            <label for="desire_to_play_steam_games_level" class="block mt-4">Desire to Play Steam Games:</label>
+            <input type="range" id="desire_to_play_steam_games_level" min="0" max="100" value="50" class="w-full">
+
+            <label for="overall_frustration_level" class="block mt-4">Overall Frustration:</label>
+            <input type="range" id="overall_frustration_level" min="0" max="100" value="50" class="w-full">
         </div>
     </section>
+
 
 
     <footer class="text-center">

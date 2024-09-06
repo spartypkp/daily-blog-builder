@@ -30,13 +30,10 @@ def home():
 @app.route('/api/today_blog')
 def get_today_blog():
     today_blog = get_blog_for_today()
-
-    if today_blog:
-        return jsonify(today_blog.dict())
-    else:
-        return jsonify(None), 200
+    return jsonify(today_blog.dict())
+   
     
-def get_blog_for_today() -> Optional[DailyBlog]:
+def get_blog_for_today() -> DailyBlog:
     today = date.today().isoformat()
 
     # Connect to the PostgreSQL database (adjust connection parameters as needed)
@@ -49,7 +46,7 @@ def get_blog_for_today() -> Optional[DailyBlog]:
         return results[0]
     else:
         # Return None if no blog entry for today is found
-        return None
+        return DailyBlog(date=today)
     
 @app.route('/submit-blog', methods=['POST'])
 def submit_blog():

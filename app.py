@@ -14,6 +14,7 @@ app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'static/uploads/')
 
 @app.route('/')
 def home():
+    
     today_date = date.today().strftime("%B %d, %Y")
     today_blog = get_blog_for_today()
     
@@ -35,24 +36,6 @@ def get_today_blog():
     return jsonify(today_blog.dict())
    
     
-def get_blog_for_today() -> DailyBlog:
-    today = date.today().isoformat()
-
-    # Connect to the PostgreSQL database (adjust connection parameters as needed)
-    results: List[DailyBlog] = pydantic_select(f"SELECT * FROM daily_blogs WHERE date = '{today}';", modelType=DailyBlog)
-
-
-
-    if len(results) > 0:
-        # Assuming your table structure matches the Pydantic model (adjust as needed)
-        return results[0]
-    else:
-        # Return None if no blog entry for today is found
-        empty_blog = DailyBlog(date=today)
-        
-        return empty_blog
-
-    
 @app.route('/submit-blog', methods=['POST'])
 def submit_blog():
     try:
@@ -60,7 +43,8 @@ def submit_blog():
         data = request.get_json()
 
         # Add today's date to the JSON data (assuming 'date' is the primary key)
-        data['date'] = date.today().isoformat()  # Format as 'YYYY-MM-DD'
+        #data['date'] = date.today().isoformat()  # Format as 'YYYY-MM-DD'
+        data['date'] = "2024-09-05"
 
         # Validate the incoming data using the DailyBlog Pydantic model
         daily_blog = DailyBlog(**data)
@@ -112,6 +96,24 @@ def allowed_file(filename):
     # This function will return True if file extension is allowed
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def get_blog_for_today() -> DailyBlog:
+    #today = date.today().isoformat()
+    today= "2024-09-05"
+
+    # Connect to the PostgreSQL database (adjust connection parameters as needed)
+    results: List[DailyBlog] = pydantic_select(f"SELECT * FROM daily_blogs WHERE date = '{today}';", modelType=DailyBlog)
+
+
+
+    if len(results) > 0:
+        # Assuming your table structure matches the Pydantic model (adjust as needed)
+        return results[0]
+    else:
+        # Return None if no blog entry for today is found
+        empty_blog = DailyBlog(date=today)
+        
+        return empty_blog
 
 if __name__ == '__main__':
     app.run(debug=True)

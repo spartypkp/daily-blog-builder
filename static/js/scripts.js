@@ -42,10 +42,6 @@ function initializeBlog(blogData) {
     
 }
 
-function autoResizeTextArea(event) {
-    event.target.style.height = 'auto';  // Reset the height
-    event.target.style.height = event.target.scrollHeight + 'px';  // Set the height based on scroll height
-}
 
 // Fetch today's blog data using AJAX
 document.addEventListener('DOMContentLoaded', function () {
@@ -67,6 +63,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+function autoResizeTextArea(event) {
+    event.target.style.height = 'auto';  // Reset the height
+    event.target.style.height = event.target.scrollHeight + 'px';  // Set the height based on scroll height
+}
 
 function addTask(taskData) {
     currentTaskId++;

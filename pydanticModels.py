@@ -204,7 +204,6 @@ class Task(BaseModel):
     challenges_encountered: Optional[str] = Field("", description="Key challenges or bugs encountered.")
     research_questions: Optional[str] = Field("", description="An always updated list of research questions Will had while working on the task")
     
-    
     # Task Reflection - filled out after task completion
     tools_used: Optional[str] = Field("", description="Key tools, libraries, or frameworks used during the task.")
     reflection_successes: Optional[str] = Field("", description="What worked well during the task?")
@@ -227,8 +226,6 @@ class Introduction(BaseModel):
     burnout_level: Optional[int] = Field(50, description="Burnout meter (0-100).", ge=0, le=100)
     leetcode_hatred_level: Optional[int] = Field(99, description="LeetCode hatred meter (0-100).", ge=0, le=100)
     
-    
-
 class Reflection(BaseModel):
     technical_challenges: Optional[str] = Field("", description="Notable technical challenges or obstacles faced.")
     interesting_bugs: Optional[str] = Field("", description="Details of any interesting bugs encountered.")
@@ -242,8 +239,6 @@ class Reflection(BaseModel):
     distraction_level: Optional[int] = Field(50, description="Self-evaluation: How Distracted were you (0-100).", ge=0, le=100)
     desire_to_play_steam_games_level: Optional[int] = Field(50, description="Desire to play Steam games (0-100). It's always Europa Universalis IV", ge=0, le=100)
     overall_frustration_level: Optional[int] = Field(50, description="Frustration level (0-100).", ge=0, le=100)
-
-    
 
 # Main model for the Daily Blog
 class DailyBlog(BaseModel):

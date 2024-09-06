@@ -407,8 +407,7 @@ def pydantic_select(sql_select: str, modelType: Any) -> List[Any]:
 
     Args:
         sql_select (str): The SQL SELECT statement to execute.
-        modelType (Optional[Any]): The Pydantic model to use for the row factory
-        user (Optional[str]): The user making the request
+        modelType (Optional[Any]): The Pydantic model to use for the Psycopg row factory.   
 
     Returns:
         List[Any]: The rows returned by the SELECT statement as a list of Pydantic Models.

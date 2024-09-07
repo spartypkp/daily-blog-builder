@@ -17,7 +17,10 @@
 <body class="bg-white p-4">
     <header class="text-center mb-6">
         <h1 class="text-5xl font-bold">Daily Blog Builder</h1>
-        <p id="date" class="text-sm">Date: {{ today_date }}</p>
+        <select id="blogDateSelector" onchange="fetchBlogData(this.value)">
+            <!-- Options will be dynamically populated by JavaScript -->
+        </select>
+        <!-- <p id="date" class="text-sm">Date: {{ today_date }}</p> -->
     </header>
     <!-- Introduction Section -->
     <section class="goals mb-8 bg-gray-200 shadow-md rounded-lg p-6">

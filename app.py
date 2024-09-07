@@ -14,27 +14,37 @@ app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'static/uploads/')
 
 @app.route('/')
 def home():
-    
-    today_date = date.today().strftime("%B %d, %Y")
-    today_blog = get_blog_for_today()
-    
+    selected_date = request.args.get('date', date.today().isoformat())  # Get date from URL query parameter or default to today
+
+    today_blog = get_blog_by_date(selected_date)
 
     if today_blog:
-        print(f"Today's blog already exists!")
-        # If today's blog exists, pass its data to the template
-        return render_template('home.html', today_blog=today_blog, today_date=today_date)
+        print(f"Blog for {selected_date} already exists!")
     else:
-        # If no blog exists for today, pass empty data
-        return render_template('home.html', today_blog=None, today_date=today_date)
-   
+        print(f"No blog found for {selected_date}, showing empty template.")
 
-@app.route('/api/today_blog')
-def get_today_blog():
-    today_blog = get_blog_for_today()
-    if today_blog.tasks == []:
-        today_blog.tasks.append(Task())
-    return jsonify(today_blog.dict())
-   
+    return render_template('home.html', today_blog=today_blog, today_date=selected_date)
+
+@app.route('/api/available_dates')
+def available_dates():
+    today = datetime.date.today().isoformat()
+    dates = fetch_blog_dates()  # This function needs to query your database for all unique blog dates
+    for date in dates:
+        print(date)
+    if today not in dates:
+        print(today)
+        dates.append(today)
+    
+    return jsonify(dates)
+
+@app.route('/api/blog_by_date/<date>', methods=['GET'])
+def get_blog_by_date(date):
+    blog = fetch_blog_by_date(date)
+    if blog.tasks == []:
+        blog.tasks.append(Task())
+    if blog:
+        return jsonify(blog.dict())
+    return jsonify({'error': 'Blog not found'}), 404
     
 @app.route('/submit-blog', methods=['POST'])
 def submit_blog():
@@ -43,8 +53,8 @@ def submit_blog():
         data = request.get_json()
 
         # Add today's date to the JSON data (assuming 'date' is the primary key)
-        #data['date'] = date.today().isoformat()  # Format as 'YYYY-MM-DD'
-        data['date'] = "2024-09-05"
+          # Format as 'YYYY-MM-DD'
+        
 
         # Validate the incoming data using the DailyBlog Pydantic model
         daily_blog = DailyBlog(**data)
@@ -97,23 +107,27 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def get_blog_for_today() -> DailyBlog:
-    #today = date.today().isoformat()
-    today= "2024-09-05"
-
-    # Connect to the PostgreSQL database (adjust connection parameters as needed)
-    results: List[DailyBlog] = pydantic_select(f"SELECT * FROM daily_blogs WHERE date = '{today}';", modelType=DailyBlog)
 
 
 
-    if len(results) > 0:
-        # Assuming your table structure matches the Pydantic model (adjust as needed)
+def fetch_blog_dates():
+    # Example SQL query to fetch all unique blog dates
+    results: List[DailyBlog] = pydantic_select(f"SELECT * FROM daily_blogs ORDER BY date DESC;", modelType=DailyBlog)
+    
+    return [result.date.isoformat() for result in results]
+
+def fetch_blog_by_date(date):
+    if date is None:
+        date = datetime.date.today().isoformat()
+    # Fetch a blog by its date
+    results: List[DailyBlog] = pydantic_select(f"SELECT * FROM daily_blogs WHERE date='{date}';", modelType=DailyBlog)
+    
+    if results:
         return results[0]
-    else:
-        # Return None if no blog entry for today is found
-        empty_blog = DailyBlog(date=today)
-        
+    if date == datetime.date.today().isoformat():
+        empty_blog = DailyBlog(date=datetime.date.today().isoformat())
         return empty_blog
+    return None
 
 if __name__ == '__main__':
     app.run(debug=True)

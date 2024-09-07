@@ -1,6 +1,29 @@
 let currentTaskId = 0; // Start from 1 because the initial task is already there
 
 function initializeBlog(blogData) {
+    // Reset the current task count
+    currentTaskId = 0;
+
+    // Clear existing task tabs and content
+    const tabButtonsContainer = document.querySelector('.tab-buttons');
+    const tabContentContainer = document.getElementById('tabContent');
+    while (tabButtonsContainer.firstChild) {
+        tabButtonsContainer.removeChild(tabButtonsContainer.firstChild);
+    }
+    while (tabContentContainer.firstChild) {
+        tabContentContainer.removeChild(tabContentContainer.firstChild);
+    }
+    
+    // Cleanup for Quill editors if they were previously initialized
+    const quillEditors = tabContentContainer.querySelectorAll('.quill-editor');
+    quillEditors.forEach(editor => {
+        // Assuming the Quill editor instance is stored on the element
+        if (editor.__quill) {
+            editor.__quill.deleteText(0, editor.__quill.getLength()); // Clears all text
+            editor.__quill = null; // Remove reference to the Quill instance
+        }
+        editor.innerHTML = ''; // Clear the editor container
+    });
 
     // Set the values for Introduction section fields
     if (blogData.introduction) {
@@ -41,31 +64,51 @@ function initializeBlog(blogData) {
 
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    const selectElement = document.getElementById('blogDateSelector');
 
-// Fetch today's blog data using AJAX
-document.addEventListener('DOMContentLoaded', function () {
-    fetch('/api/today_blog')
+    fetch('/api/available_dates')
+        .then(response => response.json())
+        .then(dates => {
+            dates.forEach(date => {
+                console.log(date)
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = date; // Format this if necessary
+                selectElement.appendChild(option);
+            });
+           
+            
+            selectElement.value = dates[0];
+            
+
+            fetchBlogData(selectElement.value); // Load the blog for the selected date
+
+        })
+        .catch(error => console.error('Failed to load available dates:', error));
+});
+
+
+
+
+function fetchBlogData(date) {
+    fetch(`/api/blog_by_date/${date}`)
         .then(response => response.json())
         .then(blogData => {
-            initializeBlog(blogData);
+            if (blogData.error) {
+                console.error('No blog found for this date:', date);
+            } else {
+                initializeBlog(blogData); // Initialize with fetched blog data
+            }
         })
         .catch(error => {
             console.error('Error fetching blog data:', error);
         });
-
-
-    // Add the event listener to textareas
-    document.querySelectorAll('textarea').forEach(textarea => {
-        textarea.addEventListener('input', autoResizeTextArea);
-        // Initialize each textarea to resize on page load
-        autoResizeTextArea({ target: textarea });
-    });
-});
-
-function autoResizeTextArea(event) {
-    event.target.style.height = 'auto';  // Reset the height
-    event.target.style.height = event.target.scrollHeight + 'px';  // Set the height based on scroll height
 }
+
+
+
+
 
 function addTask(taskData) {
     currentTaskId++;
@@ -271,41 +314,60 @@ class ImageFormat extends BaseImageFormat {
 }
 
 function initializeEditor(idName, taskId, text, placeholder) {
-    Quill.register(ImageFormat, true);
-    var toolbarOptions = [
-        ['bold', 'italic', 'underline', 'strike'],
-        ['blockquote', 'code-block'],
-        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-        [{ 'indent': '-1' }, { 'indent': '+1' }],
-        [{ 'size': ['small', false, 'large', 'huge'] }],
-        ['image']
-    ];
+    const editorId = `#${idName}${taskId}`;
+    const editorElement = document.querySelector(editorId);
 
-    var editor = new Quill(`#${idName}${taskId}`, {
-        modules: {
-            toolbar: toolbarOptions
-        },
-        placeholder: placeholder,
-        theme: 'snow'
-    });
-    if (text && text.trim() !== "") {
-        editor.clipboard.dangerouslyPasteHTML(text);
-    }
+    // Check if Quill has already been initialized on this element
+    if (editorElement.__quill) {
+        // If editor already exists, just update its content
+        editorElement.__quill.root.innerHTML = text;
+        return editorElement.__quill; // Optionally return the existing instance
+    } else {
+        // Register custom formats or modules if not already registered
+        Quill.register(ImageFormat, true);
 
-    // Simplify image handling
-    editor.getModule('toolbar').addHandler('image', function () {
-        const input = document.createElement('input');
-        input.setAttribute('type', 'file');
-        input.setAttribute('accept', 'image/*'); // Ensure only images are selected
-        input.click();
+        var toolbarOptions = [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            [{ 'indent': '-1' }, { 'indent': '+1' }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            ['image']
+        ];
 
-        input.addEventListener('change', () => {
-            if (input.files != null && input.files[0] != null) {
-                const file = input.files[0];
-                saveToServer(file, editor);
-            }
+        // Initialize a new Quill editor
+        var editor = new Quill(editorId, {
+            modules: {
+                toolbar: toolbarOptions
+            },
+            placeholder: placeholder,
+            theme: 'snow'
         });
-    });
+
+        // Store the Quill instance directly on the element for future reference
+        editorElement.__quill = editor;
+
+        if (text && text.trim() !== "") {
+            editor.clipboard.dangerouslyPasteHTML(text);
+        }
+
+        // Image handling
+        editor.getModule('toolbar').addHandler('image', function () {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*'); // Ensure only images are selected
+            input.click();
+
+            input.addEventListener('change', () => {
+                if (input.files != null && input.files[0] != null) {
+                    const file = input.files[0];
+                    saveToServer(file, editor);
+                }
+            });
+        });
+
+        return editor; // Optionally return the new instance
+    }
 }
 
 function selectLocalImage(editor) {
@@ -361,7 +423,7 @@ function insertToEditor(url, editor) {
     }
 }
 
-function exportBlog() {
+function exportBlog(date) {
     // Introduction Section - Refactored to use Quill where applicable
     const daily_goals = document.querySelector('#daily_goals').__quill.root.innerHTML.trim();
     const learning_focus = document.querySelector('#learning_focus').__quill.root.innerHTML.trim();
@@ -458,6 +520,7 @@ function exportBlog() {
 
     // Create the blog object
     const today_blog = {
+        date: date,
         introduction: introduction,
         tasks: tasks,
         reflection: reflection

@@ -9,6 +9,8 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 
 def main():
     blog = get_blog_for_today()
+    print(blog.model_dump_json())
+    exit(1)
 
     dave_first_pass(blog)
 

@@ -1,45 +1,44 @@
 let currentTaskId = 0; // Start from 1 because the initial task is already there
 
 function initializeBlog(blogData) {
-    
+
     // Set the values for Introduction section fields
     if (blogData.introduction) {
-        document.getElementById('daily_goals').value = blogData.introduction.daily_goals || '';
-        document.getElementById('learning_focus').value = blogData.introduction.learning_focus || '';
-        document.getElementById('challenges').value = blogData.introduction.challenges || '';
-        document.getElementById('plan_of_action').value = blogData.introduction.plan_of_action || '';
-        document.getElementById('personal_context').value = blogData.introduction.personal_context || '';
-
+        initializeEditor('daily_goals', '', blogData.introduction.daily_goals || '', '');
+        initializeEditor('learning_focus', '',  blogData.introduction.learning_focus || '', '');
+        initializeEditor('challenges', '', blogData.introduction.challenges || '', '');
+        initializeEditor('plan_of_action', '', blogData.introduction.plan_of_action || '', '');
+        initializeEditor('personal_context','', blogData.introduction.personal_context || '', '');
+    
         // Set the mood sliders
         document.getElementById('enthusiasm_level').value = blogData.introduction.enthusiasm_level || 50;
         document.getElementById('burnout_level').value = blogData.introduction.burnout_level || 50;
         document.getElementById('focus_level').value = blogData.introduction.focus_level || 50;
         document.getElementById('leetcode_hatred_level').value = blogData.introduction.leetcode_hatred_level || 50;
     }
-
+    
     // Set the values for Reflection section fields
     if (blogData.reflection) {
-        document.getElementById('technical_challenges').value = blogData.reflection.technical_challenges || '';
-        document.getElementById('interesting_bugs').value = blogData.reflection.interesting_bugs || '';
-        document.getElementById('unanswered_questions').value = blogData.reflection.unanswered_questions || '';
-        document.getElementById('learning_outcomes').value = blogData.reflection.learning_outcomes || '';
-        document.getElementById('next_steps_short_term').value = blogData.reflection.next_steps_short_term || '';
-        document.getElementById('next_steps_long_term').value = blogData.reflection.next_steps_long_term || '';
-
+        initializeEditor('technical_challenges','', blogData.reflection.technical_challenges || '', '');
+        initializeEditor('interesting_bugs','', blogData.reflection.interesting_bugs || '', '');
+        initializeEditor('unanswered_questions','', blogData.reflection.unanswered_questions || '', '');
+        initializeEditor('learning_outcomes','', blogData.reflection.learning_outcomes || '', '');
+        initializeEditor('next_steps_short_term','', blogData.reflection.next_steps_short_term || '', '');
+        initializeEditor('next_steps_long_term','', blogData.reflection.next_steps_long_term || '', '');
+    
         // Set the self-reflective mood sliders
         document.getElementById('productivity_level').value = blogData.reflection.productivity_level || 50;
         document.getElementById('distraction_level').value = blogData.reflection.distraction_level || 50;
         document.getElementById('desire_to_play_steam_games_level').value = blogData.reflection.desire_to_play_steam_games_level || 50;
         document.getElementById('overall_frustration_level').value = blogData.reflection.overall_frustration_level || 50;
     }
-    console.log(`Blog Data: ${JSON.stringify(blogData, null, 2)}`)
     // Add a new task for however many tasks there are
     for (let i = 0; i < blogData.tasks.length; i++) {
         addTask(blogData.tasks[i]); // Add additional tasks
     }
-    
+
     selectTab(1); // Ensure this is called after the DOM is fully loaded
-    
+
 }
 
 
@@ -82,63 +81,47 @@ function addTask(taskData) {
     document.querySelector('.tab-buttons').appendChild(tabButton);
 
     // Populate task fields with values from taskData (if available) or defaults
-    const task_goal = taskData?.task_goal || '';
-    const task_description = taskData?.task_description || '';
     const task_expected_difficulty = taskData?.task_expected_difficulty || 50;
-    const task_planned_approach = taskData?.task_planned_approach || '';
-    
-    const task_progress_notes = taskData?.task_progress_notes || '';
-    const challenges_encountered = taskData?.challenges_encountered || '';
-    const research_questions = taskData?.research_questions || '';
-    
-    const tools_used = taskData?.tools_used || '';
-    const reflection_successes = taskData?.reflection_successes || '';
-    const reflection_failures = taskData?.reflection_failures || '';
-    const output_or_result = taskData?.output_or_result || '';
     const time_spent_coding = taskData?.time_spent_coding || '';
     const time_spent_researching = taskData?.time_spent_researching || '';
     const time_spent_debugging = taskData?.time_spent_debugging || '';
-    const follow_up_tasks = taskData?.follow_up_tasks || '';
+
 
     // Create the task content (HTML)
     const tabContent = document.createElement('div');
     tabContent.className = 'task-content p-4 border rounded hidden';
     tabContent.id = `taskContent${newTaskId}`;
-    
+
     tabContent.innerHTML = `
     <!-- Task Start -->
     <div class="task-start mb-4 bg-white p-4 border rounded">
         <h3 class="font-bold">Task Start</h3>
         <label for="task_goal${newTaskId}">Task Goal:</label>
-        <textarea id="task_goal${newTaskId}" class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-            placeholder="Desired outcome or goal for the task..." oninput="autoResizeTextArea(event)">${task_goal}</textarea>
+        <div id="task_goal${newTaskId}" class="min-h-[150px]"></div>
         
         <label for="task_description${newTaskId}" class="block mt-2">Task Description:</label>
-        <textarea id="task_description${newTaskId}" class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-            placeholder="Task description..." oninput="autoResizeTextArea(event)">${task_description}</textarea>
+        <div id="task_description${newTaskId}" class="min-h-[150px]"></div>
         
         <label for="task_expected_difficulty${newTaskId}" class="block mt-2">Expected Difficulty:</label>
         <input type="range" id="task_expected_difficulty${newTaskId}" min="1" max="100" value="${task_expected_difficulty}" class="w-full">
         
         <label for="task_planned_approach${newTaskId}" class="block mt-2">Planned Approach:</label>
-        <textarea id="task_planned_approach${newTaskId}" class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-            placeholder="Planned approach or strategy to solve the problem..." oninput="autoResizeTextArea(event)">${task_planned_approach}</textarea>
+        <div id="task_planned_approach${newTaskId}" class="min-h-[150px]"></div>
+            
     </div>
 
     <!-- Task Work -->
     <div class="task-work mb-4 bg-white p-4 border rounded">
         <h3 class="font-bold">Task Work</h3>
         <label for="task_progress_notes${newTaskId}" class="block">Progress Notes:</label>
-        <div id="task_progress_notes${newTaskId}" class="min-h-[300px]">${task_progress_notes}</div>
+        <div id="task_progress_notes${newTaskId}" class="min-h-[300px]"></div>
 
         <label for="challenges_encountered${newTaskId}" class="block mt-4">Challenges Encountered:</label>
-        <textarea id="challenges_encountered${newTaskId}" class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-            placeholder="Key challenges or bugs encountered..." oninput="autoResizeTextArea(event)">${challenges_encountered}</textarea>
-
+        <div id="challenges_encountered${newTaskId}" class="min-h-[300px]"></div>
+        
         <label for="research_questions${newTaskId}" class="block mt-4">Research Questions:</label>
-        <textarea id="research_questions${newTaskId}" class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-            placeholder="List of research questions that arose while working on the task..."
-            oninput="autoResizeTextArea(event)">${research_questions}</textarea>
+        <div id="research_questions${newTaskId}" class="min-h-[300px]"></div>
+        
     </div>
 
     <!-- Task Reflection -->
@@ -146,20 +129,16 @@ function addTask(taskData) {
         <h3 class="font-bold">Task Reflection</h3>
 
         <label for="tools_used${newTaskId}" class="block">Tools Used:</label>
-        <textarea id="tools_used${newTaskId}" class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-            placeholder="Key tools, libraries, or frameworks used during the task..." oninput="autoResizeTextArea(event)">${tools_used}</textarea>
+        <div id="tools_used${newTaskId}" class="min-h-[150px]"></div>
 
         <label for="reflection_successes${newTaskId}" class="block mt-4">Successes:</label>
-        <textarea id="reflection_successes${newTaskId}" class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-            placeholder="What worked well during the task?" oninput="autoResizeTextArea(event)">${reflection_successes}</textarea>
+        <div id="reflection_successes${newTaskId}" class="min-h-[150px]"></div>
 
         <label for="reflection_failures${newTaskId}" class="block mt-4">Failures or Shortcomings:</label>
-        <textarea id="reflection_failures${newTaskId}" class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-            placeholder="What didn’t work and why?" oninput="autoResizeTextArea(event)">${reflection_failures}</textarea>
+        <div id="reflection_failures${newTaskId}" class="min-h-[150px]"></div>
 
         <label for="output_or_result${newTaskId}" class="block mt-4">Output or Result:</label>
-        <textarea id="output_or_result${newTaskId}" class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-            placeholder="The outcome or deliverable from this task (e.g., code, documentation)." oninput="autoResizeTextArea(event)">${output_or_result}</textarea>
+        <div id="output_or_result${newTaskId}" class="min-h-[150px]"></div>
 
         <!-- Time Spent Fields -->
         <label for="time_spent_coding${newTaskId}" class="block mt-4">Time Spent Coding:</label>
@@ -175,8 +154,7 @@ function addTask(taskData) {
             placeholder="Enter debugging time spent (e.g., 45 minutes)" value="${time_spent_debugging}"/>
 
         <label for="follow_up_tasks${newTaskId}" class="block mt-4">Follow-Up Tasks:</label>
-        <textarea id="follow_up_tasks${newTaskId}" class="w-full p-2 border border-gray-300 rounded min-h-[150px]"
-            placeholder="Immediate next steps or follow-up tasks..." oninput="autoResizeTextArea(event)">${follow_up_tasks}</textarea>
+        <div id="follow_up_tasks${newTaskId}" class="min-h-[150px]"></div>
     </div>
 
     <button type="button" onclick="removeTask(${newTaskId})"
@@ -184,9 +162,37 @@ function addTask(taskData) {
     `;
 
     document.getElementById('tabContent').appendChild(tabContent);
-    
+
+    const task_goal = taskData?.task_goal || '';
+    initializeEditor("task_goal", newTaskId, task_goal, "");
+    //initializeEditor("task_goal", "", task_goal, placeholder="")
+    const task_description = taskData?.task_description || '';
+    initializeEditor("task_description", newTaskId, task_description, "");
+
+    const task_planned_approach = taskData?.task_planned_approach || '';
+    initializeEditor("task_planned_approach", newTaskId, task_planned_approach, "");
+
+    const task_progress_notes = taskData?.task_progress_notes || '';
+    initializeEditor("task_progress_notes", newTaskId, task_progress_notes, "");
+    const challenges_encountered = taskData?.challenges_encountered || '';
+    initializeEditor("challenges_encountered", newTaskId, challenges_encountered, "");
+    const research_questions = taskData?.research_questions || '';
+    initializeEditor("research_questions", newTaskId, research_questions, "");
+
+    const tools_used = taskData?.tools_used || '';
+    initializeEditor("tools_used", newTaskId, tools_used, "");
+    const reflection_successes = taskData?.reflection_successes || '';
+    initializeEditor("reflection_successes", newTaskId, reflection_successes, "");
+    const reflection_failures = taskData?.reflection_failures || '';
+    initializeEditor("reflection_failures", newTaskId, reflection_failures, "");
+    const output_or_result = taskData?.output_or_result || '';
+    initializeEditor("output_or_result", newTaskId, output_or_result, "");
+
+    const follow_up_tasks = taskData?.follow_up_tasks || '';
+    initializeEditor("follow_up_tasks", newTaskId, follow_up_tasks, "");
     // Initialize the Quill editor for the task progress notes
-    initializeEditor(newTaskId, task_progress_notes);
+
+
 
     // Select the new task tab
     selectTab(newTaskId);
@@ -243,28 +249,28 @@ const ImageFormatAttributesList = [
 ];
 
 class ImageFormat extends BaseImageFormat {
-  static formats(domNode) {
-    return ImageFormatAttributesList.reduce(function(formats, attribute) {
-      if (domNode.hasAttribute(attribute)) {
-        formats[attribute] = domNode.getAttribute(attribute);
-      }
-      return formats;
-    }, {});
-  }
-  format(name, value) {
-    if (ImageFormatAttributesList.indexOf(name) > -1) {
-      if (value) {
-        this.domNode.setAttribute(name, value);
-      } else {
-        this.domNode.removeAttribute(name);
-      }
-    } else {
-      super.format(name, value);
+    static formats(domNode) {
+        return ImageFormatAttributesList.reduce(function (formats, attribute) {
+            if (domNode.hasAttribute(attribute)) {
+                formats[attribute] = domNode.getAttribute(attribute);
+            }
+            return formats;
+        }, {});
     }
-  }
+    format(name, value) {
+        if (ImageFormatAttributesList.indexOf(name) > -1) {
+            if (value) {
+                this.domNode.setAttribute(name, value);
+            } else {
+                this.domNode.removeAttribute(name);
+            }
+        } else {
+            super.format(name, value);
+        }
+    }
 }
 
-function initializeEditor(editorId, notes) {
+function initializeEditor(idName, taskId, text, placeholder) {
     Quill.register(ImageFormat, true);
     var toolbarOptions = [
         ['bold', 'italic', 'underline', 'strike'],
@@ -275,15 +281,15 @@ function initializeEditor(editorId, notes) {
         ['image']
     ];
 
-    var editor = new Quill(`#task_progress_notes${editorId}`, {
+    var editor = new Quill(`#${idName}${taskId}`, {
         modules: {
             toolbar: toolbarOptions
         },
-        placeholder: 'How goes the grinding?',
+        placeholder: placeholder,
         theme: 'snow'
     });
-    if (notes && notes.trim() !== "") {
-        editor.clipboard.dangerouslyPasteHTML(notes);
+    if (text && text.trim() !== "") {
+        editor.clipboard.dangerouslyPasteHTML(text);
     }
 
     // Simplify image handling
@@ -338,13 +344,13 @@ function insertToEditor(url, editor) {
     const range = editor.getSelection();
     if (range) {
         editor.insertEmbed(range.index, 'image', url);
-        
+
         // Wait for the DOM update
         setTimeout(() => {
             const images = editor.container.getElementsByTagName('img');
             if (images.length) {
                 Array.from(images).forEach(img => {
-                    
+
                     if (img.src.includes(url)) {
                         img.style.width = '30%';  // Set image width to 50%
                         img.style.height = 'auto'; // Maintain aspect ratio
@@ -356,12 +362,12 @@ function insertToEditor(url, editor) {
 }
 
 function exportBlog() {
-    // Introduction Section
-    const daily_goals = (document.getElementById('daily_goals').value).trim();
-    const learning_focus = (document.getElementById('learning_focus').value).trim();
-    const challenges = (document.getElementById('challenges').value).trim();
-    const plan_of_action = (document.getElementById('plan_of_action').value).trim();
-    const personal_context = (document.getElementById('personal_context').value).trim();
+    // Introduction Section - Refactored to use Quill where applicable
+    const daily_goals = document.querySelector('#daily_goals').__quill.root.innerHTML.trim();
+    const learning_focus = document.querySelector('#learning_focus').__quill.root.innerHTML.trim();
+    const challenges = document.querySelector('#challenges').__quill.root.innerHTML.trim();
+    const plan_of_action = document.querySelector('#plan_of_action').__quill.root.innerHTML.trim();
+    const personal_context = document.querySelector('#personal_context').__quill.root.innerHTML.trim();
 
     const enthusiasm_level = parseInt(document.getElementById('enthusiasm_level').value);
     const burnout_level = parseInt(document.getElementById('burnout_level').value);
@@ -369,24 +375,24 @@ function exportBlog() {
     const leetcode_hatred_level = parseInt(document.getElementById('leetcode_hatred_level').value);
 
     const introduction = {
-        personal_context: personal_context,
-        daily_goals: daily_goals,
-        learning_focus: learning_focus,
-        challenges: challenges,
-        plan_of_action: plan_of_action,
-        enthusiasm_level: enthusiasm_level,
-        burnout_level: burnout_level,
-        focus_level: focus_level,
-        leetcode_hatred_level: leetcode_hatred_level
+        personal_context,
+        daily_goals,
+        learning_focus,
+        challenges,
+        plan_of_action,
+        enthusiasm_level,
+        burnout_level,
+        focus_level,
+        leetcode_hatred_level
     };
 
-    // Reflection Section
-    const technical_challenges = document.getElementById('technical_challenges').value.trim();
-    const interesting_bugs = document.getElementById('interesting_bugs').value.trim();
-    const unanswered_questions = document.getElementById('unanswered_questions').value.trim();
-    const learning_outcomes = document.getElementById('learning_outcomes').value.trim();
-    const next_steps_short_term = document.getElementById('next_steps_short_term').value.trim();
-    const next_steps_long_term = document.getElementById('next_steps_long_term').value.trim();
+    // Reflection Section - Refactored to use Quill where applicable
+    const technical_challenges = document.querySelector('#technical_challenges').__quill.root.innerHTML.trim();
+    const interesting_bugs = document.querySelector('#interesting_bugs').__quill.root.innerHTML.trim();
+    const unanswered_questions = document.querySelector('#unanswered_questions').__quill.root.innerHTML.trim();
+    const learning_outcomes = document.querySelector('#learning_outcomes').__quill.root.innerHTML.trim();
+    const next_steps_short_term = document.querySelector('#next_steps_short_term').__quill.root.innerHTML.trim();
+    const next_steps_long_term = document.querySelector('#next_steps_long_term').__quill.root.innerHTML.trim();
 
     const productivity_level = parseInt(document.getElementById('productivity_level').value);
     const distraction_level = parseInt(document.getElementById('distraction_level').value);
@@ -394,42 +400,42 @@ function exportBlog() {
     const overall_frustration_level = parseInt(document.getElementById('overall_frustration_level').value);
 
     const reflection = {
-        technical_challenges: technical_challenges,
-        interesting_bugs: interesting_bugs,
-        unanswered_questions: unanswered_questions,
-        learning_outcomes: learning_outcomes,
-        next_steps_short_term: next_steps_short_term,
-        next_steps_long_term: next_steps_long_term,
-        productivity_level: productivity_level,
-        distraction_level: distraction_level,
-        desire_to_play_steam_games_level: desire_to_play_steam_games_level,
-        overall_frustration_level: overall_frustration_level,
+        technical_challenges,
+        interesting_bugs,
+        unanswered_questions,
+        learning_outcomes,
+        next_steps_short_term,
+        next_steps_long_term,
+        productivity_level,
+        distraction_level,
+        desire_to_play_steam_games_level,
+        overall_frustration_level
     };
 
     // Task Section
     const tasks = [];
     document.querySelectorAll('.task-content').forEach((taskElement, index) => {
-        const task_goal = document.getElementById(`task_goal${index + 1}`).value.trim();
-        const task_description = document.getElementById(`task_description${index + 1}`).value.trim();
+        const task_goal = document.querySelector(`#task_goal${index + 1}`).__quill.root.innerHTML.trim();
+        const task_description = document.querySelector(`#task_description${index + 1}`).__quill.root.innerHTML.trim();
         const task_expected_difficulty = parseInt(document.getElementById(`task_expected_difficulty${index + 1}`).value);
-        const task_planned_approach = document.getElementById(`task_planned_approach${index + 1}`).value.trim();
+        const task_planned_approach = document.getElementById(`task_planned_approach${index + 1}`).__quill.root.innerHTML.trim();
 
-        const quillEditor = document.querySelector(`#task_progress_notes${index + 1}`).__quill; // Access Quill
-        const task_progress_notes = quillEditor.root.innerHTML.trim(); // Get Quill editor content
+        const task_progress_notes = document.querySelector(`#task_progress_notes${index + 1}`).__quill.root.innerHTML.trim();
 
-        const challenges_encountered = document.getElementById(`challenges_encountered${index + 1}`).value.trim();
-        const research_questions = document.getElementById(`research_questions${index + 1}`).value.trim();
 
-        const tools_used = document.getElementById(`tools_used${index + 1}`).value.trim();
-        const reflection_successes = document.getElementById(`reflection_successes${index + 1}`).value.trim();
-        const reflection_failures = document.getElementById(`reflection_failures${index + 1}`).value.trim();
-        const output_or_result = document.getElementById(`output_or_result${index + 1}`).value.trim();
+        const challenges_encountered = document.querySelector(`#challenges_encountered${index + 1}`).__quill.root.innerHTML.trim();
+        const research_questions = document.querySelector(`#research_questions${index + 1}`).__quill.root.innerHTML.trim();
+
+        const tools_used = document.querySelector(`#tools_used${index + 1}`).__quill.root.innerHTML.trim();
+        const reflection_successes = document.querySelector(`#reflection_successes${index + 1}`).__quill.root.innerHTML.trim();
+        const reflection_failures = document.querySelector(`#reflection_failures${index + 1}`).__quill.root.innerHTML.trim();
+        const output_or_result = document.querySelector(`#output_or_result${index + 1}`).__quill.root.innerHTML.trim();
 
         const time_spent_coding = document.getElementById(`time_spent_coding${index + 1}`).value.trim();
         const time_spent_researching = document.getElementById(`time_spent_researching${index + 1}`).value.trim();
         const time_spent_debugging = document.getElementById(`time_spent_debugging${index + 1}`).value.trim();
 
-        const follow_up_tasks = document.getElementById(`follow_up_tasks${index + 1}`).value.trim();
+        const follow_up_tasks = document.querySelector(`#follow_up_tasks${index + 1}`).__quill.root.innerHTML.trim();
 
         tasks.push({
             task_goal: task_goal,

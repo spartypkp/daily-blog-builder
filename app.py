@@ -34,6 +34,7 @@ def available_dates():
     if today not in dates:
         print(today)
         dates.append(today)
+    dates.sort(reverse=True)
     
     return jsonify(dates)
 

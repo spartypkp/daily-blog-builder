@@ -24,109 +24,157 @@
     </header>
     <!-- Introduction Section -->
     <section class="goals mb-8 bg-gray-200 shadow-md rounded-lg p-6">
-        <h1 class="text-xl font-semibold text-center mb-4">Morning Pregame</h1>
-        <div class="mx-auto bg-white p-4 border rounded">
+        <button onclick="toggleSection('morning-pregame')"
+            class="text-xl font-semibold text-center mb-4 focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
+            <span id="icon-morning-pregame">+</span> Morning Pregame
+        </button>
+        <div id="morning-pregame" class="mx-auto hidden">
+            <!-- Section content -->
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 pb-4">Context for the Day</h2>
+                <div id="personal_context" class="min-h-[100px] bg-gray-50 p-4 rounded border mt-4"></div>
+            </div>
 
-            <!-- Context for the Day -->
-            <label for="personal_context" class="block mt-4 font-bold">Context for the Day</label>
-            <div id="personal_context" class="min-h-[100px]"></div>
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 pb-4">Daily Goals</h2>
+                <div id="daily_goals" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+            </div>
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 pb-4">Learning Focus</h2>
+                <div id="learning_focus" class="min-h-[100px] bg-gray-50 p-4 rounded border"></div>
+            </div>
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 pb-4">Anticipated Challenges</h2>
+                <div id="challenges" class="min-h-[100px] bg-gray-50 p-4 rounded border"></div>
+            </div>
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 pb-4">Plan of Action</h2>
+                <div id="plan_of_action" class="min-h-[100px] bg-gray-50 p-4 rounded border"></div>
+            </div>
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <!-- Mood Sliders -->
+                <h2 class="text-2xl font-bold text-gray-800 text-center mt-4">Enthusiasm Level</h2>
+                <input type="range" id="enthusiasm_level" min="0" max="100"
+                    value="{{ today_blog.enthusiasm_level if today_blog else 50 }}"
+                    class="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer"
+                    oninput="updateSliderColor('enthusiasm_level')">
 
-            <!-- Daily Goals -->
-            <label for="daily_goals" class="block mt-4 font-bold">Daily Goals</label>
-            <div id="daily_goals" class="min-h-[150px]"></div>
+                <h2 class="text-2xl font-bold text-gray-800 text-center mt-4">Burnout Level</h2>
+                <input type="range" id="burnout_level" min="0" max="100"
+                    value="{{ today_blog.burnout_level if today_blog else 50 }}"
+                    class="w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer"
+                    oninput="updateSliderColor('burnout_level')">
 
-            <!-- Learning Focus -->
-            <label for="learning_focus" class="block mt-4 font-bold">Learning Focus</label>
-            <div id="learning_focus" class="min-h-[100px]"></div>
+                <h2 class="text-2xl font-bold text-gray-800 text-center mt-4">LeetCode Hatred</h2>
+                <input type="range" id="leetcode_hatred_level" min="0" max="100"
+                    value="{{ today_blog.leetcode_hatred_level if today_blog else 50 }}"
+                    class="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+                    oninput="updateSliderColor('leetcode_hatred_level')">
 
-            <!-- Challenges -->
-            <label for="challenges" class="block mt-4 font-bold">Anticipated Challenges</label>
-            <div id="challenges" class="min-h-[100px]"></div>
+                <h2 class="text-2xl font-bold text-gray-800 text-center mt-4">Focus Level</h2>
+                <input type="range" id="focus_level" min="0" max="100"
+                    value="{{ today_blog.focus_level if today_blog else 50 }}"
+                    class="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+                    oninput="updateSliderColor('focus_level')">
 
-            <!-- Plan of Action -->
-            <label for="plan_of_action" class="block mt-4 font-bold">Plan of Action</label>
-            <div id="plan_of_action" class="min-h-[100px]"></div>
-
-
-            <!-- Mood Sliders -->
-            <label for="enthusiasm_level" class="block mt-4">Enthusiasm Level:</label>
-            <input type="range" id="enthusiasm_level" min="0" max="100"
-                value="{{ today_blog.enthusiasm_level if today_blog else 50 }}" class="w-full">
-
-            <label for="burnout_level" class="block mt-2">Burnout Level:</label>
-            <input type="range" id="burnout_level" min="0" max="100"
-                value="{{ today_blog.burnout_level if today_blog else 50 }}" class="w-full">
-
-            <label for="leetcode_hatred_level" class="block mt-2">LeetCode Hatred:</label>
-            <input type="range" id="leetcode_hatred_level" min="0" max="100"
-                value="{{ today_blog.leetcode_hatred_level if today_blog else 50 }}" class="w-full">
-
-            <label for="focus_level" class="block mt-2">Focus Level:</label>
-            <input type="range" id="focus_level" min="0" max="100"
-                value="{{ today_blog.focus_level if today_blog else 50 }}" class="w-full">
-
+            </div>
         </div>
+
     </section>
 
-    <!-- Tasks Section -->
     <section class="tasks mb-8 bg-gray-200 shadow-md rounded-lg p-6">
-        <h1 class="text-2xl font-semibold text-center mb-4">Tasks</h1>
-        <div class="tab-buttons flex justify-center mb-2 space-x-2">
-            <!-- Task Tabs can be dynamically populated if needed -->
-        </div>
-        <div class="text-center">
-            <button type="button" onclick="addTask()"
-                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">+ Add Task</button>
-        </div>
-        <div class="tab-content mt-4" id="tabContent">
-            
+        <button onclick="toggleSection('daily-tasks')"
+            class="text-xl font-semibold text-center mb-4 focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
+            <span id="icon-daily-tasks">+</span> Daily Tasks
+        </button>
+        <div id="daily-tasks" class="mx-auto hidden">
+            <div id="tabs-container" class="tabs-container flex justify-center mb-2 border-b border-gray-300">
+                <!-- Task Tabs dynamically populated -->
+            </div>
+            <div class="text-center">
+                <button type="button" onclick="addTask()"
+                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-150">+
+                    Add Task</button>
+            </div>
+            <div class="tab-content mt-4" id="tabContent">
+                <!-- Content for each task -->
+            </div>
         </div>
     </section>
 
 
 
     <!-- Reflection Section -->
-    <section class="reflection mb-6 bg-gray-200 shadow-md rounded-lg p-6">
-        <h1 class="text-xl font-semibold text-center mb-4">Daily Reflection</h1>
-
-        <div class="mb-4 bg-white p-4 border rounded">
+    <section class="reflection mb-8 bg-gray-200 shadow-md rounded-lg p-6">
+        <button onclick="toggleSection('daily-reflection')"
+            class="text-xl font-semibold text-center mb-4 focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
+            <span id="icon-daily-reflection">+</span> Daily Reflection
+        </button>
+        <div id="daily-reflection" class="mx-auto hidden">
             <!-- Technical Challenges -->
-            <h3 class="font-bold">Technical Challenges</h3>
-            <div id="technical_challenges" class="min-h-[150px]"></div>
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 text-center">Technical Challenges</h2>
+                <div id="technical_challenges" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+            </div>
 
             <!-- Interesting Bugs -->
-            <h3 class="font-bold mt-4">Interesting Bugs</h3>
-            <div id="interesting_bugs" class="min-h-[150px]"></div>
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 text-center">Interesting Bugs</h2>
+                <div id="interesting_bugs" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+            </div>
 
             <!-- Unanswered Questions -->
-            <h3 class="font-bold mt-4">Unanswered Questions</h3>
-            <div id="unanswered_questions" class="min-h-[150px]"></div>
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 text-center">Unanswered Questions</h2>
+                <div id="unanswered_questions" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+            </div>
 
             <!-- Learning Outcomes -->
-            <h3 class="font-bold mt-4">Learning Outcomes</h3>
-            <div id="learning_outcomes" class="min-h-[150px]"></div>
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 text-center">Learning Outcomes</h2>
+                <div id="learning_outcomes" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+            </div>
 
             <!-- Short-Term Next Steps -->
-            <h3 class="font-bold mt-4">Short-Term Next Steps</h3>
-            <div id="next_steps_short_term" class="min-h-[150px]"></div>
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 text-center">Short-Term Next Steps</h2>
+                <div id="next_steps_short_term" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+            </div>
 
             <!-- Long-Term Next Steps -->
-            <h3 class="font-bold mt-4">Long-Term Next Steps</h3>
-            <div id="next_steps_long_term" class="min-h-[150px]"></div>
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 text-center">Long-Term Next Steps</h2>
+                <div id="next_steps_long_term" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+            </div>
 
             <!-- Mood Sliders (Self-Reflective & Humorous) -->
-            <h3 class="font-bold mt-4">Mood & Self-Reflection</h3>
-            <label for="productivity_level" class="block mt-4">Productivity Level:</label>
-            <input type="range" id="productivity_level" min="0" max="100" value="50" class="w-full">
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 text-center">Mood & Self-Reflection</h2>
+                <div class="space-y-4 mt-4">
+                    <div>
+                        <label for="productivity_level" class="block text-gray-800">Productivity Level:</label>
+                        <input type="range" id="productivity_level" min="0" max="100" value="50"
+                            class="w-full h-2 rounded-lg appearance-none cursor-pointer" oninput="updateSliderColor('productivity_level')">
+                    </div>
+                    <div>
+                        <label for="distraction_level" class="block text-gray-800">Distraction Level:</label>
+                        <input type="range" id="distraction_level" min="0" max="100" value="50"
+                            class="w-full h-2 rounded-lg appearance-none cursor-pointer" oninput="updateSliderColor('distraction_level')">
+                    </div>
+                    <div>
+                        <label for="desire_to_play_steam_games_level" class="block text-gray-800">Desire to Play Steam Games:</label>
+                        <input type="range" id="desire_to_play_steam_games_level" min="0" max="100" value="50"
+                            class="w-full h-2 rounded-lg appearance-none cursor-pointer" oninput="updateSliderColor('desire_to_play_steam_games_level')">
+                    </div>
+                    <div>
+                        <label for="overall_frustration_level" class="block text-gray-800">Overall Frustration:</label>
+                        <input type="range" id="overall_frustration_level" min="0" max="100" value="50"
+                            class="w-full h-2 rounded-lg appearance-none cursor-pointer" oninput="updateSliderColor('overall_frustration_level')">
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <label for="distraction_level" class="block mt-4">Distraction Level:</label>
-            <input type="range" id="distraction_level" min="0" max="100" value="50" class="w-full">
-
-            <label for="desire_to_play_steam_games_level" class="block mt-4">Desire to Play Steam Games:</label>
-            <input type="range" id="desire_to_play_steam_games_level" min="0" max="100" value="50" class="w-full">
-
-            <label for="overall_frustration_level" class="block mt-4">Overall Frustration:</label>
-            <input type="range" id="overall_frustration_level" min="0" max="100" value="50" class="w-full">
         </div>
     </section>
 

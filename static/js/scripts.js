@@ -5,7 +5,7 @@ function initializeBlog(blogData) {
     currentTaskId = 0;
 
     // Clear existing task tabs and content
-    const tabButtonsContainer = document.querySelector('.tab-buttons');
+    const tabButtonsContainer = document.getElementById('tabs-container');
     const tabContentContainer = document.getElementById('tabContent');
     while (tabButtonsContainer.firstChild) {
         tabButtonsContainer.removeChild(tabButtonsContainer.firstChild);
@@ -77,17 +77,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 option.textContent = date; // Format this if necessary
                 selectElement.appendChild(option);
             });
-           
-            
-            selectElement.value = dates[0];
-            
+
+            // Set the current value to the first date or a default
+            selectElement.value = dates[0] || new Date().toISOString().slice(0, 10);
 
             fetchBlogData(selectElement.value); // Load the blog for the selected date
 
+            // Update the color of all sliders on the page initially
+            updateAllSliders();
         })
         .catch(error => console.error('Failed to load available dates:', error));
 });
 
+// Function to update all sliders' colors based on their initial values
+function updateAllSliders() {
+    document.querySelectorAll('input[type="range"]').forEach(slider => {
+        updateSliderColor(slider.id);
+    });
+}
 
 
 
@@ -113,97 +120,35 @@ function fetchBlogData(date) {
 function addTask(taskData) {
     currentTaskId++;
     const newTaskId = currentTaskId;
-    console.log(`Current newTaskId: ${newTaskId}`)
+    console.log(`Current newTaskId: ${newTaskId}`);
 
     // Create the tab button for the new task
     const tabButton = document.createElement('button');
     tabButton.textContent = 'Task ' + newTaskId;
     tabButton.dataset.taskId = newTaskId;
-    tabButton.className = 'task-tab px-4 py-2 text-sm font-medium text-blue-700 hover:text-blue-900 whitespace-nowrap';
-    tabButton.onclick = function () { selectTab(newTaskId); };
-    document.querySelector('.tab-buttons').appendChild(tabButton);
+    tabButton.className = 'tab text-gray-600 py-2 px-4 hover:text-blue-500 focus:outline-none border-b-2 border-transparent hover:border-blue-500';
+    tabButton.onclick = function () {
+        // Activate this tab
+        document.querySelectorAll('.tab').forEach(t => {
+            t.classList.remove('text-blue-500', 'border-blue-500');
+            t.classList.add('text-gray-600', 'border-transparent');
+        });
+        this.classList.add('text-blue-500', 'border-blue-500');
+        this.classList.remove('text-gray-600', 'border-transparent');
+
+        // Show corresponding content
+        document.querySelectorAll('.task-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        document.getElementById(`taskContent${newTaskId}`).classList.remove('hidden');
+    };
+
+    // Append the new tab button to the tab-buttons container
+    const tabsContainer = document.getElementById('tabs-container');
+    tabsContainer.appendChild(tabButton);
 
     // Populate task fields with values from taskData (if available) or defaults
-    const task_expected_difficulty = taskData?.task_expected_difficulty || 50;
-    const time_spent_coding = taskData?.time_spent_coding || '';
-    const time_spent_researching = taskData?.time_spent_researching || '';
-    const time_spent_debugging = taskData?.time_spent_debugging || '';
-
-
-    // Create the task content (HTML)
-    const tabContent = document.createElement('div');
-    tabContent.className = 'task-content p-4 border rounded hidden';
-    tabContent.id = `taskContent${newTaskId}`;
-
-    tabContent.innerHTML = `
-    <!-- Task Start -->
-    <div class="task-start mb-4 bg-white p-4 border rounded">
-        <h3 class="font-bold">Task Start</h3>
-        <label for="task_goal${newTaskId}">Task Goal:</label>
-        <div id="task_goal${newTaskId}" class="min-h-[150px]"></div>
-        
-        <label for="task_description${newTaskId}" class="block mt-2">Task Description:</label>
-        <div id="task_description${newTaskId}" class="min-h-[150px]"></div>
-        
-        <label for="task_expected_difficulty${newTaskId}" class="block mt-2">Expected Difficulty:</label>
-        <input type="range" id="task_expected_difficulty${newTaskId}" min="1" max="100" value="${task_expected_difficulty}" class="w-full">
-        
-        <label for="task_planned_approach${newTaskId}" class="block mt-2">Planned Approach:</label>
-        <div id="task_planned_approach${newTaskId}" class="min-h-[150px]"></div>
-            
-    </div>
-
-    <!-- Task Work -->
-    <div class="task-work mb-4 bg-white p-4 border rounded">
-        <h3 class="font-bold">Task Work</h3>
-        <label for="task_progress_notes${newTaskId}" class="block">Progress Notes:</label>
-        <div id="task_progress_notes${newTaskId}" class="min-h-[300px]"></div>
-
-        <label for="challenges_encountered${newTaskId}" class="block mt-4">Challenges Encountered:</label>
-        <div id="challenges_encountered${newTaskId}" class="min-h-[300px]"></div>
-        
-        <label for="research_questions${newTaskId}" class="block mt-4">Research Questions:</label>
-        <div id="research_questions${newTaskId}" class="min-h-[300px]"></div>
-        
-    </div>
-
-    <!-- Task Reflection -->
-    <div class="task-reflection mb-4 bg-white p-4 border rounded">
-        <h3 class="font-bold">Task Reflection</h3>
-
-        <label for="tools_used${newTaskId}" class="block">Tools Used:</label>
-        <div id="tools_used${newTaskId}" class="min-h-[150px]"></div>
-
-        <label for="reflection_successes${newTaskId}" class="block mt-4">Successes:</label>
-        <div id="reflection_successes${newTaskId}" class="min-h-[150px]"></div>
-
-        <label for="reflection_failures${newTaskId}" class="block mt-4">Failures or Shortcomings:</label>
-        <div id="reflection_failures${newTaskId}" class="min-h-[150px]"></div>
-
-        <label for="output_or_result${newTaskId}" class="block mt-4">Output or Result:</label>
-        <div id="output_or_result${newTaskId}" class="min-h-[150px]"></div>
-
-        <!-- Time Spent Fields -->
-        <label for="time_spent_coding${newTaskId}" class="block mt-4">Time Spent Coding:</label>
-        <input type="text" id="time_spent_coding${newTaskId}" class="w-full p-2 border border-gray-300 rounded"
-            placeholder="Enter coding time spent (e.g., 2 hours)" value="${time_spent_coding}"/>
-
-        <label for="time_spent_researching${newTaskId}" class="block mt-4">Time Spent Researching:</label>
-        <input type="text" id="time_spent_researching${newTaskId}" class="w-full p-2 border border-gray-300 rounded"
-            placeholder="Enter research time spent (e.g., 30 minutes)" value="${time_spent_researching}"/>
-
-        <label for="time_spent_debugging${newTaskId}" class="block mt-4">Time Spent Debugging:</label>
-        <input type="text" id="time_spent_debugging${newTaskId}" class="w-full p-2 border border-gray-300 rounded"
-            placeholder="Enter debugging time spent (e.g., 45 minutes)" value="${time_spent_debugging}"/>
-
-        <label for="follow_up_tasks${newTaskId}" class="block mt-4">Follow-Up Tasks:</label>
-        <div id="follow_up_tasks${newTaskId}" class="min-h-[150px]"></div>
-    </div>
-
-    <button type="button" onclick="removeTask(${newTaskId})"
-        class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Remove Task</button>
-    `;
-
+    const tabContent = generateTaskHTML(newTaskId, taskData)
     document.getElementById('tabContent').appendChild(tabContent);
 
     const task_goal = taskData?.task_goal || '';
@@ -235,15 +180,104 @@ function addTask(taskData) {
     initializeEditor("follow_up_tasks", newTaskId, follow_up_tasks, "");
     // Initialize the Quill editor for the task progress notes
 
-
-
     // Select the new task tab
     selectTab(newTaskId);
 
-    // Resize all newly added textAreas
-    document.querySelectorAll('textarea').forEach(textarea => {
-        autoResizeTextArea({ target: textarea });
-    });
+}
+
+function generateTaskHTML(taskId, taskData) {
+    // Populate task fields with values from taskData (if available) or defaults
+    const task_expected_difficulty = taskData?.task_expected_difficulty || 50;
+    const time_spent_coding = taskData?.time_spent_coding || '';
+    const time_spent_researching = taskData?.time_spent_researching || '';
+    const time_spent_debugging = taskData?.time_spent_debugging || '';
+
+
+    // Create the task content (HTML)
+    const tabContent = document.createElement('div');
+    tabContent.className = 'task-content p-4 border rounded hidden';
+    tabContent.id = `taskContent${taskId}`;
+
+    tabContent.innerHTML = `
+    <!-- Task Start -->
+    <button onclick="toggleSection('task-start${taskId}')"
+        class="text-xl font-semibold text-center mb-4 focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
+        <span id="icon-task-start${taskId}">+</span> Task Start
+    </button>
+    <div id="task-start${taskId}" class="mb-4 bg-white p-4 border rounded hidden">
+        <h3 class="font-bold mt-2">Task Goal:</h3>
+        <div id="task_goal${taskId}" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+
+        <h3 class="font-bold mt-2">Task Description:</h3>
+        <div id="task_description${taskId}" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+
+        <h3 class="font-bold mt-2">Expected Difficulty:</h3>
+        <input type="range" id="task_expected_difficulty${taskId}" min="1" max="100" value="${task_expected_difficulty}" class="w-full">
+
+        <h3 class="font-bold mt-2">Planned Approach:</h3>
+        <div id="task_planned_approach${taskId}" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+    </div>
+
+    <!-- Task Work -->
+    <button onclick="toggleSection('task-work${taskId}')"
+        class="text-xl font-semibold text-center mb-4 focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
+        <span id="icon-task-work${taskId}">+</span> Task Work
+    </button>
+    <div id="task-work${taskId}" class="mb-4 bg-white p-4 border rounded hidden">
+        <h3 class="font-bold">Progress Notes:</h3>
+        <div id="task_progress_notes${taskId}" class="min-h-[300px] bg-gray-50 p-4 rounded border"></div>
+
+        <h3 class="font-bold mt-4">Challenges Encountered:</h3>
+        <div id="challenges_encountered${taskId}" class="min-h-[300px] bg-gray-50 p-4 rounded border"></div>
+        
+        <h3 class="font-bold mt-4">Research Questions:</h3>
+        <div id="research_questions${taskId}" class="min-h-[300px] bg-gray-50 p-4 rounded border"></div>
+    </div>
+
+    <!-- Task Reflection -->
+    <button onclick="toggleSection('task-reflection${taskId}')"
+        class="text-xl font-semibold text-center mb-4 focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
+        <span id="icon-task-reflection${taskId}">+</span> Task Reflection
+    </button>
+    <div id="task-reflection${taskId}" class="mb-4 bg-white p-4 border rounded hidden">
+        <h3 class="font-bold">Tools Used:</h3>
+        <div id="tools_used${taskId}" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+
+        <h3 class="font-bold mt-4">Successes:</h3>
+        <div id="reflection_successes${taskId}" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+
+        <h3 class="font-bold mt-4">Failures or Shortcomings:</h3>
+        <div id="reflection_failures${taskId}" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+
+        <h3 class="font-bold mt-4">Output or Result:</h3>
+        <div id="output_or_result${taskId}" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+    </div>
+
+    <!-- Additional details -->
+    <button onclick="toggleSection('time-spent${taskId}')"
+        class="text-xl font-semibold text-center mb-4 focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
+        <span id="icon-time-spent${taskId}">+</span> Time Spent
+    </button>
+    <div id="time-spent${taskId}" class="mb-4 bg-white p-4 border rounded hidden">
+        <h3 class="font-bold mt-4">Time Spent Coding:</h3>
+        <input type="text" id="time_spent_coding${taskId}" class="w-full p-2 border border-gray-300 rounded" value="${time_spent_coding}"/>
+
+        <h3 class="font-bold mt-4">Time Spent Researching:</h3>
+        <input type="text" id="time_spent_researching${taskId}" class="w-full p-2 border border-gray-300 rounded" value="${time_spent_researching}"/>
+
+        <h3 class="font-bold mt-4">Time Spent Debugging:</h3>
+        <input type="text" id="time_spent_debugging${taskId}" class="w-full p-2 border border-gray-300 rounded" value="${time_spent_debugging}"/>
+
+        <h3 class="font-bold mt-4">Follow-Up Tasks:</h3>
+        <div id="follow_up_tasks${taskId}" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+    </div>
+
+    <button type="button" onclick="removeTask(${taskId})"
+        class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Remove Task</button>
+    `;
+    return tabContent;
+
+
 }
 
 function selectTab(taskId) {
@@ -423,7 +457,7 @@ function insertToEditor(url, editor) {
     }
 }
 
-function exportBlog(date) {
+function exportBlog() {
     // Introduction Section - Refactored to use Quill where applicable
     const daily_goals = document.querySelector('#daily_goals').__quill.root.innerHTML.trim();
     const learning_focus = document.querySelector('#learning_focus').__quill.root.innerHTML.trim();
@@ -517,6 +551,8 @@ function exportBlog(date) {
             follow_up_tasks: follow_up_tasks
         });
     });
+    const date = document.getElementById("blogDateSelector").value
+    console.log(`Saving blog for date: ${date}`)
 
     // Create the blog object
     const today_blog = {
@@ -543,3 +579,53 @@ function exportBlog(date) {
         });
 }
 
+function toggleSection(sectionId) {
+    var element = document.getElementById(sectionId);
+    var icon = document.getElementById('icon-' + sectionId);
+    if (element.classList.contains('hidden')) {
+        element.classList.remove('hidden');
+        icon.textContent = '−'; // Change to minus
+        icon.classList.add('rotate-180'); // Rotate icon if desired
+    } else {
+        element.classList.add('hidden');
+        icon.textContent = '+';
+        icon.classList.remove('rotate-180');
+    }
+}
+
+function updateSliderColor(sliderId) {
+    const slider = document.getElementById(sliderId);
+    const value = parseInt(slider.value, 10); // Convert the value to an integer for accurate comparison
+    let newColorClass;
+
+    // Determine the new color class based on the slider's value
+    switch (sliderId) {
+        case 'enthusiasm_level':
+            newColorClass = value > 66 ? 'bg-green-500' : value > 33 ? 'bg-yellow-500' : 'bg-red-500';
+            break;
+        case 'burnout_level':
+            newColorClass = value > 66 ? 'bg-red-500' : value > 33 ? 'bg-yellow-500' : 'bg-green-500';
+            break;
+        case 'leetcode_hatred_level':
+            newColorClass = value > 66 ? 'bg-red-500' : value > 33 ? 'bg-purple-500' : 'bg-blue-500';
+            break;
+        case 'focus_level':
+            newColorClass = value > 66 ? 'bg-green-500' : value > 33 ? 'bg-orange-500' : 'bg-red-500';
+            break;
+        case 'productivity_level':
+            newColorClass = value > 66 ? 'bg-green-500' : value > 33 ? 'bg-green-300' : 'bg-green-100';
+            break;
+        case 'distraction_level':
+            newColorClass = value > 66 ? 'bg-yellow-500' : value > 33 ? 'bg-yellow-300' : 'bg-yellow-100';
+            break;
+        case 'desire_to_play_steam_games_level':
+            newColorClass = value > 66 ? 'bg-purple-500' : value > 33 ? 'bg-purple-300' : 'bg-purple-100';
+            break;
+        case 'overall_frustration_level':
+            newColorClass = value > 66 ? 'bg-red-500' : value > 33 ? 'bg-red-300' : 'bg-red-100';
+            break;
+    }
+
+    // Remove all potential color classes and then add the new one
+    slider.className = slider.className.replace(/bg-(red|yellow|green|blue|purple|orange)-[1-9]00/g, '') + ` ${newColorClass}`;
+}

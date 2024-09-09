@@ -6,8 +6,9 @@ from flask import jsonify
 import os
 from pydantic import ValidationError
 from pydanticModels import DailyBlog, Task, Introduction, Reflection
-from utilityFunctions import pydantic_upsert, pydantic_select
+from utilityFunctions import pydantic_upsert, pydantic_select, upload_to_supabase
 from typing import List, Optional
+
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'static/uploads/')
@@ -89,16 +90,29 @@ def submit_blog():
 def upload_image():
     if 'image' not in request.files:
         return jsonify({'error': 'No file part'}), 400
+
     file = request.files['image']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
+
     if file and allowed_file(file.filename):  # Implement this function to check file extensions
         filename = secure_filename(file.filename)
         save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+        # Save the file locally for backup
         file.save(save_path)
-        # Return a URL that can be accessed from the client
-        return jsonify({'path': url_for('static', filename='uploads/' + filename)})
-    return jsonify({'error': 'Failed to upload image'}), 400
+
+        # Upload the file to Supabase
+        result = upload_to_supabase(save_path, 'daily-blogs', f"images/{filename}")
+        
+
+        if result['success']:
+            return jsonify({'path': result['url']}), 200
+        else:
+            
+            return jsonify({'error': 'Failed to upload image', 'details': result}), 500
+
+    return jsonify({'error': 'Invalid file format'}), 
 
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

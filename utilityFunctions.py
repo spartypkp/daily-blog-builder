@@ -23,12 +23,16 @@ import re
 import uuid
 DIR = os.path.dirname(os.path.realpath(__file__))
 
+from supabase import create_client, Client
 
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
-# ==== Set API Keys ====
+supabase_url: str = os.getenv("SUPABASE_URL")
+key: str = os.getenv("SUPABASE_SERVICE_KEY")
+
+supabase: Client = create_client(supabase_url, key)
 
 api_key_openai_name = "Personal Key"
 openai_client = OpenAI(
@@ -667,7 +671,25 @@ def regular_upsert(table_name: str, dicts: List[Any], where_field: str):
             regular_update(table_name=table_name, dicts=[d], where_field=where_field)
 
 
+def upload_to_supabase(filepath, bucket_name, path_on_supabase):
+    """
+    Uploads a file to a specified bucket in Supabase and returns the public URL.
 
+    Args:
+    filepath (str): Path to the file on local disk.
+    bucket_name (str): Name of the Supabase storage bucket.
+    path_on_supabase (str): Path where the file will be stored in Supabase.
+
+    Returns:
+    dict: A dictionary containing the result status and URL or error message.
+    """
+    try:
+        with open(filepath, 'rb') as file:
+            supabase.storage.from_(bucket_name).upload(file=file,path=path_on_supabase, file_options={"content-type": "image/jpeg"})
+        storage_url = f"{supabase_url}/storage/v1/object/public/{bucket_name}/{path_on_supabase}"
+        return {'success': True, 'url': storage_url}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
 
 
 

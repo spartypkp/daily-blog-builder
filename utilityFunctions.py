@@ -646,7 +646,8 @@ def pydantic_upsert(table_name: str, models: List[Any], where_field: str):
     for model in models:
         try:
             pydantic_insert(table_name=table_name, models=[model])
-        except psycopg.errors.UniqueViolation:
+        except psycopg.errors.UniqueViolation as e:
+            print(e)
             pydantic_update(table_name=table_name, models=[model], where_field=where_field)
 
 def regular_upsert(table_name: str, dicts: List[Any], where_field: str):

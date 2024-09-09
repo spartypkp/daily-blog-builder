@@ -56,13 +56,13 @@ def submit_blog():
         # Add today's date to the JSON data (assuming 'date' is the primary key)
           # Format as 'YYYY-MM-DD'
         
-
         # Validate the incoming data using the DailyBlog Pydantic model
         daily_blog = DailyBlog(**data)
 
         # Log the parsed data for debugging (Optional)
         
         daily_blog.updated_at = datetime.datetime.now()
+        print(daily_blog)
         # Perform the upsert operation on the 'daily_blogs' table
         pydantic_upsert(
             table_name="daily_blogs", 

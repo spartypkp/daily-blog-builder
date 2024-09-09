@@ -193,28 +193,33 @@ class DaveResponse(BaseModel):
 
 # Submodel for Task
 class Task(BaseModel):
-    # Task Start - filled out at start of task
+    # Task Start - Human Input
     task_goal: Optional[str] = Field("", description="Desired outcome or goal for the task.")
     task_description: Optional[str] = Field("", description="Description of the task or problem.")
     task_expected_difficulty: Optional[int] = Field(50, description="Focus level (0-100).", ge=0, le=100)
     task_planned_approach: Optional[str] = Field("", description="Method or strategy Will plans to use to tackle the problem.")
+    # Task Start - AI Generated
+    task_start_summary: Optional[str] = Field(default=None, description="AI Generated Summary of an individual task, without knowledge of further success/failure")
 
     # Task Work - Ongoing throughout day
     task_progress_notes: Optional[str] = Field("", description="Main writing area for Will to document  his progress.")
-    challenges_encountered: Optional[str] = Field("", description="Key challenges or bugs encountered.")
-    research_questions: Optional[str] = Field("", description="An always updated list of research questions Will had while working on the task")
-    
-    # Task Reflection - filled out after task completion
-    tools_used: Optional[str] = Field("", description="Key tools, libraries, or frameworks used during the task.")
-    reflection_successes: Optional[str] = Field("", description="What worked well during the task?")
-    reflection_failures: Optional[str] = Field("", description="What didn't work, and why?")
-    output_or_result: Optional[str] = Field("", description="The outcome or deliverable from this task (e.g., code, documentation).")
+
+    # Task Reflection - Human Input
     time_spent_coding: Optional[str] = Field("", description="Time spent actively coding (e.g., '2 hours').")
     time_spent_researching: Optional[str] = Field("", description="Time spent researching (e.g., '30 minutes').")
     time_spent_debugging: Optional[str] = Field("", description="Time spent debugging (e.g., '45 minutes').")
+    # Task Reflection - AI Generated
+    task_reflection_summary: Optional[str] = Field(default=None, description="AI summary of how the task went.")
+    output_or_result: Optional[str] = Field("", description="The outcome or deliverable from this task (e.g., code, documentation).")
+    challenges_encountered: Optional[str] = Field("", description="Key challenges or bugs encountered.")
     follow_up_tasks: Optional[str] = Field("", description="Immediate next steps or follow-up tasks.")
-
+    reflection_successes: Optional[str] = Field("", description="What worked well during the task?")
+    reflection_failures: Optional[str] = Field("", description="What didn't work, and why?")
+    research_questions: Optional[str] = Field("", description="An always updated list of research questions Will had while working on the task")
+    tools_used: Optional[str] = Field("", description="Key tools, libraries, or frameworks used during the task.")
+    
 class Introduction(BaseModel):
+    # Human Input
     personal_context: Optional[str] = Field("", description="Additional context for the day (e.g., external factors).")
     daily_goals: Optional[str] = Field("", description="Main tasks or goals for the day.")
     learning_focus: Optional[str] = Field("", description="What Will wants to learn or improve on today.")
@@ -226,19 +231,27 @@ class Introduction(BaseModel):
     burnout_level: Optional[int] = Field(50, description="Burnout meter (0-100).", ge=0, le=100)
     leetcode_hatred_level: Optional[int] = Field(99, description="LeetCode hatred meter (0-100).", ge=0, le=100)
     
+    # AI Generated
+    introduction_summary: Optional[str] = Field(default=None, description="AI summary of Will's daily blog introduction.")
+    
 class Reflection(BaseModel):
-    technical_challenges: Optional[str] = Field("", description="Notable technical challenges or obstacles faced.")
-    interesting_bugs: Optional[str] = Field("", description="Details of any interesting bugs encountered.")
-    unanswered_questions: Optional[str] = Field("", description="Unanswered technical questions or topics for further research.")
+    # Human Generated
     learning_outcomes: Optional[str] = Field("", description="Key takeaways and things learned during the day.")
     next_steps_short_term: Optional[str] = Field("", description="Immediate next steps or tasks for tomorrow.")
     next_steps_long_term: Optional[str] = Field("", description="Long-term goals or ongoing technical objectives.")
-    
-    # Humorous & Self-Reflective Mood Sliders
+
     productivity_level: Optional[int] = Field(50, description="Self-evaluation: Productivity (0-100).", ge=0, le=100)
     distraction_level: Optional[int] = Field(50, description="Self-evaluation: How Distracted were you (0-100).", ge=0, le=100)
     desire_to_play_steam_games_level: Optional[int] = Field(50, description="Desire to play Steam games (0-100). It's always Europa Universalis IV", ge=0, le=100)
     overall_frustration_level: Optional[int] = Field(50, description="Frustration level (0-100).", ge=0, le=100)
+
+    # AI Generated
+    entire_blog_summary: Optional[str] = Field("", description="An AI Summary of Will's blog.")
+    technical_challenges: Optional[str] = Field("", description="Notable technical challenges or obstacles faced.")
+    interesting_bugs: Optional[str] = Field("", description="Details of any interesting bugs encountered.")
+    unanswered_questions: Optional[str] = Field("", description="Unanswered technical questions or topics for further research.")
+    
+   
 
 # Main model for the Daily Blog
 class DailyBlog(BaseModel):
@@ -248,6 +261,13 @@ class DailyBlog(BaseModel):
     reflection: Optional[Reflection] = Field(default=Reflection(), description="The reflection portion of Will's daily blog")
     created_at: Optional[datetime.datetime] = Field(default=None, description="Timestamp for when the blog was created.")
     updated_at: Optional[datetime.datetime] = Field(default=None, description="Timestamp for the last update.")
+    status: Optional[str] = Field(default=None, description="Indicates the publication status of the blog.")
+    day_count: Optional[int] = Field(default=None, description="Number of days since I started my journey.")
+    # AI Generated 
+    blog_title: Optional[str] = Field(default=None, description="AI Generated Title for the Daily Blog")
+    blog_description: Optional[str] = Field(default=None, description="AI Generated description (1-2 sentences) about the blog content.")
+    blog_tags: Optional[Dict[str, Any]] = Field(default=None, description="AI Generated tags for a blog. TODO: Make into Pydantic model.")
+    
 
 
 # ===== API Models =====

@@ -683,12 +683,19 @@ def upload_to_supabase(filepath, bucket_name, path_on_supabase):
     Returns:
     dict: A dictionary containing the result status and URL or error message.
     """
+    storage_url = f"{supabase_url}/storage/v1/object/public/{bucket_name}/{path_on_supabase}"
     try:
         with open(filepath, 'rb') as file:
-            supabase.storage.from_(bucket_name).upload(file=file,path=path_on_supabase, file_options={"content-type": "image/jpeg"})
-        storage_url = f"{supabase_url}/storage/v1/object/public/{bucket_name}/{path_on_supabase}"
+            response = supabase.storage.from_(bucket_name).upload(file=file,path=path_on_supabase, file_options={"content-type": "image/jpeg"})
+            print(response)
+        
+        
+        
         return {'success': True, 'url': storage_url}
     except Exception as e:
+        if "'error': 'Duplicate'" in str(e):
+            return {'success': True, 'url': storage_url}
+            
         return {'success': False, 'error': str(e)}
 
 

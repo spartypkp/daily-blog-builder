@@ -78,6 +78,11 @@
                     oninput="updateSliderColor('focus_level')">
 
             </div>
+            <!-- AI Generated Teaser-->
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 text-center">Introduction Summary and Teaser</h2>
+                <div id="introduction_summary" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+            </div>
         </div>
 
     </section>
@@ -102,8 +107,6 @@
         </div>
     </section>
 
-
-
     <!-- Reflection Section -->
     <section class="reflection mb-8 bg-gray-200 shadow-md rounded-lg p-6">
         <button onclick="toggleSection('daily-reflection')"
@@ -111,23 +114,7 @@
             <span id="icon-daily-reflection">+</span> Daily Reflection
         </button>
         <div id="daily-reflection" class="mx-auto hidden">
-            <!-- Technical Challenges -->
-            <div class="mt-4 bg-white rounded-lg p-4">
-                <h2 class="text-3xl font-bold text-gray-800 text-center">Technical Challenges</h2>
-                <div id="technical_challenges" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
-            </div>
-
-            <!-- Interesting Bugs -->
-            <div class="mt-4 bg-white rounded-lg p-4">
-                <h2 class="text-3xl font-bold text-gray-800 text-center">Interesting Bugs</h2>
-                <div id="interesting_bugs" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
-            </div>
-
-            <!-- Unanswered Questions -->
-            <div class="mt-4 bg-white rounded-lg p-4">
-                <h2 class="text-3xl font-bold text-gray-800 text-center">Unanswered Questions</h2>
-                <div id="unanswered_questions" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
-            </div>
+            
 
             <!-- Learning Outcomes -->
             <div class="mt-4 bg-white rounded-lg p-4">
@@ -172,6 +159,29 @@
                             class="w-full h-2 rounded-lg appearance-none cursor-pointer" oninput="updateSliderColor('overall_frustration_level')">
                     </div>
                 </div>
+            </div>
+            <h1> AI Generated Reflection</h1>
+            <!-- Technical Challenges -->
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 text-center">Summary of Entire Blog</h2>
+                <div id="entire_blog_summary" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+            </div>
+
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 text-center">Technical Challenges</h2>
+                <div id="technical_challenges" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+            </div>
+
+            <!-- Interesting Bugs -->
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 text-center">Interesting Bugs</h2>
+                <div id="interesting_bugs" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
+            </div>
+
+            <!-- Unanswered Questions -->
+            <div class="mt-4 bg-white rounded-lg p-4">
+                <h2 class="text-3xl font-bold text-gray-800 text-center">Unanswered Questions</h2>
+                <div id="unanswered_questions" class="min-h-[150px] bg-gray-50 p-4 rounded border"></div>
             </div>
         </div>
 

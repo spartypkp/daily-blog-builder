@@ -9,15 +9,17 @@ from pydanticModels import DailyBlog, Task, Introduction, Reflection
 from utilityFunctions import pydantic_upsert, pydantic_select, upload_to_supabase
 from typing import List, Optional
 
-
+# If localhost won't connect: chrome://net-internals/#sockets
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'static/uploads/')
 
 @app.route('/')
 def home():
+    print(F"Starting up home route!")
     selected_date = request.args.get('date', date.today().isoformat())  # Get date from URL query parameter or default to today
 
     today_blog = get_blog_by_date(selected_date)
+    print(f"Today blog found!")
 
     if today_blog:
         print(f"Blog for {selected_date} already exists!")
@@ -105,7 +107,7 @@ def upload_image():
         # Upload the file to Supabase
         result = upload_to_supabase(save_path, 'daily-blogs', f"images/{filename}")
         
-
+        print(result)
         if result['success']:
             return jsonify({'path': result['url']}), 200
         else:

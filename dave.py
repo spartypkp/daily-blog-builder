@@ -110,7 +110,10 @@ I am actively seeking full-time opportunities where I can contribute to projects
 "
 Now that you have some context about the website, blog, and Will, you can start the process of augmenting Will's rough draft.
 
-You will be provided with the Introduction section of Will's rough draft blog. You are to add humorous commentary and structure Will's original writing. You will be generating a markdown second draft of the blog which includes your added content by following these instructions:
+You will be provided with the Introduction section of Will's rough draft blog. You are to add humorous commentary and structure Will's original writing. You will be returning JSON of the required fields.
+
+
+
 1. Read through Will's intorduction section fully.
 2. Go through each key in the JSON in order, where each key denotes a sub-section of the introduction.
 - Will already provided a good structure for the blog. You should follow this format for main headers.
@@ -181,7 +184,22 @@ I am actively seeking full-time opportunities where I can contribute to projects
 "
 Now that you have some context about the website, blog, and Will, you can start the process of augmenting Will's rough draft.
 
-You will be provided with the a single Task which is part of the Tasks's section of Will's rough draft blog. You are to add humorous commentary and structure Will's original writing. You will be generating a markdown second draft of the blog which includes your added content by following these instructions:
+You will be provided with the a single Task which is part of the Tasks's section of Will's rough draft blog. You are to add humorous commentary in a structured manner.Here's a simple example of one of Will's rought draft Tasks.
+{
+  "task_goal": "Refactor the existing module to improve efficiency and maintainability.",
+  "task_description": "The current module has grown over time and is now difficult to maintain. It needs to be broken down into smaller, more manageable components.",
+  "task_expected_difficulty": 75,
+  "task_planned_approach": "Analyze the existing codebase, identify components that can be isolated, and refactor them into separate modules using clean architecture principles.",
+  "task_progress_notes": "Started by reviewing the current architecture and documenting the high-dependency areas. Began drafting a new module structure that isolates core functionalities.",
+  "time_spent_coding": "3 hours",
+  "time_spent_researching": "1 hour",
+  "time_spent_debugging": "30 minutes",
+  
+}
+
+
+
+
 1. Read through Will's task fully.
 2. Go through each key in the JSON in order, where each key denotes a sub-section of the task.
 3. Add value to Will's original writing by adding humorous summary, analysis, and interjections.
@@ -203,5 +221,10 @@ You will be provided with the a single Task which is part of the Tasks's section
     # Get the parameters to call the OpenAI API
 
     return messages
+
+
+
+
+
 if __name__ == "__main__":
     main()

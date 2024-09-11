@@ -38,13 +38,12 @@ function initializeBlog(blogData) {
         document.getElementById('burnout_level').value = blogData.introduction.burnout_level || 50;
         document.getElementById('focus_level').value = blogData.introduction.focus_level || 50;
         document.getElementById('leetcode_hatred_level').value = blogData.introduction.leetcode_hatred_level || 50;
+
+        document.getElementById('introduction_summary').innerHTML = blogData.introduction.introduction_summary || '';
     }
     
     // Set the values for Reflection section fields
     if (blogData.reflection) {
-        initializeEditor('technical_challenges','', blogData.reflection.technical_challenges || '', '');
-        initializeEditor('interesting_bugs','', blogData.reflection.interesting_bugs || '', '');
-        initializeEditor('unanswered_questions','', blogData.reflection.unanswered_questions || '', '');
         initializeEditor('learning_outcomes','', blogData.reflection.learning_outcomes || '', '');
         initializeEditor('next_steps_short_term','', blogData.reflection.next_steps_short_term || '', '');
         initializeEditor('next_steps_long_term','', blogData.reflection.next_steps_long_term || '', '');
@@ -54,6 +53,11 @@ function initializeBlog(blogData) {
         document.getElementById('distraction_level').value = blogData.reflection.distraction_level || 50;
         document.getElementById('desire_to_play_steam_games_level').value = blogData.reflection.desire_to_play_steam_games_level || 50;
         document.getElementById('overall_frustration_level').value = blogData.reflection.overall_frustration_level || 50;
+
+        document.getElementById('entire_blog_summary').innerHTML = blogData.introduction.entire_blog_summary || '';
+        document.getElementById('technical_challenges').innerHTML = blogData.introduction.technical_challenges || '';
+        document.getElementById('interesting_bugs').innerHTML = blogData.introduction.interesting_bugs || '';
+        document.getElementById('unanswered_questions').innerHTML = blogData.introduction.unanswered_questions || '';
     }
     // Add a new task for however many tasks there are
     for (let i = 0; i < blogData.tasks.length; i++) {
@@ -501,7 +505,7 @@ function exportBlog() {
         const task_description = document.querySelector(`#task_description${index + 1}`).__quill.root.innerHTML.trim();
         const task_expected_difficulty = parseInt(document.getElementById(`task_expected_difficulty${index + 1}`).value);
         const task_planned_approach = document.getElementById(`task_planned_approach${index + 1}`).__quill.root.innerHTML.trim();
-        const task_start_summary = document.getElementById(`task_start_summary${index + 1}`).value.trim();
+        const task_start_summary = document.getElementById(`task_start_summary${index + 1}`).innerHTML.trim();
 
         const task_progress_notes = document.querySelector(`#task_progress_notes${index + 1}`).__quill.root.innerHTML.trim();
         
@@ -509,16 +513,14 @@ function exportBlog() {
         const time_spent_debugging = document.getElementById(`time_spent_debugging${index + 1}`).value.trim();
         const time_spent_coding = document.getElementById(`time_spent_coding${index + 1}`).value.trim();
 
-        const task_reflection_summary = document.getElementById(`task_reflection_summary${index + 1}`).value.trim();
+        const task_reflection_summary = document.getElementById(`task_reflection_summary${index + 1}`).innerHTML.trim();
         const challenges_encountered = document.getElementById(`challenges_encountered${index + 1}`).innerHTML.trim();
         const research_questions = document.getElementById(`research_questions${index + 1}`).innerHTML.trim();
-        const tools_used = document.getElementById(`#tools_used${index + 1}`).__quill.root.innerHTML.trim();
-        const reflection_successes = document.getElementById(`#reflection_successes${index + 1}`).__quill.root.innerHTML.trim();
-        const reflection_failures = document.getElementById(`#reflection_failures${index + 1}`).__quill.root.innerHTML.trim();
-        const output_or_result = document.getElementById(`#output_or_result${index + 1}`).__quill.root.innerHTML.trim();
-
-
-        const follow_up_tasks = document.querySelector(`#follow_up_tasks${index + 1}`).__quill.root.innerHTML.trim();
+        const tools_used = document.getElementById(`tools_used${index + 1}`).innerHTML.trim();
+        const reflection_successes = document.getElementById(`reflection_successes${index + 1}`).innerHTML.trim();
+        const reflection_failures = document.getElementById(`reflection_failures${index + 1}`).innerHTML.trim();
+        const output_or_result = document.getElementById(`output_or_result${index + 1}`).innerHTML.trim();
+        const follow_up_tasks = document.getElementById(`follow_up_tasks${index + 1}`).innerHTML.trim();
 
         tasks.push({
             task_goal: task_goal,

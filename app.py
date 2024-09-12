@@ -6,7 +6,7 @@ from flask import jsonify
 import os
 from pydantic import ValidationError
 from pydanticModels import DailyBlog, Task, Introduction, Reflection
-from utilityFunctions import pydantic_upsert, pydantic_select, upload_to_supabase
+from utilityFunctions import pydantic_upsert, pydantic_select, upload_to_supabase, pydantic_update
 from typing import List, Optional
 from dave import ai_edit_introduction, ai_edit_task, ai_edit_reflection
 
@@ -36,6 +36,7 @@ def edit_introduction():
     data = request.get_json()
     intro_model = Introduction(**data)
     updated_intro = ai_edit_introduction(intro_model)
+
     return jsonify(updated_intro.dict())
 
 @app.route('/edit_task', methods=['POST'])

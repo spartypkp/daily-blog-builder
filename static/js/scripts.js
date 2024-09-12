@@ -13,7 +13,7 @@ function initializeBlog(blogData) {
     while (tabContentContainer.firstChild) {
         tabContentContainer.removeChild(tabContentContainer.firstChild);
     }
-    
+
     // Cleanup for Quill editors if they were previously initialized
     const quillEditors = tabContentContainer.querySelectorAll('.quill-editor');
     quillEditors.forEach(editor => {
@@ -28,11 +28,11 @@ function initializeBlog(blogData) {
     // Set the values for Introduction section fields
     if (blogData.introduction) {
         initializeEditor('daily_goals', '', blogData.introduction.daily_goals || '', '');
-        initializeEditor('learning_focus', '',  blogData.introduction.learning_focus || '', '');
+        initializeEditor('learning_focus', '', blogData.introduction.learning_focus || '', '');
         initializeEditor('challenges', '', blogData.introduction.challenges || '', '');
         initializeEditor('plan_of_action', '', blogData.introduction.plan_of_action || '', '');
-        initializeEditor('personal_context','', blogData.introduction.personal_context || '', '');
-    
+        initializeEditor('personal_context', '', blogData.introduction.personal_context || '', '');
+
         // Set the mood sliders
         document.getElementById('enthusiasm_level').value = blogData.introduction.enthusiasm_level || 50;
         document.getElementById('burnout_level').value = blogData.introduction.burnout_level || 50;
@@ -41,13 +41,13 @@ function initializeBlog(blogData) {
 
         document.getElementById('introduction_summary').innerHTML = blogData.introduction.introduction_summary || '';
     }
-    
+
     // Set the values for Reflection section fields
     if (blogData.reflection) {
-        initializeEditor('learning_outcomes','', blogData.reflection.learning_outcomes || '', '');
-        initializeEditor('next_steps_short_term','', blogData.reflection.next_steps_short_term || '', '');
-        initializeEditor('next_steps_long_term','', blogData.reflection.next_steps_long_term || '', '');
-    
+        initializeEditor('learning_outcomes', '', blogData.reflection.learning_outcomes || '', '');
+        initializeEditor('next_steps_short_term', '', blogData.reflection.next_steps_short_term || '', '');
+        initializeEditor('next_steps_long_term', '', blogData.reflection.next_steps_long_term || '', '');
+
         // Set the self-reflective mood sliders
         document.getElementById('productivity_level').value = blogData.reflection.productivity_level || 50;
         document.getElementById('distraction_level').value = blogData.reflection.distraction_level || 50;
@@ -68,7 +68,7 @@ function initializeBlog(blogData) {
 
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const selectElement = document.getElementById('blogDateSelector');
 
     fetch('/api/available_dates')
@@ -118,6 +118,187 @@ function fetchBlogData(date) {
 }
 
 
+async function edit_introduction() {
+    const daily_goals = document.querySelector('#daily_goals').__quill.root.innerHTML.trim();
+    const learning_focus = document.querySelector('#learning_focus').__quill.root.innerHTML.trim();
+    const challenges = document.querySelector('#challenges').__quill.root.innerHTML.trim();
+    const plan_of_action = document.querySelector('#plan_of_action').__quill.root.innerHTML.trim();
+    const personal_context = document.querySelector('#personal_context').__quill.root.innerHTML.trim();
+
+    const enthusiasm_level = parseInt(document.getElementById('enthusiasm_level').value);
+    const burnout_level = parseInt(document.getElementById('burnout_level').value);
+    const focus_level = parseInt(document.getElementById('focus_level').value);
+    const leetcode_hatred_level = parseInt(document.getElementById('leetcode_hatred_level').value);
+
+    const introduction_summary = document.getElementById('introduction_summary').innerHTML.trim();
+
+    const introductionData = {
+        personal_context,
+        daily_goals,
+        learning_focus,
+        challenges,
+        plan_of_action,
+        enthusiasm_level,
+        burnout_level,
+        focus_level,
+        leetcode_hatred_level,
+        introduction_summary
+    };
+
+    const response = await fetch('/edit_introduction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(introductionData)
+    });
+
+    const responseData = await response.json();
+    console.log('AI Edited Introduction:', responseData);
+    const introduction_element = document.getElementById('introduction_summary')
+    introduction_element.innerHTML = responseData['introduction_summary']
+
+}
+
+async function edit_tasks() {
+    // Task Section
+    const tasks = [];
+    document.querySelectorAll('.task-content').forEach((taskElement, index) => {
+        const task_goal = document.querySelector(`#task_goal${index + 1}`).__quill.root.innerHTML.trim();
+        const task_description = document.querySelector(`#task_description${index + 1}`).__quill.root.innerHTML.trim();
+        const task_expected_difficulty = parseInt(document.getElementById(`task_expected_difficulty${index + 1}`).value);
+        const task_planned_approach = document.getElementById(`task_planned_approach${index + 1}`).__quill.root.innerHTML.trim();
+        const task_start_summary = document.getElementById(`task_start_summary${index + 1}`).innerHTML.trim();
+
+        const task_progress_notes = document.querySelector(`#task_progress_notes${index + 1}`).__quill.root.innerHTML.trim();
+
+        const time_spent_researching = document.getElementById(`time_spent_researching${index + 1}`).value.trim();
+        const time_spent_debugging = document.getElementById(`time_spent_debugging${index + 1}`).value.trim();
+        const time_spent_coding = document.getElementById(`time_spent_coding${index + 1}`).value.trim();
+
+        const task_reflection_summary = document.getElementById(`task_reflection_summary${index + 1}`).innerHTML.trim();
+        const challenges_encountered = document.getElementById(`challenges_encountered${index + 1}`).innerHTML.trim();
+        const research_questions = document.getElementById(`research_questions${index + 1}`).innerHTML.trim();
+        const tools_used = document.getElementById(`tools_used${index + 1}`).innerHTML.trim();
+        const reflection_successes = document.getElementById(`reflection_successes${index + 1}`).innerHTML.trim();
+        const reflection_failures = document.getElementById(`reflection_failures${index + 1}`).innerHTML.trim();
+        const output_or_result = document.getElementById(`output_or_result${index + 1}`).innerHTML.trim();
+        const follow_up_tasks = document.getElementById(`follow_up_tasks${index + 1}`).innerHTML.trim();
+
+        tasks.push({
+            task_goal: task_goal,
+            task_description: task_description,
+            task_expected_difficulty: task_expected_difficulty,
+            task_planned_approach: task_planned_approach,
+            task_start_summary: task_start_summary,
+            task_progress_notes: task_progress_notes,
+            challenges_encountered: challenges_encountered,
+            research_questions: research_questions,
+            tools_used: tools_used,
+            reflection_successes: reflection_successes,
+            reflection_failures: reflection_failures,
+            output_or_result: output_or_result,
+            time_spent_coding: time_spent_coding,
+            time_spent_researching: time_spent_researching,
+            time_spent_debugging: time_spent_debugging,
+            follow_up_tasks: follow_up_tasks,
+            task_reflection_summary: task_reflection_summary
+        });
+    });
+    const response = await fetch('/edit_task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tasks })
+    });
+
+    const responseData = await response.json();
+    console.log('AI Edited Tasks:', responseData);
+
+    const task_start_summary_element = document.getElementById(`task_start_summary${index + 1}`);
+    if (task_start_summary_element) {
+        task_start_summary_element.innerHTML = responseData['task_start_summary'] || ''; // Ensuring no undefined value is set
+    }
+
+    const task_reflection_summary_element = document.getElementById(`task_reflection_summary${index + 1}`);
+    if (task_reflection_summary_element) {
+        task_reflection_summary_element.innerHTML = responseData['task_reflection_summary'] || '';
+    }
+
+    const challenges_encountered_element = document.getElementById(`challenges_encountered${index + 1}`);
+    if (challenges_encountered_element) {
+        challenges_encountered_element.innerHTML = responseData['challenges_encountered'] || '';
+    }
+
+    const research_questions_element = document.getElementById(`research_questions${index + 1}`);
+    if (research_questions_element) {
+        research_questions_element.innerHTML = responseData['research_questions'] || '';
+    }
+
+    const tools_used_element = document.getElementById(`tools_used${index + 1}`);
+    if (tools_used_element) {
+        tools_used_element.innerHTML = responseData['tools_used'] || '';
+    }
+
+    const reflection_successes_element = document.getElementById(`reflection_successes${index + 1}`);
+    if (reflection_successes_element) {
+        reflection_successes_element.innerHTML = responseData['reflection_successes'] || '';
+    }
+
+    const reflection_failures_element = document.getElementById(`reflection_failures${index + 1}`);
+    if (reflection_failures_element) {
+        reflection_failures_element.innerHTML = responseData['reflection_failures'] || '';
+    }
+
+    const output_or_result_element = document.getElementById(`output_or_result${index + 1}`);
+    if (output_or_result_element) {
+        output_or_result_element.innerHTML = responseData['output_or_result'] || '';
+    }
+
+    const follow_up_tasks_element = document.getElementById(`follow_up_tasks${index + 1}`);
+    if (follow_up_tasks_element) {
+        follow_up_tasks_element.innerHTML = responseData['follow_up_tasks'] || '';
+    }
+
+}
+
+async function edit_reflection() {
+    const learning_outcomes = document.querySelector('#learning_outcomes').__quill.root.innerHTML.trim();
+    const next_steps_short_term = document.querySelector('#next_steps_short_term').__quill.root.innerHTML.trim();
+    const next_steps_long_term = document.querySelector('#next_steps_long_term').__quill.root.innerHTML.trim();
+
+    const productivity_level = parseInt(document.getElementById('productivity_level').value);
+    const distraction_level = parseInt(document.getElementById('distraction_level').value);
+    const desire_to_play_steam_games_level = parseInt(document.getElementById('desire_to_play_steam_games_level').value);
+    const overall_frustration_level = parseInt(document.getElementById('overall_frustration_level').value);
+
+    // Reflection - AI Generated
+    const entire_blog_summary = document.getElementById('entire_blog_summary').innerHTML.trim();
+    const technical_challenges = document.getElementById('technical_challenges').innerHTML.trim();
+    const interesting_bugs = document.getElementById('interesting_bugs').innerHTML.trim();
+    const unanswered_questions = document.getElementById('unanswered_questions').innerHTML.trim();
+
+    const reflectionData = {
+
+        learning_outcomes,
+        next_steps_short_term,
+        next_steps_long_term,
+        productivity_level,
+        distraction_level,
+        desire_to_play_steam_games_level,
+        overall_frustration_level,
+        entire_blog_summary,
+        technical_challenges,
+        interesting_bugs,
+        unanswered_questions,
+    };
+
+    const response = await fetch('/edit_reflection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reflectionData)
+    });
+
+    const responseData = await response.json();
+    console.log('AI Edited Reflection:', responseData);
+}
 
 
 
@@ -166,7 +347,7 @@ function addTask(taskData) {
 
     const task_progress_notes = taskData?.task_progress_notes || '';
     initializeEditor("task_progress_notes", newTaskId, task_progress_notes, "");
-    
+
 
 
     // Initialize the Quill editor for the task progress notes
@@ -188,7 +369,7 @@ function generateTaskHTML(taskId, taskData) {
     const research_questions = taskData?.research_questions || '';
     const tools_used = taskData?.tools_used || '';
     // Human Fields
-    
+
     const task_expected_difficulty = taskData?.task_expected_difficulty || 50;
     const time_spent_coding = taskData?.time_spent_coding || '';
     const time_spent_researching = taskData?.time_spent_researching || '';
@@ -313,6 +494,192 @@ function removeTask(taskId) {
     }
 }
 
+
+
+function exportBlog() {
+    // Introduction Section - Refactored to use Quill where applicable
+    const daily_goals = document.querySelector('#daily_goals').__quill.root.innerHTML.trim();
+    const learning_focus = document.querySelector('#learning_focus').__quill.root.innerHTML.trim();
+    const challenges = document.querySelector('#challenges').__quill.root.innerHTML.trim();
+    const plan_of_action = document.querySelector('#plan_of_action').__quill.root.innerHTML.trim();
+    const personal_context = document.querySelector('#personal_context').__quill.root.innerHTML.trim();
+
+    const enthusiasm_level = parseInt(document.getElementById('enthusiasm_level').value);
+    const burnout_level = parseInt(document.getElementById('burnout_level').value);
+    const focus_level = parseInt(document.getElementById('focus_level').value);
+    const leetcode_hatred_level = parseInt(document.getElementById('leetcode_hatred_level').value);
+
+    const introduction_summary = document.getElementById('introduction_summary').innerHTML.trim();
+
+    const introduction = {
+        personal_context,
+        daily_goals,
+        learning_focus,
+        challenges,
+        plan_of_action,
+        enthusiasm_level,
+        burnout_level,
+        focus_level,
+        leetcode_hatred_level,
+        introduction_summary
+    };
+
+    // Reflect - Human Input
+    const learning_outcomes = document.querySelector('#learning_outcomes').__quill.root.innerHTML.trim();
+    const next_steps_short_term = document.querySelector('#next_steps_short_term').__quill.root.innerHTML.trim();
+    const next_steps_long_term = document.querySelector('#next_steps_long_term').__quill.root.innerHTML.trim();
+
+    const productivity_level = parseInt(document.getElementById('productivity_level').value);
+    const distraction_level = parseInt(document.getElementById('distraction_level').value);
+    const desire_to_play_steam_games_level = parseInt(document.getElementById('desire_to_play_steam_games_level').value);
+    const overall_frustration_level = parseInt(document.getElementById('overall_frustration_level').value);
+
+    // Reflection - AI Generated
+    const entire_blog_summary = document.getElementById('entire_blog_summary').innerHTML.trim();
+    const technical_challenges = document.getElementById('technical_challenges').innerHTML.trim();
+    const interesting_bugs = document.getElementById('interesting_bugs').innerHTML.trim();
+    const unanswered_questions = document.getElementById('unanswered_questions').innerHTML.trim();
+
+    const reflection = {
+
+        learning_outcomes,
+        next_steps_short_term,
+        next_steps_long_term,
+        productivity_level,
+        distraction_level,
+        desire_to_play_steam_games_level,
+        overall_frustration_level,
+        entire_blog_summary,
+        technical_challenges,
+        interesting_bugs,
+        unanswered_questions,
+    };
+
+    // Task Section
+    const tasks = [];
+    document.querySelectorAll('.task-content').forEach((taskElement, index) => {
+        const task_goal = document.querySelector(`#task_goal${index + 1}`).__quill.root.innerHTML.trim();
+        const task_description = document.querySelector(`#task_description${index + 1}`).__quill.root.innerHTML.trim();
+        const task_expected_difficulty = parseInt(document.getElementById(`task_expected_difficulty${index + 1}`).value);
+        const task_planned_approach = document.getElementById(`task_planned_approach${index + 1}`).__quill.root.innerHTML.trim();
+        const task_start_summary = document.getElementById(`task_start_summary${index + 1}`).innerHTML.trim();
+
+        const task_progress_notes = document.querySelector(`#task_progress_notes${index + 1}`).__quill.root.innerHTML.trim();
+
+        const time_spent_researching = document.getElementById(`time_spent_researching${index + 1}`).value.trim();
+        const time_spent_debugging = document.getElementById(`time_spent_debugging${index + 1}`).value.trim();
+        const time_spent_coding = document.getElementById(`time_spent_coding${index + 1}`).value.trim();
+
+        const task_reflection_summary = document.getElementById(`task_reflection_summary${index + 1}`).innerHTML.trim();
+        const challenges_encountered = document.getElementById(`challenges_encountered${index + 1}`).innerHTML.trim();
+        const research_questions = document.getElementById(`research_questions${index + 1}`).innerHTML.trim();
+        const tools_used = document.getElementById(`tools_used${index + 1}`).innerHTML.trim();
+        const reflection_successes = document.getElementById(`reflection_successes${index + 1}`).innerHTML.trim();
+        const reflection_failures = document.getElementById(`reflection_failures${index + 1}`).innerHTML.trim();
+        const output_or_result = document.getElementById(`output_or_result${index + 1}`).innerHTML.trim();
+        const follow_up_tasks = document.getElementById(`follow_up_tasks${index + 1}`).innerHTML.trim();
+
+        tasks.push({
+            task_goal: task_goal,
+            task_description: task_description,
+            task_expected_difficulty: task_expected_difficulty,
+            task_planned_approach: task_planned_approach,
+            task_start_summary: task_start_summary,
+            task_progress_notes: task_progress_notes,
+            challenges_encountered: challenges_encountered,
+            research_questions: research_questions,
+            tools_used: tools_used,
+            reflection_successes: reflection_successes,
+            reflection_failures: reflection_failures,
+            output_or_result: output_or_result,
+            time_spent_coding: time_spent_coding,
+            time_spent_researching: time_spent_researching,
+            time_spent_debugging: time_spent_debugging,
+            follow_up_tasks: follow_up_tasks,
+            task_reflection_summary: task_reflection_summary
+        });
+    });
+    const date = document.getElementById("blogDateSelector").value
+    console.log(`Saving blog for date: ${date}`)
+
+    // Create the blog object
+    const today_blog = {
+        date: date,
+        introduction: introduction,
+        tasks: tasks,
+        reflection: reflection
+    };
+
+    // Send the JSON object to Flask via a POST request
+    fetch('/submit-blog', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(today_blog),
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+}
+
+function toggleSection(sectionId) {
+    var element = document.getElementById(sectionId);
+    var icon = document.getElementById('icon-' + sectionId);
+    if (element.classList.contains('hidden')) {
+        element.classList.remove('hidden');
+        icon.textContent = '−'; // Change to minus
+        icon.classList.add('rotate-180'); // Rotate icon if desired
+    } else {
+        element.classList.add('hidden');
+        icon.textContent = '+';
+        icon.classList.remove('rotate-180');
+    }
+}
+
+function updateSliderColor(sliderId) {
+    const slider = document.getElementById(sliderId);
+    const value = parseInt(slider.value, 10); // Convert the value to an integer for accurate comparison
+    let newColorClass;
+
+    // Determine the new color class based on the slider's value
+    switch (sliderId) {
+        case 'enthusiasm_level':
+            newColorClass = value > 66 ? 'bg-green-500' : value > 33 ? 'bg-yellow-500' : 'bg-red-500';
+            break;
+        case 'burnout_level':
+            newColorClass = value > 66 ? 'bg-red-500' : value > 33 ? 'bg-yellow-500' : 'bg-green-500';
+            break;
+        case 'leetcode_hatred_level':
+            newColorClass = value > 66 ? 'bg-red-500' : value > 33 ? 'bg-purple-500' : 'bg-blue-500';
+            break;
+        case 'focus_level':
+            newColorClass = value > 66 ? 'bg-green-500' : value > 33 ? 'bg-orange-500' : 'bg-red-500';
+            break;
+        case 'productivity_level':
+            newColorClass = value > 66 ? 'bg-green-500' : value > 33 ? 'bg-green-300' : 'bg-green-100';
+            break;
+        case 'distraction_level':
+            newColorClass = value > 66 ? 'bg-yellow-500' : value > 33 ? 'bg-yellow-300' : 'bg-yellow-100';
+            break;
+        case 'desire_to_play_steam_games_level':
+            newColorClass = value > 66 ? 'bg-purple-500' : value > 33 ? 'bg-purple-300' : 'bg-purple-100';
+            break;
+        case 'overall_frustration_level':
+            newColorClass = value > 66 ? 'bg-red-500' : value > 33 ? 'bg-red-300' : 'bg-red-100';
+            break;
+    }
+
+    // Remove all potential color classes and then add the new one
+    slider.className = slider.className.replace(/bg-(red|yellow|green|blue|purple|orange)-[1-9]00/g, '') + ` ${newColorClass}`;
+}
+
+
+// #### Quill Editor function ####
 var BaseImageFormat = Quill.import('formats/image');
 const ImageFormatAttributesList = [
     'alt',
@@ -437,186 +804,4 @@ function insertToEditor(url, editor) {
     if (range) {
         editor.insertEmbed(range.index, 'image', url);
     }
-}
-
-function exportBlog() {
-    // Introduction Section - Refactored to use Quill where applicable
-    const daily_goals = document.querySelector('#daily_goals').__quill.root.innerHTML.trim();
-    const learning_focus = document.querySelector('#learning_focus').__quill.root.innerHTML.trim();
-    const challenges = document.querySelector('#challenges').__quill.root.innerHTML.trim();
-    const plan_of_action = document.querySelector('#plan_of_action').__quill.root.innerHTML.trim();
-    const personal_context = document.querySelector('#personal_context').__quill.root.innerHTML.trim();
-
-    const enthusiasm_level = parseInt(document.getElementById('enthusiasm_level').value);
-    const burnout_level = parseInt(document.getElementById('burnout_level').value);
-    const focus_level = parseInt(document.getElementById('focus_level').value);
-    const leetcode_hatred_level = parseInt(document.getElementById('leetcode_hatred_level').value);
-
-    const introduction_summary = document.getElementById('introduction_summary').innerHTML.trim();
-
-    const introduction = {
-        personal_context,
-        daily_goals,
-        learning_focus,
-        challenges,
-        plan_of_action,
-        enthusiasm_level,
-        burnout_level,
-        focus_level,
-        leetcode_hatred_level,
-        introduction_summary
-    };
-
-    // Reflect - Human Input
-    const learning_outcomes = document.querySelector('#learning_outcomes').__quill.root.innerHTML.trim();
-    const next_steps_short_term = document.querySelector('#next_steps_short_term').__quill.root.innerHTML.trim();
-    const next_steps_long_term = document.querySelector('#next_steps_long_term').__quill.root.innerHTML.trim();
-
-    const productivity_level = parseInt(document.getElementById('productivity_level').value);
-    const distraction_level = parseInt(document.getElementById('distraction_level').value);
-    const desire_to_play_steam_games_level = parseInt(document.getElementById('desire_to_play_steam_games_level').value);
-    const overall_frustration_level = parseInt(document.getElementById('overall_frustration_level').value);
-
-    // Reflection - AI Generated
-    const entire_blog_summary = document.getElementById('entire_blog_summary').innerHTML.trim();
-    const technical_challenges = document.getElementById('technical_challenges').innerHTML.trim();
-    const interesting_bugs = document.getElementById('interesting_bugs').innerHTML.trim();
-    const unanswered_questions = document.getElementById('unanswered_questions').innerHTML.trim();
-
-    const reflection = {
-        
-        learning_outcomes,
-        next_steps_short_term,
-        next_steps_long_term,
-        productivity_level,
-        distraction_level,
-        desire_to_play_steam_games_level,
-        overall_frustration_level,
-        entire_blog_summary,
-        technical_challenges,
-        interesting_bugs,
-        unanswered_questions,
-    };
-
-    // Task Section
-    const tasks = [];
-    document.querySelectorAll('.task-content').forEach((taskElement, index) => {
-        const task_goal = document.querySelector(`#task_goal${index + 1}`).__quill.root.innerHTML.trim();
-        const task_description = document.querySelector(`#task_description${index + 1}`).__quill.root.innerHTML.trim();
-        const task_expected_difficulty = parseInt(document.getElementById(`task_expected_difficulty${index + 1}`).value);
-        const task_planned_approach = document.getElementById(`task_planned_approach${index + 1}`).__quill.root.innerHTML.trim();
-        const task_start_summary = document.getElementById(`task_start_summary${index + 1}`).innerHTML.trim();
-
-        const task_progress_notes = document.querySelector(`#task_progress_notes${index + 1}`).__quill.root.innerHTML.trim();
-        
-        const time_spent_researching = document.getElementById(`time_spent_researching${index + 1}`).value.trim();
-        const time_spent_debugging = document.getElementById(`time_spent_debugging${index + 1}`).value.trim();
-        const time_spent_coding = document.getElementById(`time_spent_coding${index + 1}`).value.trim();
-
-        const task_reflection_summary = document.getElementById(`task_reflection_summary${index + 1}`).innerHTML.trim();
-        const challenges_encountered = document.getElementById(`challenges_encountered${index + 1}`).innerHTML.trim();
-        const research_questions = document.getElementById(`research_questions${index + 1}`).innerHTML.trim();
-        const tools_used = document.getElementById(`tools_used${index + 1}`).innerHTML.trim();
-        const reflection_successes = document.getElementById(`reflection_successes${index + 1}`).innerHTML.trim();
-        const reflection_failures = document.getElementById(`reflection_failures${index + 1}`).innerHTML.trim();
-        const output_or_result = document.getElementById(`output_or_result${index + 1}`).innerHTML.trim();
-        const follow_up_tasks = document.getElementById(`follow_up_tasks${index + 1}`).innerHTML.trim();
-
-        tasks.push({
-            task_goal: task_goal,
-            task_description: task_description,
-            task_expected_difficulty: task_expected_difficulty,
-            task_planned_approach: task_planned_approach,
-            task_start_summary: task_start_summary,
-            task_progress_notes: task_progress_notes,
-            challenges_encountered: challenges_encountered,
-            research_questions: research_questions,
-            tools_used: tools_used,
-            reflection_successes: reflection_successes,
-            reflection_failures: reflection_failures,
-            output_or_result: output_or_result,
-            time_spent_coding: time_spent_coding,
-            time_spent_researching: time_spent_researching,
-            time_spent_debugging: time_spent_debugging,
-            follow_up_tasks: follow_up_tasks,
-            task_reflection_summary: task_reflection_summary
-        });
-    });
-    const date = document.getElementById("blogDateSelector").value
-    console.log(`Saving blog for date: ${date}`)
-
-    // Create the blog object
-    const today_blog = {
-        date: date,
-        introduction: introduction,
-        tasks: tasks,
-        reflection: reflection
-    };
-
-    // Send the JSON object to Flask via a POST request
-    fetch('/submit-blog', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(today_blog),
-    })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-}
-
-function toggleSection(sectionId) {
-    var element = document.getElementById(sectionId);
-    var icon = document.getElementById('icon-' + sectionId);
-    if (element.classList.contains('hidden')) {
-        element.classList.remove('hidden');
-        icon.textContent = '−'; // Change to minus
-        icon.classList.add('rotate-180'); // Rotate icon if desired
-    } else {
-        element.classList.add('hidden');
-        icon.textContent = '+';
-        icon.classList.remove('rotate-180');
-    }
-}
-
-function updateSliderColor(sliderId) {
-    const slider = document.getElementById(sliderId);
-    const value = parseInt(slider.value, 10); // Convert the value to an integer for accurate comparison
-    let newColorClass;
-
-    // Determine the new color class based on the slider's value
-    switch (sliderId) {
-        case 'enthusiasm_level':
-            newColorClass = value > 66 ? 'bg-green-500' : value > 33 ? 'bg-yellow-500' : 'bg-red-500';
-            break;
-        case 'burnout_level':
-            newColorClass = value > 66 ? 'bg-red-500' : value > 33 ? 'bg-yellow-500' : 'bg-green-500';
-            break;
-        case 'leetcode_hatred_level':
-            newColorClass = value > 66 ? 'bg-red-500' : value > 33 ? 'bg-purple-500' : 'bg-blue-500';
-            break;
-        case 'focus_level':
-            newColorClass = value > 66 ? 'bg-green-500' : value > 33 ? 'bg-orange-500' : 'bg-red-500';
-            break;
-        case 'productivity_level':
-            newColorClass = value > 66 ? 'bg-green-500' : value > 33 ? 'bg-green-300' : 'bg-green-100';
-            break;
-        case 'distraction_level':
-            newColorClass = value > 66 ? 'bg-yellow-500' : value > 33 ? 'bg-yellow-300' : 'bg-yellow-100';
-            break;
-        case 'desire_to_play_steam_games_level':
-            newColorClass = value > 66 ? 'bg-purple-500' : value > 33 ? 'bg-purple-300' : 'bg-purple-100';
-            break;
-        case 'overall_frustration_level':
-            newColorClass = value > 66 ? 'bg-red-500' : value > 33 ? 'bg-red-300' : 'bg-red-100';
-            break;
-    }
-
-    // Remove all potential color classes and then add the new one
-    slider.className = slider.className.replace(/bg-(red|yellow|green|blue|purple|orange)-[1-9]00/g, '') + ` ${newColorClass}`;
 }

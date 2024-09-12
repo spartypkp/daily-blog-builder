@@ -178,18 +178,24 @@ class InteractiveRequest(BaseModel):
     description: str = Field(..., description="Detailed description of what is being requested for improvement or clarification.")
 
 class IntroductionContent(BaseModel):
-    dave_summary: str = Field(..., description="A more detailed summary of Will's original writing for the introduction.")
-    remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the introduction's clarity or depth. What major themes did Will leave out?")
-    interactive_requests: List[InteractiveRequest] = Field(default_factory=list, description="Interactive elements where Dave asks for further details or clarifications from Will, specifically about explaining technical matters ")
+    summary_plan: str = Field(..., description="A plan for how you can write a well formed and humorous summary of the introduction")
+    introduction_summary: str = Field(..., description="A detailed summary of Will's original writing for the introduction with humor written from the perspective of Dave.")
+    remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the introduction's clarity or depth. What could improve Will's introduction content?")
 
-class DailyReflectionContent(BaseModel):
-    dave_summary: str = Field(..., description="A more detailed summary of Will's original writing for the reflection.")
-    remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Areas identified by Dave for additional detail or clarification in the reflection.")
-    technical_highlights: List[str] = Field(default_factory=list, description="Key technical accomplishments or challenges highlighted in the reflection.")
-    interactive_requests: List[InteractiveRequest] = Field(default_factory=list, description="Interactive elements where Dave asks for further details or clarifications from Will, specifically about explaining technical matters")
-class DaveResponse(BaseModel):
-    introduction: IntroductionContent = Field(..., description="Detailed content for the blog's introduction section.")
-    daily_reflection: DailyReflectionContent = Field(..., description="Content for reflecting on the day's work and progress.")
+class TaskContent(BaseModel):
+    summary_plan: str = Field(..., description="A plan for how you can write a well formed and humorous summary of the task.")
+    task_start_summary: str = Field(..., description="A detailed summary of Will's original writing for the task start with humor written from the perspective of Dave.")
+    task_reflection_summary: Optional[str] = Field(default=None, description="AI summary of how the task went.")
+    output_or_result: Optional[str] = Field("", description="The outcome or deliverable from this task (e.g., code, documentation).")
+    challenges_encountered: Optional[str] = Field("", description="Key challenges or bugs encountered.")
+    follow_up_tasks: Optional[str] = Field("", description="Immediate next steps or follow-up tasks.")
+    reflection_successes: Optional[str] = Field("", description="What worked well for Will during the task?")
+    reflection_failures: Optional[str] = Field("", description="What didn't work for Will during the task, and why?")
+    research_questions: Optional[str] = Field("", description="An always updated list of research questions Will had while working on the task")
+    tools_used: Optional[str] = Field("", description="Key tools, libraries, or frameworks used during the task.")
+    remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the tasks's clarity or depth. What could add to the technical depth of this content?") 
+    
+
 
 # Submodel for Task
 class Task(BaseModel):

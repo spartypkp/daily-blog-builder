@@ -9,6 +9,7 @@ from pydanticModels import DailyBlog, Task, Introduction, Reflection
 from utilityFunctions import pydantic_upsert, pydantic_select, upload_to_supabase, pydantic_update
 from typing import List, Optional
 from dave import ai_edit_introduction, ai_edit_task, ai_edit_reflection
+from pydantic import parse_obj_as
 
 # If localhost won't connect: chrome://net-internals/#sockets
 app = Flask(__name__)
@@ -42,16 +43,24 @@ def edit_introduction():
 @app.route('/edit_task', methods=['POST'])
 def edit_task():
     data = request.get_json()
-    task_model = Task(**data)
-    updated_task = ai_edit_task(task_model)
-    return jsonify(updated_task.dict())
+    
+    tasks = []
+    for object in data['tasks']:
+        task = Task(**object)
+        tasks.append(task)
+
+    # Process each task using the AI edit function and collect results
+    updated_tasks = ai_edit_task(tasks)
+
+    # Convert list of updated Task models back to JSON
+    return jsonify(updated_tasks)
 
 @app.route('/edit_reflection', methods=['POST'])
 def edit_reflection():
     data = request.get_json()
-    reflection_model = Reflection(**data)
-    updated_reflection = ai_edit_reflection(reflection_model)
-    return jsonify(updated_reflection.dict())
+    reflection_model = DailyBlog(**data)
+    updated_blog = ai_edit_reflection(reflection_model)
+    return updated_blog
 
 
 @app.route('/api/available_dates')
@@ -76,7 +85,7 @@ def get_blog_by_date(date):
         return jsonify(blog.dict())
     return jsonify({'error': 'Blog not found'}), 404
     
-@app.route('/submit-blog', methods=['POST'])
+@app.route('/save-blog', methods=['POST'])
 def submit_blog():
     try:
         # Parse the incoming JSON data
@@ -111,6 +120,41 @@ def submit_blog():
         # Handle other exceptions
         print(f"Error: {e}")
         return jsonify({"error": "An error occurred while saving the blog"}), 500
+@app.route('/publish-blog', methods=['POST']) 
+def publish_blog():
+    try:
+        # Parse the incoming JSON data
+        data = request.get_json()
+
+        # Add today's date to the JSON data (assuming 'date' is the primary key)
+          # Format as 'YYYY-MM-DD'
+        
+        # Validate the incoming data using the DailyBlog Pydantic model
+        daily_blog = DailyBlog(**data)
+
+        # Log the parsed data for debugging (Optional)
+        
+        daily_blog.updated_at = datetime.datetime.now()
+        daily_blog.status = "published"
+        # Perform the upsert operation on the 'daily_blogs' table
+        pydantic_upsert(
+            table_name="daily_blogs", 
+            models=[daily_blog], 
+            where_field="date"
+        )
+
+        # Return a success response
+        return jsonify({"message": "Blog successfully published!"}), 200
+
+    except ValidationError as e:
+        # Handle validation errors from Pydantic
+        print(f"Validation Error: {e}")
+        return jsonify({"error": "Invalid data", "details": e.errors()}), 400
+
+    except Exception as e:
+        # Handle other exceptions
+        print(f"Error: {e}")
+        return jsonify({"error": "An error occurred while publishing the blog"}), 500
 
     
 

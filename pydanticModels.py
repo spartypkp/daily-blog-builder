@@ -195,7 +195,15 @@ class TaskContent(BaseModel):
     tools_used: Optional[str] = Field("", description="Key tools, libraries, or frameworks used during the task.")
     remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the tasks's clarity or depth. What could add to the technical depth of this content?") 
     
-
+class ReflectionContent(BaseModel):
+    entire_blog_summary: Optional[str] = Field("", description="An AI Summary of Will's blog.")
+    technical_challenges: Optional[str] = Field("", description="Notable technical challenges or obstacles faced.")
+    interesting_bugs: Optional[str] = Field("", description="Details of any interesting bugs encountered.")
+    unanswered_questions: Optional[str] = Field("", description="Unanswered technical questions or topics for further research.")
+    blog_title: Optional[str] = Field(default=None, description="AI Generated Title for the Daily Blog. Focus on what Will built, not humor.")
+    blog_description: Optional[str] = Field(default=None, description="AI Generated description (1-2 sentences) about the blog content. Humor allowed.")
+    blog_tags: Optional[Dict[str, Any]] = Field(default=None, description="AI Generated tags for a blog.")
+    remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the introduction's clarity or depth. What could improve Will's introduction content?")
 
 # Submodel for Task
 class Task(BaseModel):

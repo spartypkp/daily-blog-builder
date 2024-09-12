@@ -25,6 +25,9 @@ function initializeBlog(blogData) {
         editor.innerHTML = ''; // Clear the editor container
     });
 
+    document.getElementById('blog_title').value = blogData.blog_title || '';
+    document.getElementById('blog_description').value = blogData.blog_description || '';
+
     // Set the values for Introduction section fields
     if (blogData.introduction) {
         initializeEditor('daily_goals', '', blogData.introduction.daily_goals || '', '');
@@ -91,7 +94,39 @@ document.addEventListener('DOMContentLoaded', function () {
             updateAllSliders();
         })
         .catch(error => console.error('Failed to load available dates:', error));
+    
+    const save_blog = debounce(function() {
+        console.log("Saving blog...");
+        // Your save logic here, e.g., AJAX request to your server
+    }, 500); // Debounce for 500 milliseconds
+
+    // Select all input fields, including textareas and select dropdowns
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('input', save_blog);
+    });
+
+    // If you use Quill or another rich text editor, you might need to add specific listeners
+    const quillEditors = document.querySelectorAll('.ql-editor'); // Assuming Quill with class ql-editor
+    quillEditors.forEach(editor => {
+        editor.addEventListener('input', save_blog);
+    });
 });
+
+function debounce(func, wait, immediate) {
+    var timeout;
+    return function() {
+        var context = this, args = arguments;
+        var later = function() {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+    };
+}
 
 // Function to update all sliders' colors based on their initial values
 function updateAllSliders() {
@@ -116,39 +151,21 @@ function fetchBlogData(date) {
             console.error('Error fetching blog data:', error);
         });
 }
+async function edit_blog() {
+    const blogData = get_blog_data_from_html()
+    const introduction = blogData.introduction;
+    const tasks = blogData.tasks;
+    await edit_introduction(introduction);
+    await edit_tasks(tasks);
+    await edit_reflection(blogData);
+}
 
-
-async function edit_introduction() {
-    const daily_goals = document.querySelector('#daily_goals').__quill.root.innerHTML.trim();
-    const learning_focus = document.querySelector('#learning_focus').__quill.root.innerHTML.trim();
-    const challenges = document.querySelector('#challenges').__quill.root.innerHTML.trim();
-    const plan_of_action = document.querySelector('#plan_of_action').__quill.root.innerHTML.trim();
-    const personal_context = document.querySelector('#personal_context').__quill.root.innerHTML.trim();
-
-    const enthusiasm_level = parseInt(document.getElementById('enthusiasm_level').value);
-    const burnout_level = parseInt(document.getElementById('burnout_level').value);
-    const focus_level = parseInt(document.getElementById('focus_level').value);
-    const leetcode_hatred_level = parseInt(document.getElementById('leetcode_hatred_level').value);
-
-    const introduction_summary = document.getElementById('introduction_summary').innerHTML.trim();
-
-    const introductionData = {
-        personal_context,
-        daily_goals,
-        learning_focus,
-        challenges,
-        plan_of_action,
-        enthusiasm_level,
-        burnout_level,
-        focus_level,
-        leetcode_hatred_level,
-        introduction_summary
-    };
-
+async function edit_introduction(introduction) {
+    
     const response = await fetch('/edit_introduction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(introductionData)
+        body: JSON.stringify(introduction)
     });
 
     const responseData = await response.json();
@@ -158,51 +175,10 @@ async function edit_introduction() {
 
 }
 
-async function edit_tasks() {
+async function edit_tasks(tasks) {
     // Task Section
-    const tasks = [];
-    document.querySelectorAll('.task-content').forEach((taskElement, index) => {
-        const task_goal = document.querySelector(`#task_goal${index + 1}`).__quill.root.innerHTML.trim();
-        const task_description = document.querySelector(`#task_description${index + 1}`).__quill.root.innerHTML.trim();
-        const task_expected_difficulty = parseInt(document.getElementById(`task_expected_difficulty${index + 1}`).value);
-        const task_planned_approach = document.getElementById(`task_planned_approach${index + 1}`).__quill.root.innerHTML.trim();
-        const task_start_summary = document.getElementById(`task_start_summary${index + 1}`).innerHTML.trim();
+    
 
-        const task_progress_notes = document.querySelector(`#task_progress_notes${index + 1}`).__quill.root.innerHTML.trim();
-
-        const time_spent_researching = document.getElementById(`time_spent_researching${index + 1}`).value.trim();
-        const time_spent_debugging = document.getElementById(`time_spent_debugging${index + 1}`).value.trim();
-        const time_spent_coding = document.getElementById(`time_spent_coding${index + 1}`).value.trim();
-
-        const task_reflection_summary = document.getElementById(`task_reflection_summary${index + 1}`).innerHTML.trim();
-        const challenges_encountered = document.getElementById(`challenges_encountered${index + 1}`).innerHTML.trim();
-        const research_questions = document.getElementById(`research_questions${index + 1}`).innerHTML.trim();
-        const tools_used = document.getElementById(`tools_used${index + 1}`).innerHTML.trim();
-        const reflection_successes = document.getElementById(`reflection_successes${index + 1}`).innerHTML.trim();
-        const reflection_failures = document.getElementById(`reflection_failures${index + 1}`).innerHTML.trim();
-        const output_or_result = document.getElementById(`output_or_result${index + 1}`).innerHTML.trim();
-        const follow_up_tasks = document.getElementById(`follow_up_tasks${index + 1}`).innerHTML.trim();
-
-        tasks.push({
-            task_goal: task_goal,
-            task_description: task_description,
-            task_expected_difficulty: task_expected_difficulty,
-            task_planned_approach: task_planned_approach,
-            task_start_summary: task_start_summary,
-            task_progress_notes: task_progress_notes,
-            challenges_encountered: challenges_encountered,
-            research_questions: research_questions,
-            tools_used: tools_used,
-            reflection_successes: reflection_successes,
-            reflection_failures: reflection_failures,
-            output_or_result: output_or_result,
-            time_spent_coding: time_spent_coding,
-            time_spent_researching: time_spent_researching,
-            time_spent_debugging: time_spent_debugging,
-            follow_up_tasks: follow_up_tasks,
-            task_reflection_summary: task_reflection_summary
-        });
-    });
     const response = await fetch('/edit_task', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -210,94 +186,94 @@ async function edit_tasks() {
     });
 
     const responseData = await response.json();
-    console.log('AI Edited Tasks:', responseData);
 
-    const task_start_summary_element = document.getElementById(`task_start_summary${index + 1}`);
-    if (task_start_summary_element) {
-        task_start_summary_element.innerHTML = responseData['task_start_summary'] || ''; // Ensuring no undefined value is set
-    }
+    responseData.forEach((editedTask, index) => {
+        const task_start_summary_element = document.getElementById(`task_start_summary${index + 1}`);
+        if (task_start_summary_element) {
+            task_start_summary_element.innerHTML = editedTask['task_start_summary'] || ''; // Ensuring no undefined value is set
+        }
 
-    const task_reflection_summary_element = document.getElementById(`task_reflection_summary${index + 1}`);
-    if (task_reflection_summary_element) {
-        task_reflection_summary_element.innerHTML = responseData['task_reflection_summary'] || '';
-    }
+        const task_reflection_summary_element = document.getElementById(`task_reflection_summary${index + 1}`);
+        if (task_reflection_summary_element) {
+            task_reflection_summary_element.innerHTML = editedTask['task_reflection_summary'] || '';
+        }
 
-    const challenges_encountered_element = document.getElementById(`challenges_encountered${index + 1}`);
-    if (challenges_encountered_element) {
-        challenges_encountered_element.innerHTML = responseData['challenges_encountered'] || '';
-    }
+        const challenges_encountered_element = document.getElementById(`challenges_encountered${index + 1}`);
+        if (challenges_encountered_element) {
+            challenges_encountered_element.innerHTML = editedTask['challenges_encountered'] || '';
+        }
 
-    const research_questions_element = document.getElementById(`research_questions${index + 1}`);
-    if (research_questions_element) {
-        research_questions_element.innerHTML = responseData['research_questions'] || '';
-    }
+        const research_questions_element = document.getElementById(`research_questions${index + 1}`);
+        if (research_questions_element) {
+            research_questions_element.innerHTML = editedTask['research_questions'] || '';
+        }
 
-    const tools_used_element = document.getElementById(`tools_used${index + 1}`);
-    if (tools_used_element) {
-        tools_used_element.innerHTML = responseData['tools_used'] || '';
-    }
+        const tools_used_element = document.getElementById(`tools_used${index + 1}`);
+        if (tools_used_element) {
+            tools_used_element.innerHTML = editedTask['tools_used'] || '';
+        }
 
-    const reflection_successes_element = document.getElementById(`reflection_successes${index + 1}`);
-    if (reflection_successes_element) {
-        reflection_successes_element.innerHTML = responseData['reflection_successes'] || '';
-    }
+        const reflection_successes_element = document.getElementById(`reflection_successes${index + 1}`);
+        if (reflection_successes_element) {
+            reflection_successes_element.innerHTML = editedTask['reflection_successes'] || '';
+        }
 
-    const reflection_failures_element = document.getElementById(`reflection_failures${index + 1}`);
-    if (reflection_failures_element) {
-        reflection_failures_element.innerHTML = responseData['reflection_failures'] || '';
-    }
+        const reflection_failures_element = document.getElementById(`reflection_failures${index + 1}`);
+        if (reflection_failures_element) {
+            reflection_failures_element.innerHTML = editedTask['reflection_failures'] || '';
+        }
 
-    const output_or_result_element = document.getElementById(`output_or_result${index + 1}`);
-    if (output_or_result_element) {
-        output_or_result_element.innerHTML = responseData['output_or_result'] || '';
-    }
+        const output_or_result_element = document.getElementById(`output_or_result${index + 1}`);
+        if (output_or_result_element) {
+            output_or_result_element.innerHTML = editedTask['output_or_result'] || '';
+        }
 
-    const follow_up_tasks_element = document.getElementById(`follow_up_tasks${index + 1}`);
-    if (follow_up_tasks_element) {
-        follow_up_tasks_element.innerHTML = responseData['follow_up_tasks'] || '';
-    }
+        const follow_up_tasks_element = document.getElementById(`follow_up_tasks${index + 1}`);
+        if (follow_up_tasks_element) {
+            follow_up_tasks_element.innerHTML = editedTask['follow_up_tasks'] || '';
+        }
+    })
 
 }
 
-async function edit_reflection() {
-    const learning_outcomes = document.querySelector('#learning_outcomes').__quill.root.innerHTML.trim();
-    const next_steps_short_term = document.querySelector('#next_steps_short_term').__quill.root.innerHTML.trim();
-    const next_steps_long_term = document.querySelector('#next_steps_long_term').__quill.root.innerHTML.trim();
-
-    const productivity_level = parseInt(document.getElementById('productivity_level').value);
-    const distraction_level = parseInt(document.getElementById('distraction_level').value);
-    const desire_to_play_steam_games_level = parseInt(document.getElementById('desire_to_play_steam_games_level').value);
-    const overall_frustration_level = parseInt(document.getElementById('overall_frustration_level').value);
-
-    // Reflection - AI Generated
-    const entire_blog_summary = document.getElementById('entire_blog_summary').innerHTML.trim();
-    const technical_challenges = document.getElementById('technical_challenges').innerHTML.trim();
-    const interesting_bugs = document.getElementById('interesting_bugs').innerHTML.trim();
-    const unanswered_questions = document.getElementById('unanswered_questions').innerHTML.trim();
-
-    const reflectionData = {
-
-        learning_outcomes,
-        next_steps_short_term,
-        next_steps_long_term,
-        productivity_level,
-        distraction_level,
-        desire_to_play_steam_games_level,
-        overall_frustration_level,
-        entire_blog_summary,
-        technical_challenges,
-        interesting_bugs,
-        unanswered_questions,
-    };
-
+async function edit_reflection(blogData) {
+    
     const response = await fetch('/edit_reflection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(reflectionData)
+        body: JSON.stringify(blogData)
     });
 
     const responseData = await response.json();
     console.log('AI Edited Reflection:', responseData);
+    const blog_title_element = document.getElementById(`blog_title`);
+    if (blog_title_element) {
+        blog_title_element.textContent = responseData['blog_title'] || '';
+    }
+    const blog_description_element = document.getElementById(`blog_description`);
+    if (blog_description_element) {
+        blog_description_element.textContent = responseData['blog_description'] || '';
+    }
+    const entire_blog_summary_element = document.getElementById(`entire_blog_summary`);
+    if (entire_blog_summary_element) {
+        entire_blog_summary_element.innerHTML = responseData['entire_blog_summary'] || '';
+    }
+
+
+    const technical_challenges_element = document.getElementById(`technical_challenges`);
+    if (technical_challenges_element) {
+        technical_challenges_element.innerHTML = responseData['technical_challenges'] || '';
+    }
+    const unanswered_questions_element = document.getElementById(`unanswered_questions`);
+    if (unanswered_questions_element) {
+        unanswered_questions_element.innerHTML = responseData['unanswered_questions'] || '';
+    }
+    const interesting_bugs_element = document.getElementById(`interesting_bugs`);
+    if (interesting_bugs_element) {
+        interesting_bugs_element.innerHTML = responseData['interesting_bugs'] || '';
+    }
+    saveBlog(blogData);
+
 }
 
 
@@ -496,7 +472,12 @@ function removeTask(taskId) {
 
 
 
-function exportBlog() {
+function get_blog_data_from_html() {
+
+    const blog_title = document.getElementById('blog_title').textContent;
+    const blog_description = document.getElementById('blog_description').textContent;
+    const date = document.getElementById('blogDateSelector').value;
+    
     // Introduction Section - Refactored to use Quill where applicable
     const daily_goals = document.querySelector('#daily_goals').__quill.root.innerHTML.trim();
     const learning_focus = document.querySelector('#learning_focus').__quill.root.innerHTML.trim();
@@ -599,24 +580,56 @@ function exportBlog() {
             task_reflection_summary: task_reflection_summary
         });
     });
-    const date = document.getElementById("blogDateSelector").value
-    console.log(`Saving blog for date: ${date}`)
+
+
 
     // Create the blog object
-    const today_blog = {
+    const blogData = {
         date: date,
+        blog_title: blog_title,
+        blog_description: blog_description,
         introduction: introduction,
         tasks: tasks,
         reflection: reflection
     };
+    return blogData
+}
 
+function save_blog() {
+    blogData = get_blog_data_from_html()
+    saveBlog(blogData)
+}
+
+function saveBlog(blogData) {
+
+    console.log(`Saving blog for date: ${blogData.date}`)
     // Send the JSON object to Flask via a POST request
-    fetch('/submit-blog', {
+    fetch('/save-blog', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(today_blog),
+        body: JSON.stringify(blogData),
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+}
+
+function publishBlog(blogData) {
+    blogData = get_blog_data_from_html()
+    console.log(`Publishing blog for date: ${blogData.date}`)
+    // Send the JSON object to Flask via a POST request
+    fetch('/publish-blog', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(blogData),
     })
         .then(response => response.json())
         .then(data => {

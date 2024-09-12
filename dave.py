@@ -1,5 +1,5 @@
 from app import get_blog_for_today
-from pydanticModels import APIParameters, APIUsage, ChatMessage, DailyBlog, DaveResponse
+from pydanticModels import APIParameters, APIUsage, ChatMessage, DailyBlog, DaveResponse, Introduction, Reflection, Task
 from typing import List
 import utilityFunctions as util
 import uuid
@@ -13,6 +13,15 @@ def main():
     exit(1)
 
     dave_first_pass(blog)
+
+def ai_edit_introduction(introduction: Introduction):
+    return introduction
+
+def ai_edit_task(task: Task):
+    return task
+
+def ai_edit_reflection(reflection: Reflection):
+    return reflection
 
 def dave_first_pass(daily_blog: DailyBlog):
     session_id = str(uuid.uuid4())

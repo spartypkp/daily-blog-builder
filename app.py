@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from pydanticModels import DailyBlog, Task, Introduction, Reflection
 from utilityFunctions import pydantic_upsert, pydantic_select, upload_to_supabase
 from typing import List, Optional
+from dave import ai_edit_introduction, ai_edit_task, ai_edit_reflection
 
 # If localhost won't connect: chrome://net-internals/#sockets
 app = Flask(__name__)
@@ -27,6 +28,30 @@ def home():
         print(f"No blog found for {selected_date}, showing empty template.")
 
     return render_template('home.html', today_blog=today_blog, today_date=selected_date)
+
+
+
+@app.route('/edit_introduction', methods=['POST'])
+def edit_introduction():
+    data = request.get_json()
+    intro_model = Introduction(**data)
+    updated_intro = ai_edit_introduction(intro_model)
+    return jsonify(updated_intro.dict())
+
+@app.route('/edit_task', methods=['POST'])
+def edit_task():
+    data = request.get_json()
+    task_model = Task(**data)
+    updated_task = ai_edit_task(task_model)
+    return jsonify(updated_task.dict())
+
+@app.route('/edit_reflection', methods=['POST'])
+def edit_reflection():
+    data = request.get_json()
+    reflection_model = Reflection(**data)
+    updated_reflection = ai_edit_reflection(reflection_model)
+    return jsonify(updated_reflection.dict())
+
 
 @app.route('/api/available_dates')
 def available_dates():

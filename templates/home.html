@@ -24,10 +24,16 @@
     </header>
     <!-- Introduction Section -->
     <section class="goals mb-8 bg-gray-200 shadow-md rounded-lg p-6">
-        <button onclick="toggleSection('morning-pregame')"
-            class="text-xl font-semibold text-center mb-4 focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
-            <span id="icon-morning-pregame">+</span> Morning Pregame
-        </button>
+        <div class="flex justify-between items-center">
+            <button onclick="toggleSection('morning-pregame')"
+                class="text-xl font-semibold focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
+                <span id="icon-morning-pregame">+</span> Morning Pregame
+            </button>
+            <button onclick="edit_introduction()"
+                class="text-xl font-semibold focus:outline-none bg-blue-500 hover:bg-blue-700 text-white rounded-lg py-2 px-4 transition-colors duration-150">
+                Edit with AI
+            </button>
+        </div>
         <div id="morning-pregame" class="mx-auto hidden">
             <!-- Section content -->
             <div class="mt-4 bg-white rounded-lg p-4">
@@ -88,10 +94,16 @@
     </section>
 
     <section class="tasks mb-8 bg-gray-200 shadow-md rounded-lg p-6">
-        <button onclick="toggleSection('daily-tasks')"
-            class="text-xl font-semibold text-center mb-4 focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
-            <span id="icon-daily-tasks">+</span> Daily Tasks
-        </button>
+        <div class="flex justify-between items-center">
+            <button onclick="toggleSection('daily-tasks')"
+                class="text-xl font-semibold focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
+                <span id="icon-daily-tasks">+</span> Daily Tasks
+            </button>
+            <button onclick="edit_tasks()"
+                class="text-xl font-semibold focus:outline-none bg-blue-500 hover:bg-blue-700 text-white rounded-lg py-2 px-4 transition-colors duration-150">
+                Edit with AI
+            </button>
+        </div>
         <div id="daily-tasks" class="mx-auto hidden">
             <div id="tabs-container" class="tabs-container flex justify-center mb-2 border-b border-gray-300">
                 <!-- Task Tabs dynamically populated -->
@@ -109,10 +121,16 @@
 
     <!-- Reflection Section -->
     <section class="reflection mb-8 bg-gray-200 shadow-md rounded-lg p-6">
-        <button onclick="toggleSection('daily-reflection')"
-            class="text-xl font-semibold text-center mb-4 focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
-            <span id="icon-daily-reflection">+</span> Daily Reflection
-        </button>
+        <div class="flex justify-between items-center">
+            <button onclick="toggleSection('daily-reflection')"
+                class="text-xl font-semibold focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
+                <span id="icon-daily-reflection">+</span> Daily Reflection
+            </button>
+            <button onclick="edit_reflection()"
+                class="text-xl font-semibold focus:outline-none bg-blue-500 hover:bg-blue-700 text-white rounded-lg py-2 px-4 transition-colors duration-150">
+                Edit with AI
+            </button>
+        </div>
         <div id="daily-reflection" class="mx-auto hidden">
             
 

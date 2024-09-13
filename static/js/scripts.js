@@ -25,10 +25,10 @@ function initializeBlog(blogData) {
         }
         editor.innerHTML = ''; // Clear the editor container
     });
-
+    console.log(`Day count in javascript: ${blogData.day_count}`)
     document.getElementById('blog_title').textContent = blogData.blog_title || '';
     document.getElementById('blog_description').textContent = blogData.blog_description || '';
-    document.getElementById('day_count').textContent = blogData.day_count || '';
+    document.getElementById('day_count').textContent = blogData.day_count;
 
     // Set the values for Introduction section fields
     if (blogData.introduction) {

@@ -178,27 +178,29 @@ class IntroductionContent(BaseModel):
     introduction_summary: str = Field(..., description="A detailed summary of Will's original writing for the introduction with humor written from the perspective of Dave.")
     remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the introduction's clarity or depth. What could improve Will's introduction content?")
 
+class TaskDataContent(BaseModel):
+    extraction_plan: str = Field(..., description="A plan for how Dave can best extract technical information out of Will's writing about a task.")
+    output_or_result: Optional[str] = Field(..., description="The outcome or deliverable from this task (e.g., code, documentation).")
+    challenges_encountered: Optional[str] = Field(..., description="Key challenges or bugs encountered.")
+    follow_up_tasks: Optional[str] = Field(..., description="Immediate next steps or follow-up tasks.")
+    research_questions: Optional[str] = Field(..., description="An always updated list of research questions Will had while working on the task")
+    tools_used: Optional[str] = Field(..., description="Key tools, libraries, or frameworks used during the task.")
+    remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the tasks's clarity or depth. What could add to the technical depth of this content?") 
 class TaskContent(BaseModel):
-    summary_plan: str = Field(..., description="A plan for how you can write a well formed and humorous summary of the task.")
-    task_start_summary: str = Field(..., description="A detailed summary of Will's original writing for the task start with humor written from the perspective of Dave.")
-    task_reflection_summary: Optional[str] = Field(default=None, description="AI summary of how the task went.")
-    output_or_result: Optional[str] = Field("", description="The outcome or deliverable from this task (e.g., code, documentation).")
-    challenges_encountered: Optional[str] = Field("", description="Key challenges or bugs encountered.")
-    follow_up_tasks: Optional[str] = Field("", description="Immediate next steps or follow-up tasks.")
-    reflection_successes: Optional[str] = Field("", description="What worked well for Will during the task?")
-    reflection_failures: Optional[str] = Field("", description="What didn't work for Will during the task, and why?")
-    research_questions: Optional[str] = Field("", description="An always updated list of research questions Will had while working on the task")
-    tools_used: Optional[str] = Field("", description="Key tools, libraries, or frameworks used during the task.")
+    internal_planning: str = Field(..., description="A plan for how you can write a well formed and humorous summary of the task. Focus on thinking about how you plan to make this summary comprehensive. How will you follow explicit directions on analysing the entirety of the 'task_progress_notes'?")
+    task_reflection_summary: Optional[str] = Field(..., description="A detailed final summary of how the entire task went. What were all of Will's steps? How did he complete the technical challenges? Must be incredibly comprehensive in technical detail and go over Will's entire process.")
+    reflection_successes: Optional[str] = Field(..., description="What worked well for Will during the task?")
+    reflection_failures: Optional[str] = Field(..., description="What didn't work for Will during the task, and why?")
     remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the tasks's clarity or depth. What could add to the technical depth of this content?") 
     
 class ReflectionContent(BaseModel):
-    entire_blog_summary: Optional[str] = Field("", description="An AI Summary of Will's blog.")
-    technical_challenges: Optional[str] = Field("", description="Notable technical challenges or obstacles faced.")
-    interesting_bugs: Optional[str] = Field("", description="Details of any interesting bugs encountered.")
-    unanswered_questions: Optional[str] = Field("", description="Unanswered technical questions or topics for further research.")
-    blog_title: Optional[str] = Field(default=None, description="AI Generated Title for the Daily Blog. Focus on what Will built, not humor.")
-    blog_description: Optional[str] = Field(default=None, description="AI Generated description (1-2 sentences) about the blog content. Humor allowed.")
-    blog_tags: Optional[List[str]] = Field(default=None, description="AI Generated tags for a blog. Return tags as a list of strings.")
+    entire_blog_summary: Optional[str] = Field(..., description="An AI Summary of Will's blog.")
+    technical_challenges: Optional[str] = Field(..., description="Notable technical challenges or obstacles faced.")
+    interesting_bugs: Optional[str] = Field(..., description="Details of any interesting bugs encountered.")
+    unanswered_questions: Optional[str] = Field(..., description="Unanswered technical questions or topics for further research.")
+    blog_title: Optional[str] = Field(..., description="AI Generated Title for the Daily Blog. Focus on what Will built, not humor.")
+    blog_description: Optional[str] = Field(..., description="AI Generated description (1-2 sentences) about the blog content. Humor allowed.")
+    blog_tags: Optional[List[str]] = Field(..., description="AI Generated tags for a blog. Return tags as a list of strings.")
     remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the introduction's clarity or depth. What could improve Will's introduction content?")
 
 # Submodel for Task
@@ -208,8 +210,6 @@ class Task(BaseModel):
     task_description: Optional[str] = Field("", description="Description of the task or problem.")
     task_expected_difficulty: Optional[int] = Field(50, description="Focus level (0-100).", ge=0, le=100)
     task_planned_approach: Optional[str] = Field("", description="Method or strategy Will plans to use to tackle the problem.")
-    # Task Start - AI Generated
-    task_start_summary: Optional[str] = Field(default=None, description="AI Generated Summary of an individual task, without knowledge of further success/failure")
 
     # Task Work - Ongoing throughout day
     task_progress_notes: Optional[str] = Field("", description="Main writing area for Will to document  his progress.")

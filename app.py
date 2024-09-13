@@ -118,6 +118,7 @@ def save_blog():
         # Handle other exceptions
         print(f"Error: {e}")
         return jsonify({"error": "An error occurred while saving the blog"}), 500
+    
 @app.route('/publish-blog', methods=['POST']) 
 def publish_blog():
     try:
@@ -153,8 +154,6 @@ def publish_blog():
         # Handle other exceptions
         print(f"Error: {e}")
         return jsonify({"error": "An error occurred while publishing the blog"}), 500
-
-    
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
@@ -192,15 +191,11 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
-
-
 def fetch_blog_dates():
     # Example SQL query to fetch all unique blog dates
     results: List[DailyBlog] = pydantic_select(f"SELECT * FROM daily_blogs ORDER BY date DESC;", modelType=DailyBlog)
     
     return [result.date.isoformat() for result in results]
-
 
 def fetch_blog_by_date(date: str = None):
     if date is None:
@@ -210,7 +205,7 @@ def fetch_blog_by_date(date: str = None):
     parsed_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
 
     # Define the start date
-    start_date = datetime.datetime.strptime("2024-09-05", "%Y-%m-%d").date()
+    
 
     # Fetch a blog by its date
     query = f"SELECT * FROM daily_blogs WHERE date='{date}';"
@@ -219,7 +214,9 @@ def fetch_blog_by_date(date: str = None):
 
     if results:
         # Calculate the number of days from start_date to the date of the blog
-        results[0].day_count = (parsed_date - start_date).days
+        day_count = (parsed_date - start_date).days
+        print(f"Day Count: {day_count}")
+        results[0].day_count = day_count
         return results[0]
     
     if parsed_date == datetime.date.today():

@@ -173,10 +173,6 @@ class RemarkForImprovement(BaseModel):
     location: str = Field(..., description="Identifies the location or context of the remark within the blog post.")
     comment: str = Field(..., description="Detailed comment suggesting how to improve or clarify the blog content. Make Will really describe technical challenges.")
 
-class InteractiveRequest(BaseModel):
-    request_type: RequestType = Field(..., description="Type of request to improve the content: clarification, expansion, or example.")
-    description: str = Field(..., description="Detailed description of what is being requested for improvement or clarification.")
-
 class IntroductionContent(BaseModel):
     summary_plan: str = Field(..., description="A plan for how you can write a well formed and humorous summary of the introduction")
     introduction_summary: str = Field(..., description="A detailed summary of Will's original writing for the introduction with humor written from the perspective of Dave.")
@@ -202,7 +198,7 @@ class ReflectionContent(BaseModel):
     unanswered_questions: Optional[str] = Field("", description="Unanswered technical questions or topics for further research.")
     blog_title: Optional[str] = Field(default=None, description="AI Generated Title for the Daily Blog. Focus on what Will built, not humor.")
     blog_description: Optional[str] = Field(default=None, description="AI Generated description (1-2 sentences) about the blog content. Humor allowed.")
-    blog_tags: Optional[Dict[str, Any]] = Field(default=None, description="AI Generated tags for a blog.")
+    blog_tags: Optional[List[str]] = Field(default=None, description="AI Generated tags for a blog. Return tags as a list of strings.")
     remarks_for_improvement: List[RemarkForImprovement] = Field(default_factory=list, description="Suggestions for enhancing the introduction's clarity or depth. What could improve Will's introduction content?")
 
 # Submodel for Task

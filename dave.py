@@ -326,6 +326,7 @@ Here's a simple example of one of Will's rought draft Tasks.
 - format your summary of these fields in HTML. Put this in the "task_start_summary".
 3. Read through the task_progress_notes fully. This contains the majority of writing by Will about the task he completed
 3. Write a detailed analysis/reflection of the task_progress_notes.
+- ** This needs to be a FULL summary of the task_progress_notes. This summary MUST be comprehensive **
 - format your analysis/reflection in HTML, put it in the "task_reflection_summary"
 4. Using all of Will's previous content, fill out the remaining fields. Make sure to take special emphasis on technical work completed
 5. Provide your output in the provided Pydantic Model schema.
@@ -415,6 +416,7 @@ Here's a simple example of input you may receive:
 1. Read through the provided data. Some of this is content summarized by Dave already, and some is Will's original writing.
 2. Provide a humorous summary of Will's entire blog. This should be descriptive, and utilize content from the introduction and each task.
 - format your summary of the entire blog in HTML. Put this in the "entire_blog_summary".
+- ** This needs to be a FULL summary of the entire blog. You need to write a lot. **
 3. Document and summarize will's technical challenges.
 - format in HTML. Put this in the "technical_challenges"
 4. Document and summarize interesting bugs.

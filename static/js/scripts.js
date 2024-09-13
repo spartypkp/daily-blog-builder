@@ -2,6 +2,7 @@ let currentTaskId = 0; // Start from 1 because the initial task is already there
 
 function initializeBlog(blogData) {
     // Reset the current task count
+    console.log(blogData)
     currentTaskId = 0;
 
     // Clear existing task tabs and content
@@ -25,8 +26,9 @@ function initializeBlog(blogData) {
         editor.innerHTML = ''; // Clear the editor container
     });
 
-    document.getElementById('blog_title').value = blogData.blog_title || '';
-    document.getElementById('blog_description').value = blogData.blog_description || '';
+    document.getElementById('blog_title').textContent = blogData.blog_title || '';
+    document.getElementById('blog_description').textContent = blogData.blog_description || '';
+    document.getElementById('day_count').textContent = blogData.day_count || '';
 
     // Set the values for Introduction section fields
     if (blogData.introduction) {
@@ -56,11 +58,10 @@ function initializeBlog(blogData) {
         document.getElementById('distraction_level').value = blogData.reflection.distraction_level || 50;
         document.getElementById('desire_to_play_steam_games_level').value = blogData.reflection.desire_to_play_steam_games_level || 50;
         document.getElementById('overall_frustration_level').value = blogData.reflection.overall_frustration_level || 50;
-
-        document.getElementById('entire_blog_summary').innerHTML = blogData.introduction.entire_blog_summary || '';
-        document.getElementById('technical_challenges').innerHTML = blogData.introduction.technical_challenges || '';
-        document.getElementById('interesting_bugs').innerHTML = blogData.introduction.interesting_bugs || '';
-        document.getElementById('unanswered_questions').innerHTML = blogData.introduction.unanswered_questions || '';
+        document.getElementById('entire_blog_summary').innerHTML = blogData.reflection.entire_blog_summary || '';
+        document.getElementById('technical_challenges').innerHTML = blogData.reflection.technical_challenges || '';
+        document.getElementById('interesting_bugs').innerHTML = blogData.reflection.interesting_bugs || '';
+        document.getElementById('unanswered_questions').innerHTML = blogData.reflection.unanswered_questions || '';
     }
     // Add a new task for however many tasks there are
     for (let i = 0; i < blogData.tasks.length; i++) {
@@ -68,6 +69,10 @@ function initializeBlog(blogData) {
     }
 
     selectTab(1); // Ensure this is called after the DOM is fully loaded
+    const allQuillEditors = document.querySelectorAll('.ql-editor'); // Assuming Quill with class ql-editor
+    allQuillEditors.forEach(editor => {
+        editor.addEventListener('input', debouncedSaveBlog);
+    });
 
 }
 
@@ -78,7 +83,6 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(dates => {
             dates.forEach(date => {
-                console.log(date)
                 const option = document.createElement('option');
                 option.value = date;
                 option.textContent = date; // Format this if necessary
@@ -94,30 +98,24 @@ document.addEventListener('DOMContentLoaded', function () {
             updateAllSliders();
         })
         .catch(error => console.error('Failed to load available dates:', error));
+
     
-    const save_blog = debounce(function() {
-        console.log("Saving blog...");
-        // Your save logic here, e.g., AJAX request to your server
-    }, 500); // Debounce for 500 milliseconds
 
     // Select all input fields, including textareas and select dropdowns
     const inputs = document.querySelectorAll('input, textarea');
     inputs.forEach(input => {
-        input.addEventListener('input', save_blog);
+        input.addEventListener('input', debouncedSaveBlog);
     });
 
     // If you use Quill or another rich text editor, you might need to add specific listeners
-    const quillEditors = document.querySelectorAll('.ql-editor'); // Assuming Quill with class ql-editor
-    quillEditors.forEach(editor => {
-        editor.addEventListener('input', save_blog);
-    });
+    
 });
 
 function debounce(func, wait, immediate) {
     var timeout;
-    return function() {
+    return function () {
         var context = this, args = arguments;
-        var later = function() {
+        var later = function () {
             timeout = null;
             if (!immediate) func.apply(context, args);
         };
@@ -161,7 +159,7 @@ async function edit_blog() {
 }
 
 async function edit_introduction(introduction) {
-    
+
     const response = await fetch('/edit_introduction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -177,7 +175,7 @@ async function edit_introduction(introduction) {
 
 async function edit_tasks(tasks) {
     // Task Section
-    
+
 
     const response = await fetch('/edit_task', {
         method: 'POST',
@@ -237,7 +235,7 @@ async function edit_tasks(tasks) {
 }
 
 async function edit_reflection(blogData) {
-    
+
     const response = await fetch('/edit_reflection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -476,8 +474,9 @@ function get_blog_data_from_html() {
 
     const blog_title = document.getElementById('blog_title').textContent;
     const blog_description = document.getElementById('blog_description').textContent;
+    const day_count = document.getElementById('day_count').textContent;
     const date = document.getElementById('blogDateSelector').value;
-    
+
     // Introduction Section - Refactored to use Quill where applicable
     const daily_goals = document.querySelector('#daily_goals').__quill.root.innerHTML.trim();
     const learning_focus = document.querySelector('#learning_focus').__quill.root.innerHTML.trim();
@@ -586,6 +585,7 @@ function get_blog_data_from_html() {
     // Create the blog object
     const blogData = {
         date: date,
+        day_count: day_count,
         blog_title: blog_title,
         blog_description: blog_description,
         introduction: introduction,
@@ -594,6 +594,10 @@ function get_blog_data_from_html() {
     };
     return blogData
 }
+
+const debouncedSaveBlog = debounce(function() {
+    save_blog();
+}, 5000); // 5000 ms delay; adjust as needed
 
 function save_blog() {
     blogData = get_blog_data_from_html()

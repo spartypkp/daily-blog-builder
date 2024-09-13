@@ -67,10 +67,8 @@ def edit_reflection():
 def available_dates():
     today = datetime.date.today().isoformat()
     dates = fetch_blog_dates()  # This function needs to query your database for all unique blog dates
-    for date in dates:
-        print(date)
+    
     if today not in dates:
-        print(today)
         dates.append(today)
     dates.sort(reverse=True)
     
@@ -86,7 +84,7 @@ def get_blog_by_date(date):
     return jsonify({'error': 'Blog not found'}), 404
     
 @app.route('/save-blog', methods=['POST'])
-def submit_blog():
+def save_blog():
     try:
         # Parse the incoming JSON data
         data = request.get_json()
@@ -100,7 +98,7 @@ def submit_blog():
         # Log the parsed data for debugging (Optional)
         
         daily_blog.updated_at = datetime.datetime.now()
-        print(daily_blog)
+        
         # Perform the upsert operation on the 'daily_blogs' table
         pydantic_upsert(
             table_name="daily_blogs", 
@@ -203,18 +201,32 @@ def fetch_blog_dates():
     
     return [result.date.isoformat() for result in results]
 
-def fetch_blog_by_date(date):
-    if date is None:
-        date = datetime.date.today().isoformat()
-    # Fetch a blog by its date
-    results: List[DailyBlog] = pydantic_select(f"SELECT * FROM daily_blogs WHERE date='{date}';", modelType=DailyBlog)
-    
-    if results:
-        return results[0]
-    if date == datetime.date.today().isoformat():
-        empty_blog = DailyBlog(date=datetime.date.today().isoformat())
-        return empty_blog
-    return None
 
+def fetch_blog_by_date(date: str = None):
+    if date is None:
+        date = datetime.date.today().isoformat()  # Get today's date as a string in ISO format
+    
+    # Parse the input string date to datetime.date object
+    parsed_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+
+    # Define the start date
+    start_date = datetime.datetime.strptime("2024-09-05", "%Y-%m-%d").date()
+
+    # Fetch a blog by its date
+    query = f"SELECT * FROM daily_blogs WHERE date='{date}';"
+    results = pydantic_select(query, modelType=DailyBlog)
+    start_date = datetime.date(2024, 9, 5)  # Define start date once
+
+    if results:
+        # Calculate the number of days from start_date to the date of the blog
+        results[0].day_count = (parsed_date - start_date).days
+        return results[0]
+    
+    if parsed_date == datetime.date.today():
+        # If no results and the date is today, return a new empty blog for today
+        empty_blog = DailyBlog(date=date, day_count=(parsed_date - start_date).days)
+        return empty_blog
+    
+    return None
 if __name__ == '__main__':
     app.run(debug=True)

@@ -22,13 +22,15 @@
             <!-- Options will be dynamically populated by JavaScript -->
         </select>
         <div class="mt-4 bg-white rounded-lg p-4">
-            <h2 class="text-3xl font-bold text-gray-800 text-center">Blog Title</h2>
-            <p id="blog_title" class=" bg-gray-50 p-4 rounded border"></p>
+            <h2  class="text-3xl font-bold text-gray-800 text-center">Day Number</h2>
+            <p id="day_count" class="text-m  text-gray-800 text-center"></p>
+            <h2  class="text-3xl font-bold text-gray-800 text-center">Blog Title</h2>
+            <p id="blog_title" class="text-m  text-gray-800 text-center"></p>
+            <h2  class="text-3xl font-bold text-gray-800 text-center">Blog Description</h2>
+            <p id="blog_description" class="text-m  text-gray-800 text-center"></p>
+            
         </div>
-        <div class="mt-4 bg-white rounded-lg p-4">
-            <h2 class="text-3xl font-bold text-gray-800 text-center">Blog Description</h2>
-            <p id="blog_description" class=" bg-gray-50 p-4 rounded border"></p>
-        </div>
+       
         <!-- <p id="date" class="text-sm">Date: {{ today_date }}</p> -->
     </header>
     <!-- Introduction Section -->
@@ -38,10 +40,7 @@
                 class="text-xl font-semibold focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
                 <span id="icon-morning-pregame">+</span> Morning Pregame
             </button>
-            <button onclick="edit_introduction()"
-                class="text-xl font-semibold focus:outline-none bg-blue-500 hover:bg-blue-700 text-white rounded-lg py-2 px-4 transition-colors duration-150">
-                Edit with AI
-            </button>
+            
         </div>
         <div id="morning-pregame" class="mx-auto hidden">
             <!-- Section content -->
@@ -108,10 +107,7 @@
                 class="text-xl font-semibold focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
                 <span id="icon-daily-tasks">+</span> Daily Tasks
             </button>
-            <button onclick="edit_tasks()"
-                class="text-xl font-semibold focus:outline-none bg-blue-500 hover:bg-blue-700 text-white rounded-lg py-2 px-4 transition-colors duration-150">
-                Edit with AI
-            </button>
+            
         </div>
         <div id="daily-tasks" class="mx-auto hidden">
             <div id="tabs-container" class="tabs-container flex justify-center mb-2 border-b border-gray-300">
@@ -135,10 +131,7 @@
                 class="text-xl font-semibold focus:outline-none bg-gray-200 hover:bg-blue-200 rounded-lg py-2 px-4 transition-colors duration-150">
                 <span id="icon-daily-reflection">+</span> Daily Reflection
             </button>
-            <button onclick="edit_reflection()"
-                class="text-xl font-semibold focus:outline-none bg-blue-500 hover:bg-blue-700 text-white rounded-lg py-2 px-4 transition-colors duration-150">
-                Edit with AI
-            </button>
+            
         </div>
         <div id="daily-reflection" class="mx-auto hidden">
             

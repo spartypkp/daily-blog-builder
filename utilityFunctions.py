@@ -269,13 +269,13 @@ def create_chat_completion_instructor(params: APIParameters) -> Tuple[Type[BaseM
     start = time.time()
     actual_vendor = params.vendor.split("/")[1].lower()
     params.vendor = actual_vendor
-
+    completion = None
 
     try:
         if params.vendor == "openai":
             
 
-            completion: Type[BaseModel] = instructor_openai_client.chat.completions.create(
+            completion = instructor_openai_client.chat.completions.create(
                 model=params.model,
                 response_model=params.response_model,
                 max_retries=params.max_retries,
@@ -286,6 +286,9 @@ def create_chat_completion_instructor(params: APIParameters) -> Tuple[Type[BaseM
                 presence_penalty=params.presence_penalty,
                 stream=params.stream,
             )
+            print(completion)
+            if not completion:
+                raise Exception(f"Instructor {params.vendor} API call failed with status: {completion}")
         elif params.vendor == "anthropic":
 
             if params.messages[0].role != "system":
@@ -297,7 +300,7 @@ def create_chat_completion_instructor(params: APIParameters) -> Tuple[Type[BaseM
             for msg in params.messages:
                 real_messages.append(msg.model_dump())
 
-            completion: Type[BaseModel] = instructor_anthropic_client.messages.create(
+            completion = instructor_anthropic_client.messages.create(
                 model=params.model,
                 system=system,
                 response_model=params.response_model,
@@ -326,8 +329,7 @@ def create_chat_completion_instructor(params: APIParameters) -> Tuple[Type[BaseM
         
         
 
-        if not completion:
-            raise Exception(f"Instructor {params.vendor} API call failed with status: {completion}")
+        
         
         status = 200
         response_id = completion._raw_response.id
@@ -341,13 +343,14 @@ def create_chat_completion_instructor(params: APIParameters) -> Tuple[Type[BaseM
         total_tokens = usage.total_tokens
 
     except Exception as error:
-        print(f"Error: {error}")
+        raise error
         status = 400
         error_message = str(error)
         duration = None
         
-        input_tokens, output_tokens, total_tokens = None, None, None
+        input_tokens, output_tokens, total_tokens = 0, 0, 0
         response_id = f"ERROR-{str(uuid.uuid4())}"
+    
     
 
     usage = APIUsage(model=params.model, 

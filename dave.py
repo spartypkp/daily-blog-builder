@@ -4,12 +4,19 @@ import utilityFunctions as util
 import uuid
 import json
 import os
-from html_parser import process_html
+from html_parser import process_html, apply_modifications
 DIR = os.path.dirname(os.path.realpath(__file__))
 
 def main():
-    blogs: List[DailyBlog] = util.pydantic_select(f"SELECT * FROM daily_blogs WHERE date='2024-09-05';", modelType=DailyBlog)
-    ai_add_custom_components(blogs[0])
+    blogs: List[DailyBlog] = util.pydantic_select(f"SELECT * FROM daily_blogs;", modelType=DailyBlog)
+    for blog in blogs:
+        print(blog.date)
+        if blog.date == "2024-09-05":
+            print("TRUE!")
+            continue
+        
+
+    #ai_add_custom_components(blogs[0])
 
 def ai_edit_introduction(introduction: Introduction):
     vendor = "instructor/openai"
@@ -152,30 +159,37 @@ def ai_add_custom_components(blog: DailyBlog):
         "task_planned_approach": "Method or strategy Will plans to use to tackle the task he's working on.",
         "task_progress_notes": "Main writing area for Will to document his progress on a given task."
     }
-    # introduction_dict = blog.introduction.model_dump()
-    # for field_name, field_description in applicable_introduction_fields.items():
-    #     processed_html = process_html(introduction_dict[field_name], field_name)
-    #     messages = custom_component_addition_prompt(processed_html, f"{field_name}={field_description}")
+    introduction_dict = blog.introduction.model_dump()
+    for field_name, field_description in applicable_introduction_fields.items():
+        processed_html, soup = process_html(introduction_dict[field_name], field_name)
+        messages = custom_component_addition_prompt(processed_html, f"{field_name}={field_description}")
 
-    #     params = APIParameters(
-    #         vendor=vendor,
-    #         model=llm_model,
-    #         messages=messages,
-    #         temperature=1,
-    #         response_format={"type": "json_object"},
-    #         rag_tokens=0
-    #     )
-    #     completion_response = util.create_chat_completion(params, insert_usage=False)
-    #     response = completion_response[0]
-    #     print(response)
-    #     exit(1)
+        params = APIParameters(
+            vendor=vendor,
+            model=llm_model,
+            messages=messages,
+            temperature=1,
+            response_format={"type": "json_object"},
+            rag_tokens=0
+        )
+        completion_response = util.create_chat_completion(params, insert_usage=False)
+        response = completion_response[0]
+        print(response)
+
+        response_dict = json.loads(response)
+        components = response_dict["components"]
+        updated_field_text = apply_modifications(soup, components)
+        introduction_dict[field_name] = updated_field_text
+    blog.introduction = Introduction(**introduction_dict)
+        
+    updated_tasks = []
     tasks = blog.tasks
     for task in tasks:
         task_dict = task.model_dump()
         for field_name, field_description in applicable_task_fields.items():
             if field_name != "task_progress_notes":
                 continue
-            processed_html = process_html(task_dict[field_name], field_name)
+            processed_html, soup = process_html(task_dict[field_name], field_name)
             messages = custom_component_addition_prompt(processed_html, f"{field_name}={field_description}")
 
             params = APIParameters(
@@ -188,9 +202,39 @@ def ai_add_custom_components(blog: DailyBlog):
             )
             completion_response = util.create_chat_completion(params, insert_usage=False)
             response = completion_response[0]
-            print(response)
-            exit(1)
-    return
+            response_dict = json.loads(response)
+            components = response_dict["components"]
+            updated_field_text = apply_modifications(soup, components)
+            task_dict[field_name] = updated_field_text
+        task_pydantic = Task(**task_dict)
+        updated_tasks.append(task_pydantic)
+    blog.tasks = updated_tasks
+
+    reflection_dict = blog.reflection.model_dump()
+    for field_name, field_description in applicable_reflection_fields.items():
+        processed_html, soup = process_html(reflection_dict[field_name], field_name)
+        messages = custom_component_addition_prompt(processed_html, f"{field_name}={field_description}")
+
+        params = APIParameters(
+            vendor=vendor,
+            model=llm_model,
+            messages=messages,
+            temperature=1,
+            response_format={"type": "json_object"},
+            rag_tokens=0
+        )
+        completion_response = util.create_chat_completion(params, insert_usage=False)
+        response = completion_response[0]
+        print(response)
+
+        response_dict = json.loads(response)
+        components = response_dict["components"]
+        updated_field_text = apply_modifications(soup, components)
+        reflection_dict[field_name] = updated_field_text
+    blog.reflection = Reflection(**reflection_dict)
+
+    util.pydantic_update("daily_blogs", [blog], "date")
+    
 
 
 
@@ -660,7 +704,7 @@ Your job is to edit some provided HTML and then choose to add humorous question 
 "componentType": "Warning" | "Informative" | "Question" | "",
 "componentMessage": "Message" | ""
 }
--We are going to be efficient. You are to indicate the exact text right before the place you'd like to insert the custom component. **Must be exact text**
+-We are going to be efficient. You are to indicate the exact text right before the place you'd like to insert the custom component. **Must be exact text**. Keep this the few words right before insertion, to limit regex errors.
 -We will use your output to use regex to insert the custom component
 5. Here are some general instructions for writing the componentMessage:
 -**Add Specificity and Relatability**: Tailoring the humor more closely to common developer experiences can invoke stronger laughs.
@@ -679,7 +723,7 @@ Return your results in the following json format:
 , components: [
 {
 "elementId": "The ID of the HTML element to add a component to",
-"precedingText": "The exact text preceding your point of insertion"
+"precedingText": "The 2-3 words of exact text preceeding the insertion point."
 "componentType": "Warning" | "Informative" | "Question" | "",
 "componentMessage": "Message" | ""
 }

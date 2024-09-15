@@ -1,0 +1,16 @@
+[
+    {'elementId': 'task_progress_notes-0', 'precedingText': "It is considered bad practice to use Python f string formatting to inject the table name directly, however I don't care.", 'componentType': 'Warning', 'componentMessage': "Well, when Will says 'I don't care,' he really means, 'Please don’t try this at home unless you love debugging security issues at midnight.'"
+    },
+    {'elementId': 'task_progress_notes-3', 'precedingText': 'I have the same function defined in 10 different repositories.', 'componentType': 'Question', 'componentMessage': "So Will, when you said you were into DRY principle (Don’t Repeat Yourself), you meant 'Definitely Repeat Yourself', right?"
+    },
+    {'elementId': 'task_progress_notes-5', 'precedingText': 'I needed something flexible that allowed me to track multiple different unique tasks throughout the day.', 'componentType': 'Question', 'componentMessage': 'Will, have you ever considered that your ‘flexible system’ is just a sneaky way to avoid making decisions? 😏'
+    },
+    {'elementId': 'task_progress_notes-9', 'precedingText': 'I really enjoy using the Field() feature of Pydantic, which allows me to set default values and add extensive descriptions, as well as constraints for improved automatic value validation.', 'componentType': 'Warning', 'componentMessage': "Watch out—when Will says 'extensive descriptions', he might just mean his usual rambling but in JSON format. 🤷\u200d♂️"
+    },
+    {'elementId': 'task_progress_notes-23', 'precedingText': 'Smort. To be completely honest, this is the point where a lot of design iteration happened.', 'componentType': 'Warning', 'componentMessage': '‘Smort’. Will trying to make ‘smart’ sound cool, or a typo? You decide!'
+    },
+    {'elementId': 'task_progress_notes-29', 'precedingText': 'and then generated new HTML with formatted values for consecutive tasks.', 'componentType': 'Warning', 'componentMessage': '‘Formatted values’—another term for ‘I just hope this code works and I remember what it does tomorrow.’'
+    },
+    {'elementId': 'task_progress_notes-33', 'precedingText': 'So, I changed one single line of my Pydantic file: I made a default_factory with a lambda to simply initialize a list, with an empty Task model, if no value was provided.', 'componentType': 'Informative', 'componentMessage': 'He means he cleverly avoided a potential crisis, or ‘introduced a subtle bug’—future Will can sort it out! 😜'
+    }
+]

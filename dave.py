@@ -9,14 +9,11 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 
 def main():
     blogs: List[DailyBlog] = util.pydantic_select(f"SELECT * FROM daily_blogs;", modelType=DailyBlog)
+    already_edited = ["2024-09-05", "2024-09-12", "2024-09-08", "2024-09-06"]
     for blog in blogs:
-        print(blog.date)
-        if blog.date == "2024-09-05":
-            print("TRUE!")
+        if str(blog.date) in already_edited:
             continue
-        
-
-    #ai_add_custom_components(blogs[0])
+        ai_add_custom_components(blog)
 
 def ai_edit_introduction(introduction: Introduction):
     vendor = "instructor/openai"

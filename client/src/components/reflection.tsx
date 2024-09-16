@@ -5,7 +5,7 @@ interface ReflectionSectionProps {
 	updateSliderColor: (value: string) => string;
 	reflection: Reflection;
 }
-const ReflectionSection: React.FC<ReflectionSectionProps> = async ({ updateSliderColor, reflection }) => {
+const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor, reflection }) => {
 	return (
 		<div>
 			<div className="mt-4 bg-white rounded-lg p-4">

@@ -1,11 +1,11 @@
 "use client";
-import { Introduction } from "../lib/types";
+import { Introduction } from "@/lib/types";
 
 interface IntroductionSectionProps {
 	updateSliderColor: (value: string) => string;
 	intro: Introduction;
 }
-const IntroductionSection: React.FC<IntroductionSectionProps> = async ({ updateSliderColor, intro }) => {
+const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderColor, intro }) => {
 	return (
 		<div>
 			<div className="mt-4 bg-white rounded-lg p-4">

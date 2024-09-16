@@ -1,5 +1,6 @@
 let currentTaskId = 0; // Start from 1 because the initial task is already there
 
+
 function initializeBlog(blogData) {
     // Reset the current task count
     console.log(blogData)

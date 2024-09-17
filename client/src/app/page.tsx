@@ -25,31 +25,78 @@ const db = init<Schema>({ appId: APP_ID });
 
 
 function App() {
+	const today = (new Date).toISOString().slice(0, 10);
+	const [selectedDate, setSelectedDate] = useState<String>(today);
+	const emptyBlog = createEmptyDailyBlog(today)
+
 	// Read Data
-	const { isLoading, error, data } = db.useQuery({ dailyBlogs: {} });
+	const query = {
+		dailyBlogs: {
+			$: {
+				where: {
+					date: today,
+				},
+			},
+		},
+	};
+	const { isLoading, error, data } = db.useQuery(query);
 	if (isLoading) {
+		console.log("loading!")
 		return <div>Fetching data...</div>;
 	}
 	if (error) {
-		return <div>Error fetching data: {error.message}</div>;
+
+		return <div>Error!</div>
 	}
+	
 	const { dailyBlogs } = data;
-	const [selectedBlog, setSelectedBlog] = useState<DailyBlog>();
-	const [selectedDate, setSelectedDate] = useState();
+	
+	
+	const selectedBlog = dailyBlogs[0]
+
+	if (!selectedBlog) {
+		db.transact([tx.dailyBlogs[id()].update(
+			{
+				"date": today, 
+				"introduction": emptyBlog.introduction!,
+			 	"tasks": emptyBlog.tasks, 
+				"reflection": emptyBlog.reflection! 
+			})
+		]);
+	}
+	
+	console.log(selectedBlog)
+    
+
+	// useEffect(() => {
+	// 	// Set the selected date to today's date if not already set
+	// 	if (!selectedDate) {
+	// 		const today = new Date().toISOString().slice(0, 10);
+	// 		setSelectedDate(today);
+	// 	} else {
+	// 		// Find the blog with a matching date
+	// 		const blog = dailyBlogs.find(blog => blog.date.toString() === selectedDate);
+	// 		if (!blog) {
+	// 			// If found, set it as the selected blog
+	// 			const newBlog = createEmptyDailyBlog();
+	// 			db.transact([tx.dailyBlogs[id()].update({ "introduction": newBlog.introduction!, "tasks": newBlog.tasks, "reflection": newBlog.reflection! })]);
+	// 			console.error('No blog found for the selected date');
+	// 		}
+	// 	}
+	// }, [selectedDate]);
 
 	return (
-		<body className="bg-white p-4">
+		<div className="bg-white p-4">
 			<header className="text-center mb-6">
 				<h1 className="text-5xl font-bold">Daily Blog Builder</h1>
 				<Select>
 					<SelectTrigger className="w-[180px]">
-						<SelectValue placeholder={selectedBlog?.date.toString()} />
+						<SelectValue placeholder="Choose a date" />
 					</SelectTrigger>
 					<SelectContent>
-						{dailyBlogs.map((blog) => (
-							// The key should be here, on the first element inside the map
-							<SelectItem value={blog.date.toString()}>{blog.date.toString()}</SelectItem>
-						))}
+						
+							<SelectItem value={today}>{today}</SelectItem>
+						
 
 						<SelectItem value="dark">Dark</SelectItem>
 						<SelectItem value="system">System</SelectItem>
@@ -77,7 +124,7 @@ function App() {
 
 
 				</div>
-				<IntroductionSection intro={selectedBlog?.introduction!} updateSliderColor={updateSliderColor} />
+				<IntroductionSection intro={selectedBlog.introduction || emptyBlog.introduction!} updateSliderColor={updateSliderColor} />
 
 			</section>
 
@@ -105,7 +152,7 @@ function App() {
 				<div className="flex justify-between items-center">
 
 				</div>
-				<ReflectionSection reflection={selectedBlog?.reflection!} updateSliderColor={updateSliderColor} />
+				<ReflectionSection reflection={selectedBlog.reflection!} updateSliderColor={updateSliderColor} />
 			</section>
 
 
@@ -116,7 +163,7 @@ function App() {
 				<button type="button" onClick={(e) => publish_blog()}
 					className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">Publish Blog</button>
 			</footer>
-		</body >
+		</div >
 	);
 }
 
@@ -135,4 +182,74 @@ function add_task() {
 function publish_blog() {
 	return;
 }
+
+
+// Helper function to calculate day count
+const calculateDayCount = (): number => {
+	const startDate = new Date('2024-09-05');
+	const today = new Date();
+	return Math.floor((today.getTime() - startDate.getTime()) / (1000 * 3600 * 24));
+};
+
+// Function to create an empty daily blog
+export const createEmptyDailyBlog = (today: string): DailyBlog => {
+	const emptyTask: Task = {
+		task_goal: '',
+		task_description: '',
+		task_expected_difficulty: 50,
+		task_planned_approach: '',
+		task_progress_notes: '',
+		task_start_summary: '',
+		time_spent_coding: '',
+		time_spent_researching: '',
+		time_spent_debugging: '',
+		task_reflection_summary: '',
+		output_or_result: '',
+		challenges_encountered: '',
+		follow_up_tasks: '',
+		reflection_successes: '',
+		reflection_failures: '',
+		research_questions: '',
+		tools_used: ''
+	};
+
+	const emptyIntroduction: Introduction = {
+		personal_context: '',
+		daily_goals: '',
+		learning_focus: '',
+		challenges: '',
+		plan_of_action: '',
+		focus_level: 50,
+		enthusiasm_level: 50,
+		burnout_level: 50,
+		leetcode_hatred_level: 50,
+		introduction_summary: ''
+	};
+
+	const emptyReflection: Reflection = {
+		learning_outcomes: '',
+		next_steps_short_term: '',
+		next_steps_long_term: '',
+		productivity_level: 50,
+		distraction_level: 50,
+		desire_to_play_steam_games_level: 50,
+		overall_frustration_level: 50,
+		entire_blog_summary: '',
+		technical_challenges: '',
+		interesting_bugs: '',
+		unanswered_questions: ''
+	};
+
+	return {
+		date: today,
+		day_count: calculateDayCount(),
+		blog_title: '',
+		blog_description: '',
+		blog_tags: [],
+		introduction: emptyIntroduction,
+		tasks: [emptyTask],
+		reflection: emptyReflection,
+		status: ''
+	};
+};
 export default App;

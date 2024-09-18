@@ -6,9 +6,12 @@ import { InstantGraph } from '@instantdb/core/src/schema';
 import { DailyBlog } from "@/lib/types";
 import { useEffect, useRef, useMemo } from "react";
 import { useQuill } from 'react-quilljs';
+import { selectLocalImage } from "@/lib/quillHelpers";
+import {Slider} from "@nextui-org/slider";
 // or const { useQuill } = require('react-quilljs');
 
 import 'quill/dist/quill.snow.css'; // Add css for snow theme
+import { Module } from "quill";
 type Schema = {
 	dailyBlogs: DailyBlog;
 };
@@ -23,6 +26,19 @@ interface IntroductionSectionProps {
 const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderColor, selectedBlog, db, tx }) => {
 
 	function mergeField(id: string, field_name: string, field_value: string) {
+		db.transact([
+			tx.dailyBlogs[id].merge({
+				introduction: {
+					[field_name]: field_value,
+				},
+			}),
+		]);
+	}
+
+	function mergeNumericField(id: string, field_name: string, field_value: number | number[]) {
+		if (typeof(field_value) !== 'number') {
+			field_value = field_value[0]
+		}
 		db.transact([
 			tx.dailyBlogs[id].merge({
 				introduction: {
@@ -48,23 +64,52 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 		};
 		intro = emptyIntroduction;
 	}
+	const modules = {
+		toolbar: [
+			['bold', 'italic', 'underline', 'strike'],
+			['blockquote', 'code-block'],
+			[{ 'list': 'ordered' }, { 'list': 'bullet' }],
+			[{ 'indent': '-1' }, { 'indent': '+1' }],
+			[{ 'size': ['small', false, 'large', 'huge'] }],
+			['image']
+		],
+	};
+	const getColor = (val: number, id: string) => {
+		switch (id) {
+			case 'enthusiasm_level':
+				return val > 66 ? 'bg-green-500' : val > 33 ? 'bg-yellow-500' : 'bg-red-500';
+			case 'burnout_level':
+				return val > 66 ? 'bg-red-500' : val > 33 ? 'bg-yellow-500' : 'bg-green-500';
+			case 'leetcode_hatred_level':
+				return val > 66 ? 'bg-red-500' : val > 33 ? 'bg-purple-500' : 'bg-blue-500';
+			case 'focus_level':
+				return val > 66 ? 'bg-green-500' : val > 33 ? 'bg-orange-500' : 'bg-red-500';
+			default:
+				return 'bg-gray-200'; // Default color if none of the cases match
+		}
+	};
+
 
 	const { quill: quill_personal_context, quillRef: quillRef_personal_context } = useQuill();
+
 	useEffect(() => {
 		if (quill_personal_context && intro) {
+			const module: any = quill_personal_context.getModule('toolbar');
+			module.addHandler('image', selectLocalImage);
 			quill_personal_context.clipboard.dangerouslyPasteHTML(intro.personal_context!);
-	
+
+
 			const key = 'personal_context';
 			const handler = (delta: any, oldDelta: any, source: string) => {
 				if (source === 'user') {
 					const htmlText = quill_personal_context.root.innerHTML;
-					
+
 					mergeField(selectedBlog.id, key, htmlText);
 				}
 			};
-	
+
 			quill_personal_context.on('text-change', handler);
-	
+
 			// Return a cleanup function that explicitly returns void
 			return () => {
 				quill_personal_context.off('text-change', handler);
@@ -75,19 +120,21 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 	const { quill: quill_daily_goals, quillRef: quillRef_daily_goals } = useQuill();
 	useEffect(() => {
 		if (quill_daily_goals && intro) {
+			const module: any = quill_daily_goals.getModule('toolbar');
+			module.addHandler('image', selectLocalImage);
 			quill_daily_goals.clipboard.dangerouslyPasteHTML(intro.daily_goals!);
-	
+
 			const key = 'daily_goals';
 			const handler = (delta: any, oldDelta: any, source: string) => {
 				if (source === 'user') {
 					const htmlText = quill_daily_goals.root.innerHTML;
-					
+
 					mergeField(selectedBlog.id, key, htmlText);
 				}
 			};
-	
+
 			quill_daily_goals.on('text-change', handler);
-	
+
 			// Return a cleanup function that explicitly returns void
 			return () => {
 				quill_daily_goals.off('text-change', handler);
@@ -98,19 +145,21 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 	const { quill: quill_learning_focus, quillRef: quillRef_learning_focus } = useQuill();
 	useEffect(() => {
 		if (quill_learning_focus && intro) {
+			const module: any = quill_learning_focus.getModule('toolbar');
+			module.addHandler('image', selectLocalImage);
 			quill_learning_focus.clipboard.dangerouslyPasteHTML(intro.learning_focus!);
-	
+
 			const key = 'learning_focus';
 			const handler = (delta: any, oldDelta: any, source: string) => {
 				if (source === 'user') {
 					const htmlText = quill_learning_focus.root.innerHTML;
-					
+
 					mergeField(selectedBlog.id, key, htmlText);
 				}
 			};
-	
+
 			quill_learning_focus.on('text-change', handler);
-	
+
 			// Return a cleanup function that explicitly returns void
 			return () => {
 				quill_learning_focus.off('text-change', handler);
@@ -121,19 +170,21 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 	const { quill: quill_challenges, quillRef: quillRef_challenges } = useQuill();
 	useEffect(() => {
 		if (quill_challenges && intro) {
+			const module: any = quill_challenges.getModule('toolbar');
+			module.addHandler('image', selectLocalImage);
 			quill_challenges.clipboard.dangerouslyPasteHTML(intro.challenges!);
-	
+
 			const key = 'challenges';
 			const handler = (delta: any, oldDelta: any, source: string) => {
 				if (source === 'user') {
 					const htmlText = quill_challenges.root.innerHTML;
-					
+
 					mergeField(selectedBlog.id, key, htmlText);
 				}
 			};
-	
+
 			quill_challenges.on('text-change', handler);
-	
+
 			// Return a cleanup function that explicitly returns void
 			return () => {
 				quill_challenges.off('text-change', handler);
@@ -144,19 +195,21 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 	const { quill: quill_plan_of_action, quillRef: quillRef_plan_of_action } = useQuill();
 	useEffect(() => {
 		if (quill_plan_of_action && intro) {
+			const module: any = quill_plan_of_action.getModule('toolbar');
+			module.addHandler('image', selectLocalImage);
 			quill_plan_of_action.clipboard.dangerouslyPasteHTML(intro.plan_of_action!);
-	
+
 			const key = 'plan_of_action';
 			const handler = (delta: any, oldDelta: any, source: string) => {
 				if (source === 'user') {
 					const htmlText = quill_plan_of_action.root.innerHTML;
-					
+
 					mergeField(selectedBlog.id, key, htmlText);
 				}
 			};
-	
+
 			quill_plan_of_action.on('text-change', handler);
-	
+
 			// Return a cleanup function that explicitly returns void
 			return () => {
 				quill_plan_of_action.off('text-change', handler);
@@ -220,28 +273,44 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 			<div className="mt-4 bg-white rounded-lg p-4">
 
 				<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">Enthusiasm Level</h2>
-				<input type="range" id="enthusiasm_level" min="0" max="100"
-					value="${intro.enthusiasm_level || 50}"
-					className="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer"
-					onInput={(e) => updateSliderColor((e.target as HTMLInputElement).value)}></input>
+				<Slider 
+					key="enthusiasm_level"
+					minValue={0}
+					step={1}
+					maxValue={100}
+					defaultValue={intro.enthusiasm_level || 50}
+					className={`w-full h-2 ${getColor(intro.enthusiasm_level || 50, "enthusiasm_level")} rounded-lg appearance-none cursor-pointer`}
+					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "enthusiasm_level", value)}></Slider>
 
 				<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">Burnout Level</h2>
-				<input type="range" id="burnout_level" min="0" max="100"
-					value="${intro.burnout_level || 50}"
-					className="w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer"
-					onInput={(e) => updateSliderColor((e.target as HTMLInputElement).value)}></input>
+				<Slider 
+					key="burnout_level"
+					minValue={0}
+					step={1}
+					maxValue={100}
+					defaultValue={intro.burnout_level || 50}
+					className={`w-full h-2 ${getColor(intro.burnout_level || 50, "burnout_level")} rounded-lg appearance-none cursor-pointer`}
+					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "burnout_level", value)}></Slider>
 
 				<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">LeetCode Hatred</h2>
-				<input type="range" id="leetcode_hatred_level" min="0" max="100"
-					value="${intro.leetcode_hatred_level || 50}"
-					className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
-					onInput={(e) => updateSliderColor((e.target as HTMLInputElement).value)}></input>
+				<Slider 
+					key="leetcode_hatred_level"
+					minValue={0}
+					step={1}
+					maxValue={100}
+					defaultValue={intro.leetcode_hatred_level || 50}
+					className={`w-full h-2 ${getColor(intro.leetcode_hatred_level || 50, "leetcode_hatred_level")} rounded-lg appearance-none cursor-pointer`}
+					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "leetcode_hatred_level", value)}></Slider>
 
 				<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">Focus Level</h2>
-				<input type="range" id="focus_level" min="0" max="100"
-					value="${intro.focus_level || 50}"
-					className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
-					onInput={(e) => updateSliderColor((e.target as HTMLInputElement).value)}></input>
+				<Slider 
+					key="focus_level"
+					minValue={0}
+					step={1}
+					maxValue={100}
+					defaultValue={intro.focus_level || 50}
+					className={`w-full h-2 ${getColor(intro.focus_level || 50, "focus_level")} rounded-lg appearance-none cursor-pointer`}
+					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "focus_level", value)}></Slider>
 
 			</div>
 

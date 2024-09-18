@@ -1,10 +1,10 @@
 "use client";
 import { Introduction } from "@/lib/types";
 import { init, tx, id, InstantReactWeb } from '@instantdb/react';
-import { TxChunk} from '@instantdb/core/src/instatx'
-import { InstantGraph} from '@instantdb/core/src/schema'
+import { TxChunk } from '@instantdb/core/src/instatx';
+import { InstantGraph } from '@instantdb/core/src/schema';
 import { DailyBlog } from "@/lib/types";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { useQuill } from 'react-quilljs';
 // or const { useQuill } = require('react-quilljs');
 
@@ -21,17 +21,17 @@ interface IntroductionSectionProps {
 }
 
 const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderColor, selectedBlog, db, tx }) => {
-	console.log(`Rerendering IntroductionSection!`)
-	function mergeField(field_name: string, field_value: string) {
+
+	function mergeField(id: string, field_name: string, field_value: string) {
 		db.transact([
-			tx.dailyBlogs[selectedBlog.id].merge({
+			tx.dailyBlogs[id].merge({
 				introduction: {
 					[field_name]: field_value,
 				},
 			}),
 		]);
 	}
-	
+
 	let intro = selectedBlog.introduction;
 	if (!intro) {
 		const emptyIntroduction: Introduction = {
@@ -49,79 +49,144 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 		intro = emptyIntroduction;
 	}
 
-	const {quill: quill_personal_context, quillRef: quillRef_personal_context} = useQuill()
+	const { quill: quill_personal_context, quillRef: quillRef_personal_context } = useQuill();
 	useEffect(() => {
-		if (quill_personal_context) {
-			const key = 'personal_context'
-			quill_personal_context.on('text-change', (delta, oldDelta, source) => {
-				console.log(`Source: ${source}`)
-				const htmlText = quill_personal_context.root.innerHTML;
-				if (source === 'user') {
-
-					mergeField(key, htmlText);
-				}
-		  });
-		}
-	  }, [quill_personal_context]);
-	const {quill: quill_daily_goals, quillRef: quillRef_daily_goals} = useQuill()
-	useEffect(() => {
-		if (quill_daily_goals) {
-			const key = 'daily_goals'
-			quill_daily_goals.on('text-change', (delta, oldDelta, source) => {
-				console.log(`Source: ${source}`)
-				const htmlText = quill_daily_goals.root.innerHTML;
-				if (source === 'user') {
-
-					mergeField(key, htmlText);
-				}
-		  });
-		}
-	  }, [quill_daily_goals]);
-	const {quill: quill_learning_focus, quillRef: quillRef_learning_focus} = useQuill()
-	useEffect(() => {
-		if (quill_learning_focus) {
-			const key = 'learning_focus'
-			quill_learning_focus.on('text-change', (delta, oldDelta, source) => {
-				console.log(`Source: ${source}`)
-				const htmlText = quill_learning_focus.root.innerHTML;
-				if (source === 'user') {
-
-					mergeField(key, htmlText);
-				}
-		  });
-		}
-	  }, [quill_learning_focus]);
-	const {quill: quill_challenges, quillRef: quillRef_challenges} = useQuill()
-	useEffect(() => {
-		if (quill_challenges) {
-			const key = 'challenges'
-			quill_challenges.on('text-change', (delta, oldDelta, source) => {
-				console.log(`Source: ${source}`)
-				const htmlText = quill_challenges.root.innerHTML;
-				if (source === 'user') {
-
-					mergeField(key, htmlText);
-				}
-		  });
-		}
-	  }, [quill_challenges]);
-	const {quill: quill_plan_of_action, quillRef: quillRef_plan_of_action} = useQuill()
-	useEffect(() => {
-		if (quill_plan_of_action) {
-			const key = 'plan_of_action'
-			quill_plan_of_action.on('text-change', (delta, oldDelta, source) => {
-				console.log(`Source: ${source}`)
-				const htmlText = quill_plan_of_action.root.innerHTML;
-				if (source === 'user') {
-
-					mergeField(key, htmlText);
-				}
-		  });
-		}
-	  }, [quill_plan_of_action]);
+		if (quill_personal_context && intro) {
+			quill_personal_context.clipboard.dangerouslyPasteHTML(intro.personal_context!);
 	
-
+			const key = 'personal_context';
+			const handler = (delta: any, oldDelta: any, source: string) => {
+				if (source === 'user') {
+					const htmlText = quill_personal_context.root.innerHTML;
+					
+					mergeField(selectedBlog.id, key, htmlText);
+				}
+			};
 	
+			quill_personal_context.on('text-change', handler);
+	
+			// Return a cleanup function that explicitly returns void
+			return () => {
+				quill_personal_context.off('text-change', handler);
+			};
+		}
+		// Ensure that this effect runs only when necessary
+	}, [quill_personal_context, selectedBlog.id]);
+	const { quill: quill_daily_goals, quillRef: quillRef_daily_goals } = useQuill();
+	useEffect(() => {
+		if (quill_daily_goals && intro) {
+			quill_daily_goals.clipboard.dangerouslyPasteHTML(intro.daily_goals!);
+	
+			const key = 'daily_goals';
+			const handler = (delta: any, oldDelta: any, source: string) => {
+				if (source === 'user') {
+					const htmlText = quill_daily_goals.root.innerHTML;
+					
+					mergeField(selectedBlog.id, key, htmlText);
+				}
+			};
+	
+			quill_daily_goals.on('text-change', handler);
+	
+			// Return a cleanup function that explicitly returns void
+			return () => {
+				quill_daily_goals.off('text-change', handler);
+			};
+		}
+		// Ensure that this effect runs only when necessary
+	}, [quill_daily_goals, selectedBlog.id]);
+	const { quill: quill_learning_focus, quillRef: quillRef_learning_focus } = useQuill();
+	useEffect(() => {
+		if (quill_learning_focus && intro) {
+			quill_learning_focus.clipboard.dangerouslyPasteHTML(intro.learning_focus!);
+	
+			const key = 'learning_focus';
+			const handler = (delta: any, oldDelta: any, source: string) => {
+				if (source === 'user') {
+					const htmlText = quill_learning_focus.root.innerHTML;
+					
+					mergeField(selectedBlog.id, key, htmlText);
+				}
+			};
+	
+			quill_learning_focus.on('text-change', handler);
+	
+			// Return a cleanup function that explicitly returns void
+			return () => {
+				quill_learning_focus.off('text-change', handler);
+			};
+		}
+		// Ensure that this effect runs only when necessary
+	}, [quill_learning_focus, selectedBlog.id]);
+	const { quill: quill_challenges, quillRef: quillRef_challenges } = useQuill();
+	useEffect(() => {
+		if (quill_challenges && intro) {
+			quill_challenges.clipboard.dangerouslyPasteHTML(intro.challenges!);
+	
+			const key = 'challenges';
+			const handler = (delta: any, oldDelta: any, source: string) => {
+				if (source === 'user') {
+					const htmlText = quill_challenges.root.innerHTML;
+					
+					mergeField(selectedBlog.id, key, htmlText);
+				}
+			};
+	
+			quill_challenges.on('text-change', handler);
+	
+			// Return a cleanup function that explicitly returns void
+			return () => {
+				quill_challenges.off('text-change', handler);
+			};
+		}
+		// Ensure that this effect runs only when necessary
+	}, [quill_challenges, selectedBlog.id]);
+	const { quill: quill_plan_of_action, quillRef: quillRef_plan_of_action } = useQuill();
+	useEffect(() => {
+		if (quill_plan_of_action && intro) {
+			quill_plan_of_action.clipboard.dangerouslyPasteHTML(intro.plan_of_action!);
+	
+			const key = 'plan_of_action';
+			const handler = (delta: any, oldDelta: any, source: string) => {
+				if (source === 'user') {
+					const htmlText = quill_plan_of_action.root.innerHTML;
+					
+					mergeField(selectedBlog.id, key, htmlText);
+				}
+			};
+	
+			quill_plan_of_action.on('text-change', handler);
+	
+			// Return a cleanup function that explicitly returns void
+			return () => {
+				quill_plan_of_action.off('text-change', handler);
+			};
+		}
+		// Ensure that this effect runs only when necessary
+	}, [quill_plan_of_action, selectedBlog.id]);
+
+	useMemo(() => {
+		if (intro) {
+			if (intro.personal_context && quill_personal_context) {
+				quill_personal_context.clipboard.dangerouslyPasteHTML(intro.personal_context);
+			}
+			if (quill_daily_goals && intro.daily_goals) {
+				quill_daily_goals.clipboard.dangerouslyPasteHTML(intro.daily_goals);
+			}
+			if (quill_learning_focus && intro.learning_focus) {
+				quill_learning_focus.clipboard.dangerouslyPasteHTML(intro.learning_focus);
+			}
+			if (intro.challenges && quill_challenges) {
+				quill_challenges.clipboard.dangerouslyPasteHTML(intro.challenges);
+			}
+			if (quill_plan_of_action && intro.plan_of_action) {
+				quill_plan_of_action.clipboard.dangerouslyPasteHTML(intro.plan_of_action);
+			}
+
+		}
+
+	}, [selectedBlog.id]);
+
 
 	return (
 		<div>
@@ -146,7 +211,7 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 			</div>
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 pb-4">Anticipated Challenges</h2>
-				<div id="challenges" className="min-h-[100px] bg-gray-50 p-4 rounded border"ref={quillRef_challenges}></div>
+				<div id="challenges" className="min-h-[100px] bg-gray-50 p-4 rounded border" ref={quillRef_challenges}></div>
 			</div>
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 pb-4">Plan of Action</h2>

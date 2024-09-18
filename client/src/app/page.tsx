@@ -38,7 +38,7 @@ function App() {
 		const result = dailyBlogs?.find((b) => b.date === selectedDate);
 		console.log(`Returning result blog: ${JSON.stringify(result)}`)
 		return result
-	}, [selectedDate, dailyBlogs]);
+	}, [selectedDate]);
 
 	// iterate through dailyBlogs, finding the blog which has today's date (may not exist!). Set selectedBlog
 

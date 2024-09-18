@@ -4,7 +4,7 @@ import { init, tx, id, InstantReactWeb } from '@instantdb/react';
 import { TxChunk} from '@instantdb/core/src/instatx'
 import { InstantGraph} from '@instantdb/core/src/schema'
 import { DailyBlog } from "@/lib/types";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { useQuill } from 'react-quilljs';
 
 type Schema = {
@@ -19,17 +19,16 @@ interface ReflectionSectionProps {
 
 const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor, selectedBlog, db, tx }) => {
 	
-	function mergeField(field_name: string, field_value: string) {
+	function mergeField(id: string, field_name: string, field_value: string) {
 		db.transact([
-			tx.dailyBlogs[selectedBlog.id].merge({
-				introduction: {
+			tx.dailyBlogs[id].merge({
+				reflectionduction: {
 					[field_name]: field_value,
 				},
 			}),
 		]);
 	}
 
-	
 	let reflection = selectedBlog.reflection
 	if (!reflection) {
 		const emptyReflection: Reflection = {
@@ -48,35 +47,102 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor
 		reflection = emptyReflection;
 	}
 
-	const quills = [
-        { key: 'learning_outcomes', quill: useQuill({ modules: { toolbar: true }, theme: 'snow' }) },
-        { key: 'next_steps_short_term', quill: useQuill({ modules: { toolbar: true }, theme: 'snow' }) },
-        { key: 'next_steps_long_term', quill: useQuill({ modules: { toolbar: true }, theme: 'snow' }) },
-    ];
-
+	const { quill: quill_learning_outcomes, quillRef: quillRef_learning_outcomes } = useQuill();
 	useEffect(() => {
-        quills.forEach(({ key, quill }) => {
-            if (quill.quill && reflection) {
-                const editorElement = document.querySelector(`#${key} .ql-editor`);
-                if (editorElement) {
-                    editorElement.innerHTML = reflection[key] || '';
-                }
+		if (quill_learning_outcomes && reflection) {
+			quill_learning_outcomes.clipboard.dangerouslyPasteHTML(reflection.learning_outcomes!);
+	
+			const key = 'learning_outcomes';
+			const handler = (delta: any, oldDelta: any, source: string) => {
+				if (source === 'user') {
+					const htmlText = quill_learning_outcomes.root.innerHTML;
+					
+					mergeField(selectedBlog.id, key, htmlText);
+				}
+			};
+	
+			quill_learning_outcomes.on('text-change', handler);
+	
+			// Return a cleanup function that explicitly returns void
+			return () => {
+				quill_learning_outcomes.off('text-change', handler);
+			};
+		}
+		// Ensure that this effect runs only when necessary
+	}, [quill_learning_outcomes, selectedBlog.id]);
+	const { quill: quill_next_steps_short_term, quillRef: quillRef_next_steps_short_term } = useQuill();
+	useEffect(() => {
+		if (quill_next_steps_short_term && reflection) {
+			quill_next_steps_short_term.clipboard.dangerouslyPasteHTML(reflection.next_steps_short_term!);
+	
+			const key = 'next_steps_short_term';
+			const handler = (delta: any, oldDelta: any, source: string) => {
+				if (source === 'user') {
+					const htmlText = quill_next_steps_short_term.root.innerHTML;
+					
+					mergeField(selectedBlog.id, key, htmlText);
+				}
+			};
+	
+			quill_next_steps_short_term.on('text-change', handler);
+	
+			// Return a cleanup function that explicitly returns void
+			return () => {
+				quill_next_steps_short_term.off('text-change', handler);
+			};
+		}
+		// Ensure that this effect runs only when necessary
+	}, [quill_next_steps_short_term, selectedBlog.id]);
+	const { quill: quill_next_steps_long_term, quillRef: quillRef_next_steps_long_term } = useQuill();
+	useEffect(() => {
+		if (quill_next_steps_long_term && reflection) {
+			quill_next_steps_long_term.clipboard.dangerouslyPasteHTML(reflection.next_steps_long_term!);
+	
+			const key = 'next_steps_long_term';
+			const handler = (delta: any, oldDelta: any, source: string) => {
+				if (source === 'user') {
+					const htmlText = quill_next_steps_long_term.root.innerHTML;
+					
+					mergeField(selectedBlog.id, key, htmlText);
+				}
+			};
+	
+			quill_next_steps_long_term.on('text-change', handler);
+	
+			// Return a cleanup function that explicitly returns void
+			return () => {
+				quill_next_steps_long_term.off('text-change', handler);
+			};
+		}
+		// Ensure that this effect runs only when necessary
+	}, [quill_next_steps_long_term, selectedBlog.id]);
+	
 
-                // Attach event listener for text changes
-                quill.quill.on('text-change', (delta, oldDelta, source) => {
-                    if (source === 'user') {
-                        const htmlText = quill.quill!.root.innerHTML;
-                        mergeField(key, htmlText);
-                    }
-                });
-            }
-        });
-    }, [quills.map(q => q.quill.quill), reflection]); // Notice how dependencies are set
+	useMemo(() => {
+		if (reflection) {
+			if (reflection.learning_outcomes && quill_learning_outcomes) {
+				quill_learning_outcomes.clipboard.dangerouslyPasteHTML(reflection.learning_outcomes);
+			}
+			if (quill_next_steps_short_term && reflection.next_steps_short_term) {
+				quill_next_steps_short_term.clipboard.dangerouslyPasteHTML(reflection.next_steps_short_term);
+			}
+			if (quill_next_steps_long_term && reflection.next_steps_long_term) {
+				quill_next_steps_long_term.clipboard.dangerouslyPasteHTML(reflection.next_steps_long_term);
+			}
+
+		}
+
+	}, [selectedBlog.id]);
+
+	
+	
+
+	
 	return (
 		<div>
 			<div className="mt-4 bg-white rounded-lg p-4">
                 <h2 className="text-3xl font-bold text-gray-800 text-center">Learning Outcomes</h2>
-                <div id="learning_outcomes" className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quills.find(quill => quill.key === 'learning_outcomes')?.quill.quillRef}>
+                <div id="learning_outcomes" className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_learning_outcomes}>
 				
 				</div>
             </div>
@@ -84,7 +150,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor
             
             <div className="mt-4 bg-white rounded-lg p-4">
                 <h2 className="text-3xl font-bold text-gray-800 text-center">Short-Term Next Steps</h2>
-                <div id="next_steps_short_term" className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quills.find(quill => quill.key === 'next_steps_short_term')?.quill.quillRef}>
+                <div id="next_steps_short_term" className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_next_steps_short_term}>
 				
 				</div>
             </div>
@@ -92,7 +158,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor
             
             <div className="mt-4 bg-white rounded-lg p-4">
                 <h2 className="text-3xl font-bold text-gray-800 text-center">Long-Term Next Steps</h2>
-                <div id="next_steps_long_term" className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quills.find(quill => quill.key === 'next_steps_long_term')?.quill.quillRef}>
+                <div id="next_steps_long_term" className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_next_steps_long_term}>
 				
 				</div>
             </div>

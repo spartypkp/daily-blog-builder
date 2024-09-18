@@ -17,6 +17,7 @@ export interface Introduction {
 }
 
 export interface Task {
+	[key: string]: any
     task_goal?: string;
     task_description?: string;
     task_expected_difficulty?: number;
@@ -36,6 +37,7 @@ export interface Task {
     tools_used?: string;
 }
 export interface Reflection {
+	[key: string]: any
     learning_outcomes?: string;
     next_steps_short_term?: string;
     next_steps_long_term?: string;

@@ -1,50 +1,36 @@
 "use client";
 import { Reflection } from "../lib/types";
-import { init, tx, id } from '@instantdb/react';
+import { init, tx, id, InstantReactWeb } from '@instantdb/react';
+import { TxChunk} from '@instantdb/core/src/instatx'
+import { InstantGraph} from '@instantdb/core/src/schema'
 import { DailyBlog } from "@/lib/types";
-
-interface ReflectionSectionProps {
-	updateSliderColor: (value: string) => string;
-	id: string;
-}
-
-const APP_ID = '3b4a73a0-ffc6-488a-b883-550004ff6e0a';
+import { useEffect, useRef } from "react";
+import { useQuill } from 'react-quilljs';
 
 type Schema = {
 	dailyBlogs: DailyBlog;
 };
-
-const db = init<Schema>({ appId: APP_ID });
-
-function mergeField(id: string, field_name: string, field_value: string) {
-	db.transact([
-		tx.dailyBlogs[id].merge({
-			introduction: {
-				[field_name]: field_value,
-			},
-		}),
-	]);
+interface ReflectionSectionProps {
+	updateSliderColor: (value: string) => string;
+	selectedBlog: { id: string; } & DailyBlog;
+	db: InstantReactWeb<Schema, {}, false>;
+	tx: TxChunk<InstantGraph<any, any, {}>>;
 }
 
-const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor, id }) => {
-
-	const query = {
-		dailyBlogs: {
-			$: {
-				where: {
-					id: id,
+const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor, selectedBlog, db, tx }) => {
+	
+	function mergeField(field_name: string, field_value: string) {
+		db.transact([
+			tx.dailyBlogs[selectedBlog.id].merge({
+				introduction: {
+					[field_name]: field_value,
 				},
-			},
-		},
-	};
-	const { isLoading, error, data } = db.useQuery(query);
-	if (isLoading) {
-		return <p>Loading Introduction</p>
+			}),
+		]);
 	}
-	if (error) {
-		return <p>Error loading Introduction</p>
-	}
-	let reflection = data.dailyBlogs[0].reflection
+
+	
+	let reflection = selectedBlog.reflection
 	if (!reflection) {
 		const emptyReflection: Reflection = {
 			learning_outcomes: '',
@@ -61,11 +47,36 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor
 		};
 		reflection = emptyReflection;
 	}
+
+	const quills = [
+        { key: 'learning_outcomes', quill: useQuill({ modules: { toolbar: true }, theme: 'snow' }) },
+        { key: 'next_steps_short_term', quill: useQuill({ modules: { toolbar: true }, theme: 'snow' }) },
+        { key: 'next_steps_long_term', quill: useQuill({ modules: { toolbar: true }, theme: 'snow' }) },
+    ];
+
+	useEffect(() => {
+        quills.forEach(({ key, quill }) => {
+            if (quill.quill && reflection) {
+                const editorElement = document.querySelector(`#${key} .ql-editor`);
+                if (editorElement) {
+                    editorElement.innerHTML = reflection[key] || '';
+                }
+
+                // Attach event listener for text changes
+                quill.quill.on('text-change', (delta, oldDelta, source) => {
+                    if (source === 'user') {
+                        const htmlText = quill.quill!.root.innerHTML;
+                        mergeField(key, htmlText);
+                    }
+                });
+            }
+        });
+    }, [quills.map(q => q.quill.quill), reflection]); // Notice how dependencies are set
 	return (
 		<div>
 			<div className="mt-4 bg-white rounded-lg p-4">
                 <h2 className="text-3xl font-bold text-gray-800 text-center">Learning Outcomes</h2>
-                <div id="learning_outcomes" className="min-h-[150px] bg-gray-50 p-4 rounded border">
+                <div id="learning_outcomes" className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quills.find(quill => quill.key === 'learning_outcomes')?.quill.quillRef}>
 				
 				</div>
             </div>
@@ -73,7 +84,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor
             
             <div className="mt-4 bg-white rounded-lg p-4">
                 <h2 className="text-3xl font-bold text-gray-800 text-center">Short-Term Next Steps</h2>
-                <div id="next_steps_short_term" className="min-h-[150px] bg-gray-50 p-4 rounded border">
+                <div id="next_steps_short_term" className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quills.find(quill => quill.key === 'next_steps_short_term')?.quill.quillRef}>
 				
 				</div>
             </div>
@@ -81,7 +92,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor
             
             <div className="mt-4 bg-white rounded-lg p-4">
                 <h2 className="text-3xl font-bold text-gray-800 text-center">Long-Term Next Steps</h2>
-                <div id="next_steps_long_term" className="min-h-[150px] bg-gray-50 p-4 rounded border">
+                <div id="next_steps_long_term" className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quills.find(quill => quill.key === 'next_steps_long_term')?.quill.quillRef}>
 				
 				</div>
             </div>
@@ -92,22 +103,22 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor
                 <div className="space-y-4 mt-4">
                     <div>
                         <label htmlFor="productivity_level" className="block text-gray-800">Productivity Level:</label>
-                        <input type="range" id="productivity_level" min="0" max="100" value="${reflection.productivity_level || 50}"
+                        <input type="range" id="productivity_level" min="0" max="100" value={reflection.productivity_level || 50}
                             className="w-full h-2 rounded-lg appearance-none cursor-pointer" onInput={(e) => updateSliderColor((e.target as HTMLInputElement).value)}></input>
                     </div>
                     <div>
                         <label htmlFor="distraction_level" className="block text-gray-800">Distraction Level:</label>
-                        <input type="range" id="distraction_level" min="0" max="100" value="${reflection.distraction_level || 50}"
+                        <input type="range" id="distraction_level" min="0" max="100" value={reflection.distraction_level || 50}
                             className="w-full h-2 rounded-lg appearance-none cursor-pointer" onInput={(e) => updateSliderColor((e.target as HTMLInputElement).value)}></input>
                     </div>
                     <div>
                         <label htmlFor="desire_to_play_steam_games_level" className="block text-gray-800">Desire to Play Steam Games:</label>
-                        <input type="range" id="desire_to_play_steam_games_level" min="0" max="100" value="${reflection.desire_to_play_steam_games_level || 50}"
+                        <input type="range" id="desire_to_play_steam_games_level" min="0" max="100" value={reflection.desire_to_play_steam_games_level || 50}
                             className="w-full h-2 rounded-lg appearance-none cursor-pointer" onInput={(e) => updateSliderColor((e.target as HTMLInputElement).value)}></input>
                     </div>
                     <div>
                         <label htmlFor="overall_frustration_level" className="block text-gray-800">Overall Frustration:</label>
-                        <input type="range" id="overall_frustration_level" min="0" max="100" value="${reflection.overall_frustration_level || 50}"
+                        <input type="range" id="overall_frustration_level" min="0" max="100" value={reflection.overall_frustration_level || 50}
                             className="w-full h-2 rounded-lg appearance-none cursor-pointer" onInput={(e) => updateSliderColor((e.target as HTMLInputElement).value)}></input>
                     </div>
                 </div>

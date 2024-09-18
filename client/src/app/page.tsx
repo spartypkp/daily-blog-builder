@@ -1,17 +1,11 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { init, tx, id } from '@instantdb/react';
 import { DailyBlog, Introduction, Task, Reflection } from "@/lib/types";
 import IntroductionSection from '@/components/introduction';
 import ReflectionSection from '@/components/reflection';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import DateSelector from "@/components/dateSelector";
 import { useQuill } from 'react-quilljs';
 // or const { useQuill } = require('react-quilljs');
 
@@ -26,52 +20,31 @@ type Schema = {
 
 const db = init<Schema>({ appId: APP_ID });
 
+const query = {
+	dailyBlogs: {
+	},
+};
 
 function App() {
 	const today = (new Date).toISOString().slice(0, 10);
-	const [selectedDate, setSelectedDate] = useState<string>(today);
-	const { quill, quillRef } = useQuill();
-
-	useEffect(() => {
-		if (quill) {
-		  quill.on('text-change', (delta, oldDelta, source) => {
-			console.log('Text change!');
-			console.log(quill.getText()); // Get text only
-			console.log(quill.getContents()); // Get delta contents
-			console.log(quill.root.innerHTML); // Get innerHTML using quill
-			console.log(quillRef.current.firstChild.innerHTML); // Get innerHTML using quillRef
-		  });
-		}
-	  }, [quill]);
+	const [selectedDate, setSelectedDate] = useState<string | null>(null);
+	const {isLoading, error, data} = db.useQuery(query);
 	
-	// Read Data
-	const query = {
-		dailyBlogs: {
-			$: {
-				where: {
-					date: today,
-				},
-			},
-		},
-	};
-	const { isLoading, error, data } = db.useQuery(query);
+	const dailyBlogs = data?.dailyBlogs;
 
-	if (isLoading) {
-		console.log("loading!")
-		return <div>Fetching data...</div>;
-	}
-	if (error) {
+	const selectedBlog: ({ id: string; } & DailyBlog) | undefined = useMemo(() => {
+		console.log(`Inside useMemo, looking for selected blog with date: ${selectedDate}`)
+		console.log(`dailyBlogs is undefined: ${dailyBlogs === undefined}`)
+		const result = dailyBlogs?.find((b) => b.date === selectedDate);
+		console.log(`Returning result blog: ${JSON.stringify(result)}`)
+		return result
+	}, [selectedDate, dailyBlogs]);
 
-		return <div>Error!</div>
-	}
-	
-	const { dailyBlogs } = data;
-	
-	
-	let selectedBlog = dailyBlogs[0]
+	// iterate through dailyBlogs, finding the blog which has today's date (may not exist!). Set selectedBlog
 
-	if (!selectedBlog) {
-		const newId: string = id()
+	if (!selectedBlog && !isLoading && selectedDate) {
+		console.log(`CorrectBlog is undefined. Creating empty blog!`);
+		const newId: string = id();
 		const emptyTask: Task = {
 			task_goal: '',
 			task_description: '',
@@ -102,55 +75,29 @@ function App() {
 			"blog_tags": {},
 			"tasks": [emptyTask]
 
-		}
-		
-		db.transact([tx.dailyBlogs[newId].update(empty_blog
-			)
-		]);
+		};
 
-		
-		selectedBlog = empty_blog;
+		db.transact([tx.dailyBlogs[newId].update(empty_blog)]);
+	}
+
+
+	
+
+	const handleDateChange = (newDate: string) => {
+		console.log(`Handling date change! newDate: ${newDate}`)
+		setSelectedDate(newDate);
+	};
+
+	if (isLoading) {
+		return <p>loading</p>
 	}
 	
-	console.log(selectedBlog)
-    
-
-	// useEffect(() => {
-	// 	// Set the selected date to today's date if not already set
-	// 	if (!selectedDate) {
-	// 		const today = new Date().toISOString().slice(0, 10);
-	// 		setSelectedDate(today);
-	// 	} else {
-	// 		// Find the blog with a matching date
-	// 		const blog = dailyBlogs.find(blog => blog.date.toString() === selectedDate);
-	// 		if (!blog) {
-	// 			// If found, set it as the selected blog
-	// 			const newBlog = createEmptyDailyBlog();
-	// 			db.transact([tx.dailyBlogs[id()].update({ "introduction": newBlog.introduction!, "tasks": newBlog.tasks, "reflection": newBlog.reflection! })]);
-	// 			console.error('No blog found for the selected date');
-	// 		}
-	// 	}
-	// }, [selectedDate]);
 
 	return (
 		<div className="bg-white p-4">
-			<header className="text-center mb-6 justify-center items-center">
+			<header className="flex flex-col justify-center items-center text-center mb-6">
 				<h1 className="text-5xl font-bold">Daily Blog Builder</h1>
-				<Select >
-					<SelectTrigger className="w-[180px]">
-						<SelectValue placeholder="Choose a date" />
-					</SelectTrigger>
-					<SelectContent>
-						
-							<SelectItem value={selectedDate}>{selectedDate}</SelectItem>
-
-						
-					</SelectContent>
-				</Select>
-
-				<select id="blogDateSelector" onChange={(e) => fetchBlogData(e.target.value)}>
-
-				</select>
+				<DateSelector dailyBlogs={dailyBlogs!} handleDateChange={handleDateChange} />
 				<div className="mt-4 bg-white rounded-lg p-4">
 					<h2 className="text-3xl font-bold text-gray-800 text-center">Day Number</h2>
 					<p id="day_count" className="text-m  text-gray-800 text-center"></p>
@@ -163,12 +110,14 @@ function App() {
 
 
 			</header>
-
-			<section className="goals mb-8 bg-gray-200 shadow-md rounded-lg p-6">
+			
+			{selectedBlog && (
+				<div>
+					<section className="goals mb-8 bg-gray-200 shadow-md rounded-lg p-6">
 				<div className="flex justify-between items-center">
 
 				</div>
-				<IntroductionSection id={selectedBlog.id} updateSliderColor={updateSliderColor} />
+				<IntroductionSection selectedBlog={selectedBlog!} updateSliderColor={updateSliderColor} db={db} tx={tx} />
 
 			</section>
 
@@ -196,7 +145,7 @@ function App() {
 				<div className="flex justify-between items-center">
 
 				</div>
-				<ReflectionSection id={selectedBlog.id} updateSliderColor={updateSliderColor} />
+				<ReflectionSection selectedBlog={selectedBlog!} updateSliderColor={updateSliderColor} db={db} tx={tx} />
 			</section>
 
 
@@ -207,6 +156,11 @@ function App() {
 				<button type="button" onClick={(e) => publish_blog()}
 					className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">Publish Blog</button>
 			</footer>
+				</div>
+			)}
+
+			
+			
 		</div >
 	);
 }

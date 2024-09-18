@@ -1,57 +1,38 @@
 "use client";
 import { Introduction } from "@/lib/types";
-import { init, tx, id } from '@instantdb/react';
+import { init, tx, id, InstantReactWeb } from '@instantdb/react';
+import { TxChunk} from '@instantdb/core/src/instatx'
+import { InstantGraph} from '@instantdb/core/src/schema'
 import { DailyBlog } from "@/lib/types";
 import { useEffect, useRef } from "react";
 import { useQuill } from 'react-quilljs';
 // or const { useQuill } = require('react-quilljs');
 
 import 'quill/dist/quill.snow.css'; // Add css for snow theme
-
-
-interface IntroductionSectionProps {
-	updateSliderColor: (value: string) => string;
-	id: string;
-}
-
-const APP_ID = '3b4a73a0-ffc6-488a-b883-550004ff6e0a';
-
 type Schema = {
 	dailyBlogs: DailyBlog;
 };
 
-const db = init<Schema>({ appId: APP_ID });
-
-function mergeField(id: string, field_name: string, field_value: string) {
-	db.transact([
-		tx.dailyBlogs[id].merge({
-			introduction: {
-				[field_name]: field_value,
-			},
-		}),
-	]);
+interface IntroductionSectionProps {
+	updateSliderColor: (value: string) => string;
+	selectedBlog: { id: string; } & DailyBlog;
+	db: InstantReactWeb<Schema, {}, false>;
+	tx: TxChunk<InstantGraph<any, any, {}>>;
 }
 
-const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderColor, id }) => {
-	
-
-	const query = {
-		dailyBlogs: {
-			$: {
-				where: {
-					id: id,
+const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderColor, selectedBlog, db, tx }) => {
+	console.log(`Rerendering IntroductionSection!`)
+	function mergeField(field_name: string, field_value: string) {
+		db.transact([
+			tx.dailyBlogs[selectedBlog.id].merge({
+				introduction: {
+					[field_name]: field_value,
 				},
-			},
-		},
-	};
-	const { isLoading, error, data } = db.useQuery(query);
-	if (isLoading) {
-		return <p>Loading Introduction</p>;
+			}),
+		]);
 	}
-	if (error) {
-		return <p>Error loading Introduction</p>;
-	}
-	let intro = data.dailyBlogs[0].introduction;
+	
+	let intro = selectedBlog.introduction;
 	if (!intro) {
 		const emptyIntroduction: Introduction = {
 			personal_context: '',
@@ -68,93 +49,108 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 		intro = emptyIntroduction;
 	}
 
-	const { quill: quill_personal_context, quillRef: quillRef_personal_context } = useQuill({
-        modules: {
-            toolbar: true
-        },
-        theme: 'snow'
-    });
-
-    const { quill: quill_daily_goals, quillRef: quillRef_daily_goals } = useQuill({
-        modules: {
-            toolbar: true
-        },
-        theme: 'snow'
-    });
-	const { quill: quill_learning_focus, quillRef: quillRef_learning_focus } = useQuill({
-        modules: {
-            toolbar: true
-        },
-        theme: 'snow'
-    });
-	const { quill: quill_challenges, quillRef: quillRef_challenges } = useQuill({
-        modules: {
-            toolbar: true
-        },
-        theme: 'snow'
-    });
-	const { quill: quill_plan_of_action, quillRef: quillRef_plan_of_action } = useQuill({
-        modules: {
-            toolbar: true
-        },
-        theme: 'snow'
-    });
-	const allQuills = [ ]
-
+	const {quill: quill_personal_context, quillRef: quillRef_personal_context} = useQuill()
 	useEffect(() => {
-		if (quill && intro) {
-			console.log(`Quill and intro are set!`)
-			// Set initial value for Quill editor
-			Object.keys(intro).forEach((key) => {
-				if (key !== "focus_level" && key !== "enthusiasm_level" && key !== "burnout_level" && key !== "leetcode_hatred_level") {
-					const editorElement = document.querySelector(`#${key} .ql-editor`);
-					if (editorElement) {
-						const value = intro![key]
-						editorElement.innerHTML = value;
-					}
-				}
-			});
-	
-			// Attach event listener for text changes
-			quill.on('text-change', (delta, oldDelta, source) => {
+		if (quill_personal_context) {
+			const key = 'personal_context'
+			quill_personal_context.on('text-change', (delta, oldDelta, source) => {
+				console.log(`Source: ${source}`)
+				const htmlText = quill_personal_context.root.innerHTML;
 				if (source === 'user') {
-					const fieldName = quill.root.parentElement!.id;
-					const htmlText = quill.root.innerHTML;
-					mergeField(id, fieldName, htmlText);
+
+					mergeField(key, htmlText);
 				}
-			});
+		  });
 		}
-	}, [quill, intro]);  // Include intro in the dependency array
+	  }, [quill_personal_context]);
+	const {quill: quill_daily_goals, quillRef: quillRef_daily_goals} = useQuill()
+	useEffect(() => {
+		if (quill_daily_goals) {
+			const key = 'daily_goals'
+			quill_daily_goals.on('text-change', (delta, oldDelta, source) => {
+				console.log(`Source: ${source}`)
+				const htmlText = quill_daily_goals.root.innerHTML;
+				if (source === 'user') {
+
+					mergeField(key, htmlText);
+				}
+		  });
+		}
+	  }, [quill_daily_goals]);
+	const {quill: quill_learning_focus, quillRef: quillRef_learning_focus} = useQuill()
+	useEffect(() => {
+		if (quill_learning_focus) {
+			const key = 'learning_focus'
+			quill_learning_focus.on('text-change', (delta, oldDelta, source) => {
+				console.log(`Source: ${source}`)
+				const htmlText = quill_learning_focus.root.innerHTML;
+				if (source === 'user') {
+
+					mergeField(key, htmlText);
+				}
+		  });
+		}
+	  }, [quill_learning_focus]);
+	const {quill: quill_challenges, quillRef: quillRef_challenges} = useQuill()
+	useEffect(() => {
+		if (quill_challenges) {
+			const key = 'challenges'
+			quill_challenges.on('text-change', (delta, oldDelta, source) => {
+				console.log(`Source: ${source}`)
+				const htmlText = quill_challenges.root.innerHTML;
+				if (source === 'user') {
+
+					mergeField(key, htmlText);
+				}
+		  });
+		}
+	  }, [quill_challenges]);
+	const {quill: quill_plan_of_action, quillRef: quillRef_plan_of_action} = useQuill()
+	useEffect(() => {
+		if (quill_plan_of_action) {
+			const key = 'plan_of_action'
+			quill_plan_of_action.on('text-change', (delta, oldDelta, source) => {
+				console.log(`Source: ${source}`)
+				const htmlText = quill_plan_of_action.root.innerHTML;
+				if (source === 'user') {
+
+					mergeField(key, htmlText);
+				}
+		  });
+		}
+	  }, [quill_plan_of_action]);
+	
+
 	
 
 	return (
 		<div>
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 pb-4">Context for the Day</h2>
-				<div id="personal_context" className="min-h-[100px] bg-gray-50 p-4 rounded border mt-4" ref={quillRef}>
+				<div id="personal_context" className="min-h-[100px] bg-gray-50 p-4 rounded border mt-4" ref={quillRef_personal_context}>
 
 				</div>
 			</div>
 
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 pb-4">Daily Goals</h2>
-				<div id="daily_goals" className="min-h-[150px] bg-gray-50 p-4 rounded border"ref={quillRef}>
+				<div id="daily_goals" className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_daily_goals}>
 
 				</div>
 			</div>
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 pb-4">Learning Focus</h2>
-				<div id="learning_focus" className="min-h-[100px] bg-gray-50 p-4 rounded border"ref={quillRef}>
+				<div id="learning_focus" className="min-h-[100px] bg-gray-50 p-4 rounded border" ref={quillRef_learning_focus}>
 
 				</div>
 			</div>
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 pb-4">Anticipated Challenges</h2>
-				<div id="challenges" className="min-h-[100px] bg-gray-50 p-4 rounded border"ref={quillRef}></div>
+				<div id="challenges" className="min-h-[100px] bg-gray-50 p-4 rounded border"ref={quillRef_challenges}></div>
 			</div>
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 pb-4">Plan of Action</h2>
-				<div id="plan_of_action" className="min-h-[100px] bg-gray-50 p-4 rounded border"ref={quillRef}></div>
+				<div id="plan_of_action" className="min-h-[100px] bg-gray-50 p-4 rounded border" ref={quillRef_plan_of_action}></div>
 			</div>
 			<div className="mt-4 bg-white rounded-lg p-4">
 

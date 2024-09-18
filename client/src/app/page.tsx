@@ -12,7 +12,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useQuill } from 'react-quilljs';
+// or const { useQuill } = require('react-quilljs');
 
+import 'quill/dist/quill.snow.css'; // Add css for snow theme
 
 // ID for app: Instant Tutorial Todo App
 const APP_ID = '3b4a73a0-ffc6-488a-b883-550004ff6e0a';
@@ -26,9 +29,21 @@ const db = init<Schema>({ appId: APP_ID });
 
 function App() {
 	const today = (new Date).toISOString().slice(0, 10);
-	const [selectedDate, setSelectedDate] = useState<String>(today);
-	const emptyBlog = createEmptyDailyBlog(today)
+	const [selectedDate, setSelectedDate] = useState<string>(today);
+	const { quill, quillRef } = useQuill();
 
+	useEffect(() => {
+		if (quill) {
+		  quill.on('text-change', (delta, oldDelta, source) => {
+			console.log('Text change!');
+			console.log(quill.getText()); // Get text only
+			console.log(quill.getContents()); // Get delta contents
+			console.log(quill.root.innerHTML); // Get innerHTML using quill
+			console.log(quillRef.current.firstChild.innerHTML); // Get innerHTML using quillRef
+		  });
+		}
+	  }, [quill]);
+	
 	// Read Data
 	const query = {
 		dailyBlogs: {
@@ -40,6 +55,7 @@ function App() {
 		},
 	};
 	const { isLoading, error, data } = db.useQuery(query);
+
 	if (isLoading) {
 		console.log("loading!")
 		return <div>Fetching data...</div>;
@@ -52,17 +68,48 @@ function App() {
 	const { dailyBlogs } = data;
 	
 	
-	const selectedBlog = dailyBlogs[0]
+	let selectedBlog = dailyBlogs[0]
 
 	if (!selectedBlog) {
-		db.transact([tx.dailyBlogs[id()].update(
-			{
-				"date": today, 
-				"introduction": emptyBlog.introduction!,
-			 	"tasks": emptyBlog.tasks, 
-				"reflection": emptyBlog.reflection! 
-			})
+		const newId: string = id()
+		const emptyTask: Task = {
+			task_goal: '',
+			task_description: '',
+			task_expected_difficulty: 50,
+			task_planned_approach: '',
+			task_progress_notes: '',
+			task_start_summary: '',
+			time_spent_coding: '',
+			time_spent_researching: '',
+			time_spent_debugging: '',
+			task_reflection_summary: '',
+			output_or_result: '',
+			challenges_encountered: '',
+			follow_up_tasks: '',
+			reflection_successes: '',
+			reflection_failures: '',
+			research_questions: '',
+			tools_used: ''
+		};
+		let empty_blog = {
+			"id": newId,
+			"date": today,
+			"blog_title": "",
+			"blog_description": "",
+			"created_at": (new Date).toDateString(),
+			"day_count": calculateDayCount(),
+			"status": null,
+			"blog_tags": {},
+			"tasks": [emptyTask]
+
+		}
+		
+		db.transact([tx.dailyBlogs[newId].update(empty_blog
+			)
 		]);
+
+		
+		selectedBlog = empty_blog;
 	}
 	
 	console.log(selectedBlog)
@@ -87,19 +134,17 @@ function App() {
 
 	return (
 		<div className="bg-white p-4">
-			<header className="text-center mb-6">
+			<header className="text-center mb-6 justify-center items-center">
 				<h1 className="text-5xl font-bold">Daily Blog Builder</h1>
-				<Select>
+				<Select >
 					<SelectTrigger className="w-[180px]">
 						<SelectValue placeholder="Choose a date" />
 					</SelectTrigger>
 					<SelectContent>
 						
-							<SelectItem value={today}>{today}</SelectItem>
-						
+							<SelectItem value={selectedDate}>{selectedDate}</SelectItem>
 
-						<SelectItem value="dark">Dark</SelectItem>
-						<SelectItem value="system">System</SelectItem>
+						
 					</SelectContent>
 				</Select>
 
@@ -122,9 +167,8 @@ function App() {
 			<section className="goals mb-8 bg-gray-200 shadow-md rounded-lg p-6">
 				<div className="flex justify-between items-center">
 
-
 				</div>
-				<IntroductionSection intro={selectedBlog.introduction || emptyBlog.introduction!} updateSliderColor={updateSliderColor} />
+				<IntroductionSection id={selectedBlog.id} updateSliderColor={updateSliderColor} />
 
 			</section>
 
@@ -152,7 +196,7 @@ function App() {
 				<div className="flex justify-between items-center">
 
 				</div>
-				<ReflectionSection reflection={selectedBlog.reflection!} updateSliderColor={updateSliderColor} />
+				<ReflectionSection id={selectedBlog.id} updateSliderColor={updateSliderColor} />
 			</section>
 
 

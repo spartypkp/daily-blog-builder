@@ -14,15 +14,6 @@ type Schema = {
 const db = init<Schema>({ appId: APP_ID });
 
 
-db.subscribeQuery({ dailyBlogs: {} }, (resp) => {
-	if (resp.error) {
-		renderError(resp.error.message); // Pro-tip: Check you have the right appId!
-		return;
-	}
-	if (resp.data) {
-		render(resp.data);
-	}
-});
 
 function updateIntroduction(date: string, new_introduction: Introduction) {
 	db.transact(tx.blogs[date].update({introduction: new_introduction}))

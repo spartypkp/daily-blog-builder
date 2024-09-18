@@ -3,6 +3,7 @@
 // Updated Task interface with additional AI generated fields
 // Interfaces for Introduction Submodel
 export interface Introduction {
+	[key: string]: any
     personal_context?: string;
     daily_goals?: string;
     learning_focus?: string;
@@ -57,7 +58,7 @@ export interface DailyBlog {
     introduction?: Introduction;
     tasks: Task[];
     reflection?: Reflection;
-	status?: string;
+	status: string | null;
     created_at?: string;
     updated_at?: string;
 }

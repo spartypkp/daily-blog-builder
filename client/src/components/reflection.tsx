@@ -1,11 +1,66 @@
 "use client";
 import { Reflection } from "../lib/types";
+import { init, tx, id } from '@instantdb/react';
+import { DailyBlog } from "@/lib/types";
 
 interface ReflectionSectionProps {
 	updateSliderColor: (value: string) => string;
-	reflection: Reflection;
+	id: string;
 }
-const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor, reflection }) => {
+
+const APP_ID = '3b4a73a0-ffc6-488a-b883-550004ff6e0a';
+
+type Schema = {
+	dailyBlogs: DailyBlog;
+};
+
+const db = init<Schema>({ appId: APP_ID });
+
+function mergeField(id: string, field_name: string, field_value: string) {
+	db.transact([
+		tx.dailyBlogs[id].merge({
+			introduction: {
+				[field_name]: field_value,
+			},
+		}),
+	]);
+}
+
+const ReflectionSection: React.FC<ReflectionSectionProps> = ({ updateSliderColor, id }) => {
+
+	const query = {
+		dailyBlogs: {
+			$: {
+				where: {
+					id: id,
+				},
+			},
+		},
+	};
+	const { isLoading, error, data } = db.useQuery(query);
+	if (isLoading) {
+		return <p>Loading Introduction</p>
+	}
+	if (error) {
+		return <p>Error loading Introduction</p>
+	}
+	let reflection = data.dailyBlogs[0].reflection
+	if (!reflection) {
+		const emptyReflection: Reflection = {
+			learning_outcomes: '',
+			next_steps_short_term: '',
+			next_steps_long_term: '',
+			productivity_level: 50,
+			distraction_level: 50,
+			desire_to_play_steam_games_level: 50,
+			overall_frustration_level: 50,
+			entire_blog_summary: '',
+			technical_challenges: '',
+			interesting_bugs: '',
+			unanswered_questions: ''
+		};
+		reflection = emptyReflection;
+	}
 	return (
 		<div>
 			<div className="mt-4 bg-white rounded-lg p-4">

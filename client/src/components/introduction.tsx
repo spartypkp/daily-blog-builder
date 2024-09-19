@@ -11,19 +11,18 @@ import {Slider} from "@nextui-org/slider";
 // or const { useQuill } = require('react-quilljs');
 
 import 'quill/dist/quill.snow.css'; // Add css for snow theme
-import { Module } from "quill";
+
 type Schema = {
 	dailyBlogs: DailyBlog;
 };
 
 interface IntroductionSectionProps {
-	updateSliderColor: (value: string) => string;
 	selectedBlog: { id: string; } & DailyBlog;
 	db: InstantReactWeb<Schema, {}, false>;
 	tx: TxChunk<InstantGraph<any, any, {}>>;
 }
 
-const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderColor, selectedBlog, db, tx }) => {
+const IntroductionSection: React.FC<IntroductionSectionProps> = ({ selectedBlog, db, tx }) => {
 
 	function mergeField(id: string, field_name: string, field_value: string) {
 		db.transact([
@@ -64,6 +63,7 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 		};
 		intro = emptyIntroduction;
 	}
+	const theme="snow";
 	const modules = {
 		toolbar: [
 			['bold', 'italic', 'underline', 'strike'],
@@ -90,7 +90,7 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 	};
 
 
-	const { quill: quill_personal_context, quillRef: quillRef_personal_context } = useQuill();
+	const { quill: quill_personal_context, quillRef: quillRef_personal_context } = useQuill({theme, modules});
 
 	useEffect(() => {
 		if (quill_personal_context && intro) {
@@ -117,7 +117,7 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 		}
 		// Ensure that this effect runs only when necessary
 	}, [quill_personal_context, selectedBlog.id]);
-	const { quill: quill_daily_goals, quillRef: quillRef_daily_goals } = useQuill();
+	const { quill: quill_daily_goals, quillRef: quillRef_daily_goals } = useQuill({theme, modules});
 	useEffect(() => {
 		if (quill_daily_goals && intro) {
 			const module: any = quill_daily_goals.getModule('toolbar');
@@ -142,7 +142,7 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 		}
 		// Ensure that this effect runs only when necessary
 	}, [quill_daily_goals, selectedBlog.id]);
-	const { quill: quill_learning_focus, quillRef: quillRef_learning_focus } = useQuill();
+	const { quill: quill_learning_focus, quillRef: quillRef_learning_focus } = useQuill({theme, modules});
 	useEffect(() => {
 		if (quill_learning_focus && intro) {
 			const module: any = quill_learning_focus.getModule('toolbar');
@@ -167,7 +167,7 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 		}
 		// Ensure that this effect runs only when necessary
 	}, [quill_learning_focus, selectedBlog.id]);
-	const { quill: quill_challenges, quillRef: quillRef_challenges } = useQuill();
+	const { quill: quill_challenges, quillRef: quillRef_challenges } = useQuill({theme, modules});
 	useEffect(() => {
 		if (quill_challenges && intro) {
 			const module: any = quill_challenges.getModule('toolbar');
@@ -192,7 +192,7 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 		}
 		// Ensure that this effect runs only when necessary
 	}, [quill_challenges, selectedBlog.id]);
-	const { quill: quill_plan_of_action, quillRef: quillRef_plan_of_action } = useQuill();
+	const { quill: quill_plan_of_action, quillRef: quillRef_plan_of_action } = useQuill({theme, modules});
 	useEffect(() => {
 		if (quill_plan_of_action && intro) {
 			const module: any = quill_plan_of_action.getModule('toolbar');
@@ -275,42 +275,65 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ updateSliderC
 				<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">Enthusiasm Level</h2>
 				<Slider 
 					key="enthusiasm_level"
+					aria-label="enthusiasm_level"
 					minValue={0}
 					step={1}
 					maxValue={100}
 					defaultValue={intro.enthusiasm_level || 50}
-					className={`w-full h-2 ${getColor(intro.enthusiasm_level || 50, "enthusiasm_level")} rounded-lg appearance-none cursor-pointer`}
+					classNames={{
+						base:`w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
+						filler: `${getColor(intro.enthusiasm_level || 50, "enthusiasm_level")}`,
+						thumb: `transition-transform ${getColor(intro.enthusiasm_level || 50, "enthusiasm_level")} shadow-small rounded-full w-5 h-5`
+					}}
 					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "enthusiasm_level", value)}></Slider>
 
 				<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">Burnout Level</h2>
 				<Slider 
 					key="burnout_level"
+					aria-label="burnout_level"
 					minValue={0}
 					step={1}
 					maxValue={100}
 					defaultValue={intro.burnout_level || 50}
-					className={`w-full h-2 ${getColor(intro.burnout_level || 50, "burnout_level")} rounded-lg appearance-none cursor-pointer`}
+					classNames={{
+						base:`w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
+						filler: `${getColor(intro.burnout_level || 50, "burnout_level")}`,
+						thumb: `transition-transform ${getColor(intro.burnout_level || 50, "burnout_level")} shadow-small rounded-full w-5 h-5`
+					}}
 					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "burnout_level", value)}></Slider>
 
 				<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">LeetCode Hatred</h2>
 				<Slider 
 					key="leetcode_hatred_level"
+					aria-label="leetcode_hatred_level"
 					minValue={0}
 					step={1}
 					maxValue={100}
 					defaultValue={intro.leetcode_hatred_level || 50}
-					className={`w-full h-2 ${getColor(intro.leetcode_hatred_level || 50, "leetcode_hatred_level")} rounded-lg appearance-none cursor-pointer`}
+					classNames={{
+						base:`w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
+						filler: `${getColor(intro.leetcode_hatred_level || 50, "leetcode_hatred_level")}`,
+						thumb: `transition-transform ${getColor(intro.leetcode_hatred_level || 50, "leetcode_hatred_level")} shadow-small rounded-full w-5 h-5`
+					}}
 					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "leetcode_hatred_level", value)}></Slider>
 
 				<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">Focus Level</h2>
 				<Slider 
 					key="focus_level"
+					aria-label="focus_level"
 					minValue={0}
 					step={1}
 					maxValue={100}
 					defaultValue={intro.focus_level || 50}
-					className={`w-full h-2 ${getColor(intro.focus_level || 50, "focus_level")} rounded-lg appearance-none cursor-pointer`}
-					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "focus_level", value)}></Slider>
+
+					classNames={{
+						base:`w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
+						filler: `${getColor(intro.focus_level || 50, "focus_level")}`,
+						thumb: `transition-transform ${getColor(intro.focus_level || 50, "focus_level")} shadow-small rounded-full w-5 h-5`
+					}}
+					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "focus_level", value)}>
+				</Slider>
+					
 
 			</div>
 

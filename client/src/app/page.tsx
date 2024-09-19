@@ -5,11 +5,13 @@ import { init, tx, id } from '@instantdb/react';
 import { DailyBlog, Introduction, Task, Reflection } from "@/lib/types";
 import IntroductionSection from '@/components/introduction';
 import ReflectionSection from '@/components/reflection';
+import TaskSection from '@/components/task';
 import DateSelector from "@/components/dateSelector";
 import { useQuill } from 'react-quilljs';
 // or const { useQuill } = require('react-quilljs');
 
 import 'quill/dist/quill.snow.css'; // Add css for snow theme
+import { Button } from "@/components/ui/button";
 
 // ID for app: Instant Tutorial Todo App
 const APP_ID = '3b4a73a0-ffc6-488a-b883-550004ff6e0a';
@@ -28,23 +30,12 @@ const query = {
 function App() {
 	const today = (new Date).toISOString().slice(0, 10);
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
-	const {isLoading, error, data} = db.useQuery(query);
-	
+	const { isLoading, error, data } = db.useQuery(query);
+	const [taskIndex, setTaskIndex] = useState<number>(0);
+
 	const dailyBlogs = data?.dailyBlogs;
 
-	const selectedBlog: ({ id: string; } & DailyBlog) | undefined = useMemo(() => {
-		console.log(`Inside useMemo, looking for selected blog with date: ${selectedDate}`)
-		console.log(`dailyBlogs is undefined: ${dailyBlogs === undefined}`)
-		const result = dailyBlogs?.find((b) => b.date === selectedDate);
-		console.log(`Returning result blog: ${JSON.stringify(result)}`)
-		return result
-	}, [selectedDate]);
-
-	// iterate through dailyBlogs, finding the blog which has today's date (may not exist!). Set selectedBlog
-
-	if (!selectedBlog && !isLoading && selectedDate) {
-		console.log(`CorrectBlog is undefined. Creating empty blog!`);
-		const newId: string = id();
+	function addTask(selectedBlog: { id: string; } & DailyBlog) {
 		const emptyTask: Task = {
 			task_goal: '',
 			task_description: '',
@@ -64,6 +55,36 @@ function App() {
 			research_questions: '',
 			tools_used: ''
 		};
+		// Update the index to the new task
+		setTaskIndex(taskIndex + 1);
+
+		// Update the database
+		db.transact([
+			tx.dailyBlogs[selectedBlog.id].merge({
+				tasks: {
+					[taskIndex]: emptyTask
+				}
+			})
+		]);
+	}
+	function deleteTask(selectedBlog: { id: string; } & DailyBlog, taskIndexToDelete: number) {
+		// Delete a task indicated by the taskIndex. Calls merge with a null value
+		db.transact([tx.dailyBlogs[selectedBlog.id].merge({
+			tasks: {
+				[taskIndexToDelete]: null
+			}
+		})]);
+	}
+
+	const selectedBlog: ({ id: string; } & DailyBlog) | undefined = useMemo(() => {
+		const result = dailyBlogs?.find((b) => b.date === selectedDate);
+		return result;
+	}, [selectedDate]);
+
+	// iterate through dailyBlogs, finding the blog which has today's date (may not exist!). Set selectedBlog
+
+	if (!selectedBlog && !isLoading && selectedDate) {
+		const newId: string = id();
 		let empty_blog = {
 			"id": newId,
 			"date": today,
@@ -72,26 +93,28 @@ function App() {
 			"created_at": (new Date).toDateString(),
 			"day_count": calculateDayCount(),
 			"status": null,
-			"blog_tags": {},
-			"tasks": [emptyTask]
+			"blog_tags": {}
 
 		};
 
 		db.transact([tx.dailyBlogs[newId].update(empty_blog)]);
+	} else if (selectedBlog && !selectedBlog.tasks) {
+		// Blog is not null and selectedBlog.tasks is empty
+		addTask(selectedBlog);
 	}
 
 
-	
+
 
 	const handleDateChange = (newDate: string) => {
-		console.log(`Handling date change! newDate: ${newDate}`)
+		console.log(`Handling date change! newDate: ${newDate}`);
 		setSelectedDate(newDate);
 	};
 
 	if (isLoading) {
-		return <p>loading</p>
+		return <p>loading</p>;
 	}
-	
+
 
 	return (
 		<div className="bg-white p-4">
@@ -110,57 +133,84 @@ function App() {
 
 
 			</header>
-			
+
 			{selectedBlog && (
 				<div>
 					<section className="goals mb-8 bg-gray-200 shadow-md rounded-lg p-6">
-				<div className="flex justify-between items-center">
+						<div className="flex justify-between items-center">
 
-				</div>
-				<IntroductionSection selectedBlog={selectedBlog!} updateSliderColor={updateSliderColor} db={db} tx={tx} />
+						</div>
+						<IntroductionSection selectedBlog={selectedBlog!} db={db} tx={tx} />
 
-			</section>
+					</section>
+					{selectedBlog.tasks && (
+						<section className="tasks mb-8 bg-gray-200 shadow-md rounded-lg p-6">
+							<div className="flex justify-between items-center">
 
-			<section className="tasks mb-8 bg-gray-200 shadow-md rounded-lg p-6">
-				<div className="flex justify-between items-center">
+							</div>
+							<div id="daily-tasks" className="mx-auto">
+								<div id="tabs-container" className="tabs-container flex justify-center mb-2 border-b border-gray-300">
+									{Object.entries(selectedBlog.tasks).map(([taskId, task]) => (
+										<Button
+											key={taskId}
+											onClick={() => setTaskIndex(Number(taskId))}
+											className={`tab text-gray-600 py-2 px-4 ${taskIndex === Number(taskId) ? 'text-blue-500 border-blue-500' : 'text-gray-600 border-transparent'} hover:text-blue-500 focus:outline-none border-b-2 border-transparent hover:border-blue-500`}>
+											Task {taskId}
+										</Button>
 
-				</div>
-				<div id="daily-tasks" className="mx-auto hidden">
-					<div id="tabs-container" className="tabs-container flex justify-center mb-2 border-b border-gray-300">
-
-					</div>
-					<div className="text-center">
-						<button type="button" onClick={(e) => add_task()}
-							className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-150">+
-							Add Task</button>
-					</div>
-					<div className="tab-content mt-4" id="tabContent">
-
-					</div>
-				</div>
-			</section>
+									))}
 
 
-			<section className="reflection mb-8 bg-gray-200 shadow-md rounded-lg p-6">
-				<div className="flex justify-between items-center">
+								</div>
+								<div className="text-center">
+									<button type="button" onClick={(e) => addTask(selectedBlog)}
+										className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-150">+
+										Add Task</button>
+								</div>
+								<div className="tab-content mt-4" id="tabContent">
+									{Object.entries(selectedBlog.tasks).map(([taskId, task]) => (
+										<div key={taskId}>
+											{taskIndex === Number(taskId) &&
+												<TaskSection
+													selectedBlog={selectedBlog}
+													taskId={Number(taskId)}
+													db={db}
+													tx={tx}
+													deleteTask={deleteTask}
+												/>
+											}
+										</div>
+									))}
 
-				</div>
-				<ReflectionSection selectedBlog={selectedBlog!} updateSliderColor={updateSliderColor} db={db} tx={tx} />
-			</section>
+								</div>
+							</div>
+						</section>
+
+					)}
 
 
 
-			<footer className="text-center">
-				<button type="button" onClick={(e) => edit_blog()}
-					className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Edit Blog</button>
-				<button type="button" onClick={(e) => publish_blog()}
-					className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">Publish Blog</button>
-			</footer>
+
+					<section className="reflection mb-8 bg-gray-200 shadow-md rounded-lg p-6">
+						<div className="flex justify-between items-center">
+
+						</div>
+						<ReflectionSection selectedBlog={selectedBlog!} db={db} tx={tx} />
+					</section>
+
+
+
+					<footer className="text-center">
+						<button type="button" onClick={(e) => edit_blog()}
+							className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Edit Blog</button>
+						<button type="button" onClick={(e) => publish_blog()}
+							className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">Publish Blog</button>
+					</footer>
 				</div>
 			)}
 
-			
-			
+
+
 		</div >
 	);
 }
@@ -168,15 +218,10 @@ function App() {
 function edit_blog() {
 	return;
 }
-function fetchBlogData(date: string) {
-	return;
-}
 function updateSliderColor(field_name: string): string {
 	return "";
 }
-function add_task() {
-	return;
-}
+
 function publish_blog() {
 	return;
 }
@@ -192,6 +237,7 @@ const calculateDayCount = (): number => {
 // Function to create an empty daily blog
 export const createEmptyDailyBlog = (today: string): DailyBlog => {
 	const emptyTask: Task = {
+		task_name: '',
 		task_goal: '',
 		task_description: '',
 		task_expected_difficulty: 50,

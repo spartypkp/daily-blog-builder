@@ -58,7 +58,7 @@ export interface DailyBlog {
 	blog_description: string;
 	blog_tags: any;
     introduction?: Introduction;
-    tasks: Task[];
+    tasks: { [taskId: number]: Task }; 
     reflection?: Reflection;
 	status: string | null;
     created_at?: string;

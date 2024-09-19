@@ -9,7 +9,7 @@ import { useQuill } from 'react-quilljs';
 import { Slider } from "@nextui-org/slider";
 import { selectLocalImage } from "@/lib/quillHelpers";
 import { Button } from "./ui/button";
-import { ChangeEvent } from "react";
+
 import { Textarea } from "./ui/textArea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -23,7 +23,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
-import { timeout } from "d3";
+
 
 type Schema = {
 	dailyBlogs: DailyBlog;
@@ -79,7 +79,8 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 				[{ 'size': ['small', false, 'large', 'huge'] }],
 				['image']],
 			handlers: {
-				'code-block': () => { console.log('code-block was clicked'); }
+				'code-block': () => { console.log('code-block was clicked');},
+				
 			}
 		}
 	};
@@ -87,8 +88,7 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 	const { quill: quill_task_goal, quillRef: quillRef_task_goal } = useQuill({ theme, modules });
 	useEffect(() => {
 		if (quill_task_goal && task) {
-			const module: any = quill_task_goal.getModule('toolbar');
-			module.addHandler('image', selectLocalImage);
+			(quill_task_goal.getModule('toolbar') as any).addHandler('image', () => selectLocalImage(quill_task_goal));
 			quill_task_goal.clipboard.dangerouslyPasteHTML(task.task_goal!);
 
 			const key = 'task_goal';
@@ -109,14 +109,15 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 		}
 		// Ensure that this effect runs only when necessary
 	}, [quill_task_goal, task]);
+
 	const { quill: quill_task_description, quillRef: quillRef_task_description } = useQuill({ theme, modules });
 	useEffect(() => {
 		if (quill_task_description && task) {
-			const module: any = quill_task_description.getModule('toolbar');
-			module.addHandler('image', selectLocalImage);
-			quill_task_description.clipboard.dangerouslyPasteHTML(task.next_steps_short_term!);
+			(quill_task_description.getModule('toolbar') as any).addHandler('image', () => selectLocalImage(quill_task_description));
+			
+			quill_task_description.clipboard.dangerouslyPasteHTML(task.task_description!);
 
-			const key = 'next_steps_short_term';
+			const key = 'task_description';
 			const handler = (delta: any, oldDelta: any, source: string) => {
 				if (source === 'user') {
 					const htmlText = quill_task_description.root.innerHTML;
@@ -137,11 +138,11 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 	const { quill: quill_task_planned_approach, quillRef: quillRef_task_planned_approach } = useQuill({ theme, modules });
 	useEffect(() => {
 		if (quill_task_planned_approach && task) {
-			const module: any = quill_task_planned_approach.getModule('toolbar');
-			module.addHandler('image', selectLocalImage);
-			quill_task_planned_approach.clipboard.dangerouslyPasteHTML(task.next_steps_long_term!);
+			(quill_task_planned_approach.getModule('toolbar') as any).addHandler('image', () => selectLocalImage(quill_task_planned_approach));
+			
+			quill_task_planned_approach.clipboard.dangerouslyPasteHTML(task.task_planned_approach!);
 
-			const key = 'next_steps_long_term';
+			const key = 'task_planned_approach';
 			const handler = (delta: any, oldDelta: any, source: string) => {
 				if (source === 'user') {
 					const htmlText = quill_task_planned_approach.root.innerHTML;
@@ -159,32 +160,32 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 		}
 		// Ensure that this effect runs only when necessary
 	}, [quill_task_planned_approach, task]);
-	const { quill: quill_progress_notes, quillRef: quillRef_progress_notes } = useQuill({ theme, modules });
+	const { quill: quill_task_progress_notes, quillRef: quillRef_task_progress_notes } = useQuill({ theme, modules });
 	useEffect(() => {
-		if (quill_progress_notes && task) {
-			const module: any = quill_progress_notes.getModule('toolbar');
-			module.addHandler('image', selectLocalImage);
-			quill_progress_notes.clipboard.dangerouslyPasteHTML(task.personal_context!);
+		if (quill_task_progress_notes && task) {
+			(quill_task_progress_notes.getModule('toolbar') as any).addHandler('image',() => selectLocalImage(quill_task_progress_notes));
+			
+			quill_task_progress_notes.clipboard.dangerouslyPasteHTML(task.task_progress_notes!);
 
 
-			const key = 'personal_context';
+			const key = 'task_progress_notes';
 			const handler = (delta: any, oldDelta: any, source: string) => {
 				if (source === 'user') {
-					const htmlText = quill_progress_notes.root.innerHTML;
+					const htmlText = quill_task_progress_notes.root.innerHTML;
 
 					mergeField(task.id, key, htmlText);
 				}
 			};
 
-			quill_progress_notes.on('text-change', handler);
+			quill_task_progress_notes.on('text-change', handler);
 
 			// Return a cleanup function that explicitly returns void
 			return () => {
-				quill_progress_notes.off('text-change', handler);
+				quill_task_progress_notes.off('text-change', handler);
 			};
 		}
 		// Ensure that this effect runs only when necessary
-	}, [quill_progress_notes, task]);
+	}, [quill_task_progress_notes, task]);
 
 
 	useMemo(() => {
@@ -198,8 +199,8 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 			if (quill_task_planned_approach && task.task_planned_approach) {
 				quill_task_planned_approach.clipboard.dangerouslyPasteHTML(task.task_planned_approach);
 			}
-			if (quill_progress_notes && task.progress_notes) {
-				quill_progress_notes.clipboard.dangerouslyPasteHTML(task.progress_notes);
+			if (quill_task_progress_notes && task.task_progress_notes) {
+				quill_task_progress_notes.clipboard.dangerouslyPasteHTML(task.task_progress_notes);
 			}
 
 		}
@@ -286,7 +287,8 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 
 			<div id={`task-work${task.id}`} className="mb-4 bg-white p-4 border rounded">
 				<h3 className="font-bold">Progress Notes:</h3>
-				<div id={`task_progress_notes${task.id}`} className="min-h-[300px] bg-gray-50 p-4 rounded border" ref={quillRef_progress_notes}></div>
+				<div id={`task_progress_notes${task.id}`} className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_task_progress_notes}></div>
+				
 			</div>
 
 

@@ -76,14 +76,18 @@ const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId,
 
 	const theme = "snow";
 	const modules = {
-		toolbar: [
-			['bold', 'italic', 'underline', 'strike'],
-			['blockquote', 'code-block'],
-			[{ 'list': 'ordered' }, { 'list': 'bullet' }],
-			[{ 'indent': '-1' }, { 'indent': '+1' }],
-			[{ 'size': ['small', false, 'large', 'huge'] }],
-			['image']
-		],
+		toolbar: {
+			container: [
+				['bold', 'italic', 'underline', 'strike'],
+				['code-block'],
+				[{ 'list': 'ordered' }, { 'list': 'bullet' }],
+				[{ 'indent': '-1' }, { 'indent': '+1' }],
+				[{ 'size': ['small', false, 'large', 'huge'] }],
+				['image']],
+			handlers: {
+				'code-block': () => { console.log('code-block was clicked'); }
+			}
+		}
 	};
 
 	const { quill: quill_task_goal, quillRef: quillRef_task_goal } = useQuill({ theme, modules });
@@ -257,13 +261,13 @@ const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId,
 				
 				<h2>Human Reflection</h2>
 				<h3 className="font-bold mt-4">Time Spent Coding:</h3>
-				<input aria-label={`time_spent_coding${taskId}`} type="text" id={`time_spent_coding${taskId}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_coding} />
+				<input aria-label={`time_spent_coding${taskId}`} onChange={(e)=>mergeField(selectedBlog.id, `time_spent_coding${taskId}`, e.target.value)} type="text" id={`time_spent_coding${taskId}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_coding} />
 
 				<h3 className="font-bold mt-4">Time Spent Researching:</h3>
-				<input aria-label={`time_spent_researching${taskId}`} type="text" id={`time_spent_researching${taskId}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_researching} />
+				<input aria-label={`time_spent_researching${taskId}`} onChange={(e)=>mergeField(selectedBlog.id, `time_spent_researching${taskId}`, e.target.value)} type="text" id={`time_spent_researching${taskId}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_researching} />
 
 				<h3 className="font-bold mt-4">Time Spent Debugging:</h3>
-				<input aria-label={`time_spent_debugging${taskId}`} type="text" id={`time_spent_debugging${taskId}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_debugging} />
+				<input aria-label={`time_spent_debugging${taskId}`} onChange={(e)=>mergeField(selectedBlog.id, `time_spent_debugging${taskId}`, e.target.value)} type="text" id={`time_spent_debugging${taskId}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_debugging} />
 
 				
 				<h2>AI Generated Task Reflection</h2>

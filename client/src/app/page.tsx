@@ -27,6 +27,7 @@ const query = {
 	},
 };
 
+
 function App() {
 	const today = (new Date).toISOString().slice(0, 10);
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -102,6 +103,16 @@ function App() {
 		// Blog is not null and selectedBlog.tasks is empty
 		addTask(selectedBlog);
 	}
+
+	useEffect(() => {
+		// Call the suppress function and get the restore function
+		const restoreWarn = suppressQuillWarnings();
+	
+		// Cleanup function to restore console.warn when the component unmounts
+		return () => {
+			restoreWarn;
+		};
+	  }, []);
 
 
 
@@ -296,4 +307,17 @@ export const createEmptyDailyBlog = (today: string): DailyBlog => {
 		status: ''
 	};
 };
+const suppressQuillWarnings = () => {
+	const originalWarn = console.warn;
+	console.warn = function (msg: any, ...optionalParams: any[]) {
+	  if (!msg.includes('quill:toolbar ignoring attaching to nonexistent format')) {
+		originalWarn.call(console, msg, ...optionalParams);
+	  }
+	};
+  
+	// Function to restore the original console.warn
+	return () => console.warn = originalWarn;
+  };
 export default App;
+
+

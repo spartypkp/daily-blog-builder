@@ -59,17 +59,10 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 		reflection = emptyReflection;
 	}
 
-	const theme = "snow";
-	const modules = {
-		toolbar: [
-			['bold', 'italic', 'underline', 'strike'],
-			['blockquote', 'code-block'],
-			[{ 'list': 'ordered' }, { 'list': 'bullet' }],
-			[{ 'indent': '-1' }, { 'indent': '+1' }],
-			[{ 'size': ['small', false, 'large', 'huge'] }],
-			['image']
-		],
-	};
+	
+
+	
+
 	const getColor = (value: number, id: string) => {
 		let newColorClass = '';
 		switch (id) {
@@ -89,6 +82,22 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 				return 'bg-gray-200'; // Default color if none of the cases match
 		}
 		return newColorClass;
+	};
+
+	const theme = "snow";
+	const modules = {
+		toolbar: {
+			container: [
+				['bold', 'italic', 'underline', 'strike'],
+				['code-block'],
+				[{ 'list': 'ordered' }, { 'list': 'bullet' }],
+				[{ 'indent': '-1' }, { 'indent': '+1' }],
+				[{ 'size': ['small', false, 'large', 'huge'] }],
+				['image']],
+			handlers: {
+				'code-block': () => { console.log('code-block was clicked'); }
+			}
+		}
 	};
 
 	const { quill: quill_learning_outcomes, quillRef: quillRef_learning_outcomes } = useQuill({ theme, modules });
@@ -161,6 +170,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 		// Ensure that this effect runs only when necessary
 	}, [quill_next_steps_long_term, selectedBlog.id]);
 
+	
 
 	useMemo(() => {
 		if (reflection) {

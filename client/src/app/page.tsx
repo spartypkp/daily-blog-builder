@@ -12,6 +12,7 @@ import { useQuill } from 'react-quilljs';
 
 import 'quill/dist/quill.snow.css'; // Add css for snow theme
 import { Button } from "@/components/ui/button";
+import { damp } from "three/src/math/MathUtils.js";
 
 // ID for app: Instant Tutorial Todo App
 const APP_ID = '3b4a73a0-ffc6-488a-b883-550004ff6e0a';
@@ -24,7 +25,9 @@ const db = init<Schema>({ appId: APP_ID });
 
 const query = {
 	dailyBlogs: {
+		tasks: {},
 	},
+	
 };
 
 
@@ -32,12 +35,13 @@ function App() {
 	const today = (new Date).toISOString().slice(0, 10);
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
 	const { isLoading, error, data } = db.useQuery(query);
-	const [taskIndex, setTaskIndex] = useState<number>(0);
-
+	const [activeTask, setActiveTask] = useState<string | null>(null);
+	
 	const dailyBlogs = data?.dailyBlogs;
 
 	function addTask(selectedBlog: { id: string; } & DailyBlog) {
 		const emptyTask: Task = {
+			task_name: '',
 			task_goal: '',
 			task_description: '',
 			task_expected_difficulty: 50,
@@ -54,33 +58,49 @@ function App() {
 			reflection_successes: '',
 			reflection_failures: '',
 			research_questions: '',
-			tools_used: ''
+			tools_used: '',
+			task_created_at: new Date(),
 		};
 		// Update the index to the new task
-		setTaskIndex(taskIndex + 1);
+		
 
 		// Update the database
+		const newTaskId = id()
 		db.transact([
-			tx.dailyBlogs[selectedBlog.id].merge({
-				tasks: {
-					[taskIndex]: emptyTask
+			tx.task[newTaskId].update(emptyTask),
+			tx.task[newTaskId].link({dailyBlogs: selectedBlog.id })
+
+		]);
+		setActiveTask(newTaskId);
+	}
+
+
+	function deleteTask(task: { id: string; } & Task) {
+		if (selectedBlog?.tasks && selectedBlog.tasks.length == 1) {
+			// Pass if trying to delete the only Task
+			console.log(`Cannot delete a task when it's the only task for a blog!`)
+		} else {
+			console.log(`Deleting task with id: ${task.id}`)
+			// Delete a task indicated by the taskIndex. Calls merge with a null value
+			db.transact([tx.task[task.id].delete()]);
+			// Select the first task that wasn't the deleted one. Should trigger re-render
+			selectedBlog!.tasks!.map((oldTask) => {
+				if (oldTask.id !== task.id) {
+					setActiveTask(oldTask.id)
+					return;
 				}
 			})
-		]);
-	}
-	function deleteTask(selectedBlog: { id: string; } & DailyBlog, taskIndexToDelete: number) {
-		// Delete a task indicated by the taskIndex. Calls merge with a null value
-		db.transact([tx.dailyBlogs[selectedBlog.id].merge({
-			tasks: {
-				[taskIndexToDelete]: null
-			}
-		})]);
+		}
+		
 	}
 
 	const selectedBlog: ({ id: string; } & DailyBlog) | undefined = useMemo(() => {
-		const result = dailyBlogs?.find((b) => b.date === selectedDate);
-		return result;
-	}, [selectedDate]);
+
+		const blog = dailyBlogs?.find((b) => b.date === selectedDate);
+		//console.log(`selectedBlog has changed! ${JSON.stringify(blog)}`)
+		// Map over task (Task[]), get all tasks
+		return blog;
+	}, [selectedDate, activeTask]);
 
 	// iterate through dailyBlogs, finding the blog which has today's date (may not exist!). Set selectedBlog
 
@@ -99,23 +119,17 @@ function App() {
 		};
 
 		db.transact([tx.dailyBlogs[newId].update(empty_blog)]);
-	} else if (selectedBlog && !selectedBlog.tasks) {
-		// Blog is not null and selectedBlog.tasks is empty
-		addTask(selectedBlog);
+		
+	} else if (selectedBlog) {
+		
+		if (selectedBlog.tasks && selectedBlog.tasks.length == 0) {
+			console.log("Adding task!")
+			addTask(selectedBlog)
+		} else if (activeTask === null) {
+			const firstActiveTask = selectedBlog.tasks![0].id;
+			setActiveTask(firstActiveTask);
+		}
 	}
-
-	useEffect(() => {
-		// Call the suppress function and get the restore function
-		const restoreWarn = suppressQuillWarnings();
-	
-		// Cleanup function to restore console.warn when the component unmounts
-		return () => {
-			restoreWarn;
-		};
-	  }, []);
-
-
-
 
 	const handleDateChange = (newDate: string) => {
 		console.log(`Handling date change! newDate: ${newDate}`);
@@ -125,6 +139,9 @@ function App() {
 	if (isLoading) {
 		return <p>loading</p>;
 	}
+	
+
+	
 
 
 	return (
@@ -161,12 +178,12 @@ function App() {
 							</div>
 							<div id="daily-tasks" className="mx-auto">
 								<div id="tabs-container" className="tabs-container flex justify-center mb-2 border-b border-gray-300">
-									{Object.entries(selectedBlog.tasks).map(([taskId, task]) => (
+									{selectedBlog.tasks.map((task) => (
 										<Button
-											key={taskId}
-											onClick={() => setTaskIndex(Number(taskId))}
-											className={`tab text-gray-600 py-2 px-4 ${taskIndex === Number(taskId) ? 'text-blue-500 border-blue-500' : 'text-gray-600 border-transparent'} hover:text-blue-500 focus:outline-none border-b-2 border-transparent hover:border-blue-500`}>
-											Task {taskId}
+											key={task.id}
+											onClick={() => setActiveTask(task.id)}
+											className={`tab text-gray-600 py-2 px-4 ${activeTask === task.id ? 'text-blue-500 border-blue-500' : 'text-gray-600 border-transparent'} hover:text-blue-500 focus:outline-none border-b-2 border-transparent hover:border-blue-500`}>
+											{task.task_name || 'New Task'}
 										</Button>
 
 									))}
@@ -179,15 +196,15 @@ function App() {
 										Add Task</button>
 								</div>
 								<div className="tab-content mt-4" id="tabContent">
-									{Object.entries(selectedBlog.tasks).map(([taskId, task]) => (
-										<div key={taskId}>
-											{taskIndex === Number(taskId) &&
+									{selectedBlog.tasks.map((task) => (
+										<div key={task.id}>
+											{activeTask === task.id &&
 												<TaskSection
-													selectedBlog={selectedBlog}
-													taskId={Number(taskId)}
+													task={task}
 													db={db}
 													tx={tx}
 													deleteTask={deleteTask}
+													setActiveTask={setActiveTask}
 												/>
 											}
 										</div>
@@ -229,9 +246,7 @@ function App() {
 function edit_blog() {
 	return;
 }
-function updateSliderColor(field_name: string): string {
-	return "";
-}
+
 
 function publish_blog() {
 	return;
@@ -246,78 +261,68 @@ const calculateDayCount = (): number => {
 };
 
 // Function to create an empty daily blog
-export const createEmptyDailyBlog = (today: string): DailyBlog => {
-	const emptyTask: Task = {
-		task_name: '',
-		task_goal: '',
-		task_description: '',
-		task_expected_difficulty: 50,
-		task_planned_approach: '',
-		task_progress_notes: '',
-		task_start_summary: '',
-		time_spent_coding: '',
-		time_spent_researching: '',
-		time_spent_debugging: '',
-		task_reflection_summary: '',
-		output_or_result: '',
-		challenges_encountered: '',
-		follow_up_tasks: '',
-		reflection_successes: '',
-		reflection_failures: '',
-		research_questions: '',
-		tools_used: ''
-	};
+// export const createEmptyDailyBlog = (today: string): DailyBlog => {
+// 	const emptyTask: Task = {
+// 		task_name: '',
+// 		task_goal: '',
+// 		task_description: '',
+// 		task_expected_difficulty: 50,
+// 		task_planned_approach: '',
+// 		task_progress_notes: '',
+// 		task_start_summary: '',
+// 		time_spent_coding: '',
+// 		time_spent_researching: '',
+// 		time_spent_debugging: '',
+// 		task_reflection_summary: '',
+// 		output_or_result: '',
+// 		challenges_encountered: '',
+// 		follow_up_tasks: '',
+// 		reflection_successes: '',
+// 		reflection_failures: '',
+// 		research_questions: '',
+// 		tools_used: ''
+// 	};
 
-	const emptyIntroduction: Introduction = {
-		personal_context: '',
-		daily_goals: '',
-		learning_focus: '',
-		challenges: '',
-		plan_of_action: '',
-		focus_level: 50,
-		enthusiasm_level: 50,
-		burnout_level: 50,
-		leetcode_hatred_level: 50,
-		introduction_summary: ''
-	};
+// 	const emptyIntroduction: Introduction = {
+// 		personal_context: '',
+// 		daily_goals: '',
+// 		learning_focus: '',
+// 		challenges: '',
+// 		plan_of_action: '',
+// 		focus_level: 50,
+// 		enthusiasm_level: 50,
+// 		burnout_level: 50,
+// 		leetcode_hatred_level: 50,
+// 		introduction_summary: ''
+// 	};
 
-	const emptyReflection: Reflection = {
-		learning_outcomes: '',
-		next_steps_short_term: '',
-		next_steps_long_term: '',
-		productivity_level: 50,
-		distraction_level: 50,
-		desire_to_play_steam_games_level: 50,
-		overall_frustration_level: 50,
-		entire_blog_summary: '',
-		technical_challenges: '',
-		interesting_bugs: '',
-		unanswered_questions: ''
-	};
+// 	const emptyReflection: Reflection = {
+// 		learning_outcomes: '',
+// 		next_steps_short_term: '',
+// 		next_steps_long_term: '',
+// 		productivity_level: 50,
+// 		distraction_level: 50,
+// 		desire_to_play_steam_games_level: 50,
+// 		overall_frustration_level: 50,
+// 		entire_blog_summary: '',
+// 		technical_challenges: '',
+// 		interesting_bugs: '',
+// 		unanswered_questions: ''
+// 	};
 
-	return {
-		date: today,
-		day_count: calculateDayCount(),
-		blog_title: '',
-		blog_description: '',
-		blog_tags: [],
-		introduction: emptyIntroduction,
-		tasks: [emptyTask],
-		reflection: emptyReflection,
-		status: ''
-	};
-};
-const suppressQuillWarnings = () => {
-	const originalWarn = console.warn;
-	console.warn = function (msg: any, ...optionalParams: any[]) {
-	  if (!msg.includes('quill:toolbar ignoring attaching to nonexistent format')) {
-		originalWarn.call(console, msg, ...optionalParams);
-	  }
-	};
-  
-	// Function to restore the original console.warn
-	return () => console.warn = originalWarn;
-  };
+// 	return {
+// 		date: today,
+// 		day_count: calculateDayCount(),
+// 		blog_title: '',
+// 		blog_description: '',
+// 		blog_tags: [],
+// 		introduction: emptyIntroduction,
+// 		tasks: [emptyTask],
+// 		reflection: emptyReflection,
+// 		status: ''
+// 	};
+// };
+
 export default App;
 
 

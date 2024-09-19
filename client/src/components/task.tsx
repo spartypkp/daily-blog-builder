@@ -9,70 +9,64 @@ import { useQuill } from 'react-quilljs';
 import { Slider } from "@nextui-org/slider";
 import { selectLocalImage } from "@/lib/quillHelpers";
 import { Button } from "./ui/button";
+import { ChangeEvent } from "react";
+import { Textarea } from "./ui/textArea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { timeout } from "d3";
 
 type Schema = {
 	dailyBlogs: DailyBlog;
 };
 interface TaskSectionProps {
-	selectedBlog: { id: string; } & DailyBlog;
+	task: { id: string; } & Task;
 	db: InstantReactWeb<Schema, {}, false>;
 	tx: TxChunk<InstantGraph<any, any, {}>>;
-	taskId: number;
-	deleteTask: (selectedBlog: { id: string; } & DailyBlog, taskId: number) => void;
+	deleteTask: (task: { id: string; } & Task) => void;
+	setActiveTask: (taskId: string | null) => void;
 }
 
-const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId, deleteTask }) => {
+const FormSchema = z.object({
+	task_name: z
+		.string()
+		.max(100, {
+			message: "Name must not be longer than 100 characters.",
+		}),
+});
 
-	function mergeField(id: string, field_name: string, field_value: string) {
+const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, setActiveTask }) => {
+
+
+
+	function mergeField(taskId: string, field_name: string, field_value: string) {
 		db.transact([
-			tx.dailyBlogs[id].merge({
-				tasks: {
-					[taskId]: {
-						[field_name]: field_value
-					},
-				},
+			tx.task[taskId].update({
+				[field_name]: field_value
 			}),
 		]);
 	}
 
-	function mergeNumericField(id: string, field_name: string, field_value: number | number[]) {
+	function mergeNumericField(taskId: string, field_name: string, field_value: number | number[]) {
 		if (typeof (field_value) !== 'number') {
 			field_value = field_value[0];
 		}
 		db.transact([
-			tx.dailyBlogs[id].merge({
-				tasks: {
-					[taskId]: {
-						[field_name]: field_value
-					},
-				},
+			tx.task[taskId].update({
+				[field_name]: field_value
 			}),
 		]);
 	}
 
-	let task = selectedBlog.tasks[taskId];
-	if (!task) {
-		const emptyTask: Task = {
-			task_goal: '',
-			task_description: '',
-			task_expected_difficulty: 50,
-			task_planned_approach: '',
-			task_progress_notes: '',
-			task_start_summary: '',
-			time_spent_coding: '',
-			time_spent_researching: '',
-			time_spent_debugging: '',
-			task_reflection_summary: '',
-			output_or_result: '',
-			challenges_encountered: '',
-			follow_up_tasks: '',
-			reflection_successes: '',
-			reflection_failures: '',
-			research_questions: '',
-			tools_used: ''
-		};
-		task = emptyTask;
-	}
 
 	const theme = "snow";
 	const modules = {
@@ -102,7 +96,7 @@ const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId,
 				if (source === 'user') {
 					const htmlText = quill_task_goal.root.innerHTML;
 
-					mergeField(selectedBlog.id, key, htmlText);
+					mergeField(task.id, key, htmlText);
 				}
 			};
 
@@ -114,7 +108,7 @@ const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId,
 			};
 		}
 		// Ensure that this effect runs only when necessary
-	}, [quill_task_goal, selectedBlog.id]);
+	}, [quill_task_goal, task]);
 	const { quill: quill_task_description, quillRef: quillRef_task_description } = useQuill({ theme, modules });
 	useEffect(() => {
 		if (quill_task_description && task) {
@@ -127,7 +121,7 @@ const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId,
 				if (source === 'user') {
 					const htmlText = quill_task_description.root.innerHTML;
 
-					mergeField(selectedBlog.id, key, htmlText);
+					mergeField(task.id, key, htmlText);
 				}
 			};
 
@@ -139,7 +133,7 @@ const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId,
 			};
 		}
 		// Ensure that this effect runs only when necessary
-	}, [quill_task_description, selectedBlog.id]);
+	}, [quill_task_description, task]);
 	const { quill: quill_task_planned_approach, quillRef: quillRef_task_planned_approach } = useQuill({ theme, modules });
 	useEffect(() => {
 		if (quill_task_planned_approach && task) {
@@ -152,7 +146,7 @@ const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId,
 				if (source === 'user') {
 					const htmlText = quill_task_planned_approach.root.innerHTML;
 
-					mergeField(selectedBlog.id, key, htmlText);
+					mergeField(task.id, key, htmlText);
 				}
 			};
 
@@ -164,8 +158,8 @@ const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId,
 			};
 		}
 		// Ensure that this effect runs only when necessary
-	}, [quill_task_planned_approach, selectedBlog.id]);
-	const { quill: quill_progress_notes, quillRef: quillRef_progress_notes } = useQuill({theme, modules});
+	}, [quill_task_planned_approach, task]);
+	const { quill: quill_progress_notes, quillRef: quillRef_progress_notes } = useQuill({ theme, modules });
 	useEffect(() => {
 		if (quill_progress_notes && task) {
 			const module: any = quill_progress_notes.getModule('toolbar');
@@ -178,7 +172,7 @@ const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId,
 				if (source === 'user') {
 					const htmlText = quill_progress_notes.root.innerHTML;
 
-					mergeField(selectedBlog.id, key, htmlText);
+					mergeField(task.id, key, htmlText);
 				}
 			};
 
@@ -190,8 +184,8 @@ const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId,
 			};
 		}
 		// Ensure that this effect runs only when necessary
-	}, [quill_progress_notes, selectedBlog.id]);
-	
+	}, [quill_progress_notes, task]);
+
 
 	useMemo(() => {
 		if (task) {
@@ -210,18 +204,58 @@ const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId,
 
 		}
 
-	}, [selectedBlog.id]);
+	}, [task]);
 
+	const form = useForm<z.infer<typeof FormSchema>>({
+		resolver: zodResolver(FormSchema),
+	});
+
+	function onSubmit(data: z.infer<typeof FormSchema>) {
+		mergeField(task.id, "task_name", data.task_name);
+		// Stupid hack to trigger a re-render
+		setActiveTask(null);
+		setTimeout(() => {
+			setActiveTask(task.id);
+		}, 1000); // Delay in milliseconds
+	}
 
 
 	return (
 		<div>
-			<div id={`task-start${taskId}`} className="mb-4 bg-white p-4 border rounded">
+			<div id={`task-start${task.id}`} className="mb-4 bg-white p-4 border rounded">
+				<h3 className="font-bold mt-2">Task Name:</h3>
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="w-full p-2 border border-gray-300 rounded">
+						<FormField
+							control={form.control}
+							name="task_name"
+							render={({ field }) => (
+								<FormItem>
+									
+									<FormControl>
+										<Textarea
+											placeholder={task.task_name}
+											className="resize-none"
+											{...field}
+										/>
+									</FormControl>
+									<FormDescription>
+										Change the task name.
+									</FormDescription>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<Button type="submit">Submit</Button>
+					</form>
+				</Form>
+				
+
 				<h3 className="font-bold mt-2">Task Goal:</h3>
-				<div id={`task_goal${taskId}`} className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_task_goal}></div>
+				<div id={`task_goal${task.id}`} className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_task_goal}></div>
 
 				<h3 className="font-bold mt-2">Task Description:</h3>
-				<div id={`task_description${taskId}`} className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_task_description}></div>
+				<div id={`task_description${task.id}`} className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_task_description}></div>
 
 				<h3 className="font-bold mt-2">Expected Difficulty:</h3>
 				<Slider
@@ -237,66 +271,66 @@ const TaskSection: React.FC<TaskSectionProps> = ({ selectedBlog, db, tx, taskId,
 						filler: `bg-blue`,
 						thumb: `transition-transform bg-blue shadow-small rounded-full w-5 h-5`
 					}}
-					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "task_expected_difficulty", value)}>
+					onChangeEnd={(value) => mergeNumericField(task.id, "task_expected_difficulty", value)}>
 				</Slider>
 
 
 				<h3 className="font-bold mt-2">Planned Approach:</h3>
-				<div id={`task_planned_approach${taskId}`} className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_task_planned_approach}></div>
+				<div id={`task_planned_approach${task.id}`} className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_task_planned_approach}></div>
 
 				<h3 className="font-bold mt-4">Dave's Task Summary:</h3>
-				<div id={`task_start_summary${taskId}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.task_start_summary}</div>
+				<div id={`task_start_summary${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.task_start_summary}</div>
 			</div>
 
 
 
-			<div id={`task-work${taskId}`} className="mb-4 bg-white p-4 border rounded">
+			<div id={`task-work${task.id}`} className="mb-4 bg-white p-4 border rounded">
 				<h3 className="font-bold">Progress Notes:</h3>
-				<div id={`task_progress_notes${taskId}`} className="min-h-[300px] bg-gray-50 p-4 rounded border" ref={quillRef_progress_notes}></div>
+				<div id={`task_progress_notes${task.id}`} className="min-h-[300px] bg-gray-50 p-4 rounded border" ref={quillRef_progress_notes}></div>
 			</div>
 
 
 
-			<div id={`task-reflection${taskId}`} className="mb-4 bg-white p-4 border rounded">
-				
+			<div id={`task-reflection${task.id}`} className="mb-4 bg-white p-4 border rounded">
+
 				<h2>Human Reflection</h2>
 				<h3 className="font-bold mt-4">Time Spent Coding:</h3>
-				<input aria-label={`time_spent_coding${taskId}`} onChange={(e)=>mergeField(selectedBlog.id, `time_spent_coding${taskId}`, e.target.value)} type="text" id={`time_spent_coding${taskId}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_coding} />
+				<input aria-label={`time_spent_coding${task.id}`} onChange={(e) => mergeField(task.id, `time_spent_coding`, e.target.value)} type="text" id={`time_spent_coding${task.id}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_coding} />
 
 				<h3 className="font-bold mt-4">Time Spent Researching:</h3>
-				<input aria-label={`time_spent_researching${taskId}`} onChange={(e)=>mergeField(selectedBlog.id, `time_spent_researching${taskId}`, e.target.value)} type="text" id={`time_spent_researching${taskId}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_researching} />
+				<input aria-label={`time_spent_researching${task.id}`} onChange={(e) => mergeField(task.id, `time_spent_researching`, e.target.value)} type="text" id={`time_spent_researching${task.id}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_researching} />
 
 				<h3 className="font-bold mt-4">Time Spent Debugging:</h3>
-				<input aria-label={`time_spent_debugging${taskId}`} onChange={(e)=>mergeField(selectedBlog.id, `time_spent_debugging${taskId}`, e.target.value)} type="text" id={`time_spent_debugging${taskId}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_debugging} />
+				<input aria-label={`time_spent_debugging${task.id}`} onChange={(e) => mergeField(task.id, `time_spent_debugging`, e.target.value)} type="text" id={`time_spent_debugging${task.id}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_debugging} />
 
-				
+
 				<h2>AI Generated Task Reflection</h2>
 				<h3 className="font-bold">AI Reflection Summary:</h3>
-				<div id={`task_reflection_summary${taskId}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.task_reflection_summary}</div>
+				<div id={`task_reflection_summary${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.task_reflection_summary}</div>
 
 				<h3 className="font-bold mt-4">Output or Result:</h3>
-				<div id={`output_or_result${taskId}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.output_or_result}</div>
+				<div id={`output_or_result${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.output_or_result}</div>
 
 				<h3 className="font-bold mt-4">Challenges Encountered:</h3>
-				<div id={`challenges_encountered${taskId}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.challenges_encountered}</div>
+				<div id={`challenges_encountered${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.challenges_encountered}</div>
 
 				<h3 className="font-bold mt-4">Follow-Up Tasks:</h3>
-				<div id={`follow_up_tasks${taskId}`} className="min-h-[150px] bg-gray-50 p-4 rounded border">{task.follow_up_tasks}</div>
+				<div id={`follow_up_tasks${task.id}`} className="min-h-[150px] bg-gray-50 p-4 rounded border">{task.follow_up_tasks}</div>
 
 				<h3 className="font-bold mt-4">Successes:</h3>
-				<div id={`reflection_successes${taskId}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.reflection_successes}</div>
+				<div id={`reflection_successes${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.reflection_successes}</div>
 
 				<h3 className="font-bold mt-4">Failures or Shortcomings:</h3>
-				<div id={`reflection_failures${taskId}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.reflection_failures}</div>
+				<div id={`reflection_failures${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.reflection_failures}</div>
 
 				<h3 className="font-bold mt-4">Research Questions:</h3>
-				<div id={`research_questions${taskId}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.research_questions}</div>
+				<div id={`research_questions${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.research_questions}</div>
 
 				<h3 className="font-bold mt-4">Tools Used:</h3>
-				<div id={`tools_used${taskId}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.tools_used}</div>
+				<div id={`tools_used${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.tools_used}</div>
 			</div>
 
-			<Button onClick={() => deleteTask(selectedBlog, taskId)}
+			<Button onClick={() => deleteTask(task)}
 				className="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Remove Task</Button>
 		</div>
 	);

@@ -18,12 +18,12 @@ export interface Introduction {
 
 export interface Task {
 	[key: string]: any
+	task_name?: string;
     task_goal?: string;
     task_description?: string;
     task_expected_difficulty?: number;
     task_planned_approach?: string;
     task_progress_notes?: string;// Default ''
-    task_start_summary?: string;  // Default ''
     time_spent_coding?: string;
     time_spent_researching?: string;
     time_spent_debugging?: string;
@@ -49,6 +49,7 @@ export interface Reflection {
     technical_challenges?: string; // Default ''
     interesting_bugs?: string; // Default ''
     unanswered_questions?: string; // Default ''
+	
 }
 export interface DailyBlog {
 	id?: string;
@@ -58,7 +59,7 @@ export interface DailyBlog {
 	blog_description: string;
 	blog_tags: any;
     introduction?: Introduction;
-    tasks: { [taskId: number]: Task }; 
+	tasks?: ({ id: string; } & Task)[];
     reflection?: Reflection;
 	status: string | null;
     created_at?: string;

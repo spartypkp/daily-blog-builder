@@ -1,0 +1,44 @@
+{
+    "blog_description": "",
+    "day_count": 13,
+    "blog_title": "",
+    "status": null,
+    "created_at": "Wed Sep 18 2024",
+    "date": "2024-09-18",
+    "id": "f196f3dd-c150-479d-bb43-7d862715b71a",
+    "introduction": {
+        "daily_goals": "<p>Today's goals are relatively straightforward. I need to continue refactoring my daily blog builder tool to use NextJS and InstantDB. I wanted to also start my day by refactoring InstantDBs showcase example InstatlDraw to use the app router, because it bugged me a lot they don't use it.</p>",
+        "challenges": "<p>It's going to be difficult to learn a new database structure and implement it, especially within a NextJS React app. I think it's going to be extremely difficult to get React component rendering to play nice with InstantDB (Future Will here, yes it was very hard)</p>",
+        "focus_level": 67,
+        "plan_of_action": "<p>So my plan of action is going to be focused on two tasks. First I'm going to update the InstantDB showcase example to use NextJS App router.</p><p>Next I'm going to work on getting the Blog Builder integrated with InstantDB and NextJS.</p><p><br></p>",
+        "burnout_level": 12,
+        "learning_focus": "<p>Going to focus heavily on learning how to use InstantDB. It's new to me to use this GraphQL kind of syntax, and the instant updates are new, exciting, and weird. I'm used to \"manually\" calling into Postgres everytime I want to update or read from the database. </p>",
+        "personal_context": "<p>Feeling good for today! I apologize I haven't been posting dailyBlogs these past couple of days. I've been working on entirely rewriting my Blog Builder tool into NextJS, and to use InstantDB as my database (for no particular reason). But I'm feeling good today, I feel motivated and prepared to build some cool shit today!</p>",
+        "leetcode_hatred_level": 100,
+        "enthusiasm_level": 92
+    },
+    "tasks": [
+        {
+            "id": "abdd2833-e593-4a76-a08e-4b680de77446",
+            "task_name": "",
+            "task_goal": "",
+            "task_description": "",
+            "task_expected_difficulty": 50,
+            "task_planned_approach": "",
+            "task_progress_notes": "",
+            "task_start_summary": "",
+            "time_spent_coding": "",
+            "time_spent_researching": "",
+            "time_spent_debugging": "",
+            "task_reflection_summary": "",
+            "output_or_result": "",
+            "challenges_encountered": "",
+            "follow_up_tasks": "",
+            "reflection_successes": "",
+            "reflection_failures": "",
+            "research_questions": "",
+            "tools_used": "",
+            "task_created_at": "2024-09-19T19:43:05.473Z"
+        }
+    ]
+}

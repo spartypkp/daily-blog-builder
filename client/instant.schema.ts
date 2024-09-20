@@ -3,11 +3,9 @@
 
 import { i } from "@instantdb/core";
 import { Reflection, Introduction } from "@/lib/types";
-const INSTANT_APP_ID = "3b4a73a0-ffc6-488a-b883-550004ff6e0a";
 
 // Example entities and links (you can delete these!)
 const graph = i.graph(
-	INSTANT_APP_ID,
 	{
 		dailyBlogs: i.entity({
 			date: i.string().indexed(),

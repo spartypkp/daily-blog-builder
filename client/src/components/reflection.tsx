@@ -2,7 +2,7 @@
 import { Reflection } from "../lib/types";
 import { init, tx, id, InstantReactWeb } from '@instantdb/react';
 import { TxChunk } from '@instantdb/core/src/instatx';
-import { InstantGraph } from '@instantdb/core/src/schema';
+import { InstantGraph } from '@instantdb/core/src/schemaTypes';
 import { DailyBlog } from "@/lib/types";
 import { useEffect, useRef, useMemo } from "react";
 import { useQuill } from 'react-quilljs';

@@ -7,12 +7,10 @@ import IntroductionSection from '@/components/introduction';
 import ReflectionSection from '@/components/reflection';
 import TaskSection from '@/components/task';
 import DateSelector from "@/components/dateSelector";
-import { useQuill } from 'react-quilljs';
-// or const { useQuill } = require('react-quilljs');
 
 import 'quill/dist/quill.snow.css'; // Add css for snow theme
 import { Button } from "@/components/ui/button";
-import { damp } from "three/src/math/MathUtils.js";
+import { getAllBlogs } from "@/lib/sqlConversion";
 
 // ID for app: Instant Tutorial Todo App
 const APP_ID = '3b4a73a0-ffc6-488a-b883-550004ff6e0a';
@@ -29,7 +27,6 @@ const query = {
 	},
 	
 };
-
 
 function App() {
 	const today = (new Date).toISOString().slice(0, 10);
@@ -97,8 +94,6 @@ function App() {
 	const selectedBlog: ({ id: string; } & DailyBlog) | undefined = useMemo(() => {
 
 		const blog = dailyBlogs?.find((b) => b.date === selectedDate);
-		//console.log(`selectedBlog has changed! ${JSON.stringify(blog)}`)
-		// Map over task (Task[]), get all tasks
 		return blog;
 	}, [selectedDate, activeTask]);
 
@@ -139,10 +134,6 @@ function App() {
 	if (isLoading) {
 		return <p>loading</p>;
 	}
-	
-
-	
-
 
 	return (
 		<div className="bg-white p-4">
@@ -158,6 +149,8 @@ function App() {
 					<p id="blog_description" className="text-m  text-gray-800 text-center"></p>
 
 				</div>
+				<button type="button" onClick={(e) => edit_blog()}
+							className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Edit Blog</button>
 
 
 			</header>
@@ -229,8 +222,7 @@ function App() {
 
 
 					<footer className="text-center">
-						<button type="button" onClick={(e) => edit_blog()}
-							className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Edit Blog</button>
+						
 						<button type="button" onClick={(e) => publish_blog()}
 							className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">Publish Blog</button>
 					</footer>
@@ -244,7 +236,7 @@ function App() {
 }
 
 function edit_blog() {
-	return;
+	getAllBlogs();
 }
 
 

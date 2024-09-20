@@ -2,7 +2,7 @@
 import { Introduction } from "@/lib/types";
 import { init, tx, id, InstantReactWeb } from '@instantdb/react';
 import { TxChunk } from '@instantdb/core/src/instatx';
-import { InstantGraph } from '@instantdb/core/src/schema';
+import { InstantGraph } from '@instantdb/core/src/schemaTypes';
 import { DailyBlog } from "@/lib/types";
 import { useEffect, useRef, useMemo } from "react";
 import { useQuill } from 'react-quilljs';
@@ -10,7 +10,6 @@ import { selectLocalImage } from "@/lib/quillHelpers";
 import { Slider } from "@nextui-org/slider";
 import { CodeBlockContainer } from "quill/formats/code";
 import Quill from "quill";
-// or const { useQuill } = require('react-quilljs');
 
 import 'quill/dist/quill.snow.css'; // Add css for snow theme
 

@@ -7,6 +7,7 @@ import { DailyBlog } from "@/lib/types";
 import { useEffect, useRef, useMemo } from "react";
 import { useQuill } from 'react-quilljs';
 import { Slider } from "@nextui-org/slider";
+import { selectLocalImage } from "@/lib/quillHelpers";
 type Schema = {
 	dailyBlogs: DailyBlog;
 };
@@ -21,7 +22,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 	function mergeField(id: string, field_name: string, field_value: string) {
 		db.transact([
 			tx.dailyBlogs[id].merge({
-				reflectionduction: {
+				reflection: {
 					[field_name]: field_value,
 				},
 			}),
@@ -34,7 +35,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 		}
 		db.transact([
 			tx.dailyBlogs[id].merge({
-				introduction: {
+				reflection: {
 					[field_name]: field_value,
 				},
 			}),
@@ -103,6 +104,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 	const { quill: quill_learning_outcomes, quillRef: quillRef_learning_outcomes } = useQuill({ theme, modules });
 	useEffect(() => {
 		if (quill_learning_outcomes && reflection) {
+			(quill_learning_outcomes.getModule('toolbar') as any).addHandler('image', () => selectLocalImage(quill_learning_outcomes));
 			quill_learning_outcomes.clipboard.dangerouslyPasteHTML(reflection.learning_outcomes!);
 
 			const key = 'learning_outcomes';
@@ -126,6 +128,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 	const { quill: quill_next_steps_short_term, quillRef: quillRef_next_steps_short_term } = useQuill({ theme, modules });
 	useEffect(() => {
 		if (quill_next_steps_short_term && reflection) {
+			(quill_next_steps_short_term.getModule('toolbar') as any).addHandler('image', () => selectLocalImage(quill_next_steps_short_term));
 			quill_next_steps_short_term.clipboard.dangerouslyPasteHTML(reflection.next_steps_short_term!);
 
 			const key = 'next_steps_short_term';
@@ -149,6 +152,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 	const { quill: quill_next_steps_long_term, quillRef: quillRef_next_steps_long_term } = useQuill({ theme, modules });
 	useEffect(() => {
 		if (quill_next_steps_long_term && reflection) {
+			(quill_next_steps_long_term.getModule('toolbar') as any).addHandler('image', () => selectLocalImage(quill_next_steps_long_term));
 			quill_next_steps_long_term.clipboard.dangerouslyPasteHTML(reflection.next_steps_long_term!);
 
 			const key = 'next_steps_long_term';

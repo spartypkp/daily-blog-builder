@@ -58,7 +58,7 @@ def ai_edit_task(tasks: List[Task]):
         )
         completion_response = util.create_chat_completion(params, insert_usage=False)
         response = completion_response[0]
-        print(response)
+        
         
         task.task_reflection_summary = response.task_reflection_summary
         task.reflection_successes = response.reflection_successes
@@ -77,7 +77,7 @@ def ai_edit_task(tasks: List[Task]):
         )
         data_completion_response = util.create_chat_completion(data_params, insert_usage=False)
         data_response = data_completion_response[0]
-        print(data_response)
+        
         
     
         task.output_or_result = data_response.output_or_result
@@ -129,9 +129,20 @@ def ai_edit_reflection(blog: DailyBlog):
         rag_tokens=0
     )
     completion_response = util.create_chat_completion(params, insert_usage=False)
-    response = completion_response[0]
-    print(response)
-    return json.dumps(response.model_dump())
+    response: ReflectionContent = completion_response[0]
+    
+    blog.reflection.entire_blog_summary = response.entire_blog_summary
+    blog.reflection.technical_challenges = response.technical_challenges
+    blog.reflection.interesting_bugs = response.interesting_bugs
+    blog.reflection.unanswered_questions = response.unanswered_questions
+    blog.blog_description = response.blog_description
+    blog.blog_title = response.blog_title
+    blog.blog_tags = response.blog_tags
+    dict_response = {"reflection": blog.reflection.model_dump(), "blog_title": blog.blog_title, "blog_description": blog.blog_description, "blog_tags": blog.blog_tags}
+
+    
+    
+    return json.dumps(dict_response)
 
     
 def ai_add_custom_components(blog: DailyBlog):
@@ -171,7 +182,7 @@ def ai_add_custom_components(blog: DailyBlog):
         )
         completion_response = util.create_chat_completion(params, insert_usage=False)
         response = completion_response[0]
-        print(response)
+       
 
         response_dict = json.loads(response)
         components = response_dict["components"]
@@ -184,8 +195,7 @@ def ai_add_custom_components(blog: DailyBlog):
     for task in tasks:
         task_dict = task.model_dump()
         for field_name, field_description in applicable_task_fields.items():
-            if field_name != "task_progress_notes":
-                continue
+            
             processed_html, soup = process_html(task_dict[field_name], field_name)
             messages = custom_component_addition_prompt(processed_html, f"{field_name}={field_description}")
 
@@ -222,7 +232,7 @@ def ai_add_custom_components(blog: DailyBlog):
         )
         completion_response = util.create_chat_completion(params, insert_usage=False)
         response = completion_response[0]
-        print(response)
+        
 
         response_dict = json.loads(response)
         components = response_dict["components"]

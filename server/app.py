@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from pydanticModels import DailyBlog, Task, Introduction, Reflection
 from utilityFunctions import pydantic_upsert, pydantic_select, upload_to_supabase, pydantic_update
 from typing import List, Optional
-from dave import ai_edit_introduction, ai_edit_task, ai_edit_reflection
+from dave import ai_edit_introduction, ai_edit_task, ai_edit_reflection, ai_add_custom_components
 from flask_cors import CORS
 
 # If localhost won't connect: chrome://net-internals/#sockets
@@ -69,6 +69,21 @@ def edit_reflection():
     reflection_model = DailyBlog(**data)
     updated_blog = ai_edit_reflection(reflection_model)
     return updated_blog
+
+@app.route('/api/annotate_blog', methods=['POST'])
+def annotate_blog():
+    data = request.get_json()
+    
+    
+    blog = DailyBlog(**data)
+    print(blog)
+    return jsonify({"fuck": "off"})
+    updated_blog = ai_add_custom_components(blog)
+    print(updated_blog)
+    return jsonify(updated_blog.model_dump())
+
+
+
 
 
 # @app.route('/api/available_dates')

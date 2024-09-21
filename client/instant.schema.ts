@@ -8,16 +8,16 @@ import { Reflection, Introduction } from "@/lib/types";
 const graph = i.graph(
 	{
 		dailyBlogs: i.entity({
-			date: i.string().indexed(),
-			day_count: i.number().indexed(),
+			date: i.string().optional(),
+			day_count: i.number().optional(),
 			blog_title: i.string().optional(),
 			blog_description: i.string().optional(),
 			blog_tags: i.json().optional(),
 			introduction: i.json<Introduction>().optional(),
 			reflection: i.json<Reflection>().optional(),
 			status: i.string().optional(),
-			created_at: i.string(),
-			updated_at: i.string(),
+			created_at: i.string().optional(),
+			updated_at: i.string().optional(),
 		}),
 		task: i.entity({
 			challenges_encountered: i.string().optional(),
@@ -33,11 +33,11 @@ const graph = i.graph(
 			task_planned_approach: i.string().optional(),
 			task_progress_notes: i.string().optional(),
 			task_reflection_summary: i.string().optional(),
-			time_spent_coding: i.string().optional(),
-			time_spent_debugging: i.string().optional(),
-			time_spent_researching: i.string().optional(),
+			time_spent_coding: i.number().optional(),
+			time_spent_debugging: i.number().optional(),
+			time_spent_researching: i.number().optional(),
 			tools_used: i.string().optional(),
-			task_created_at: i.string(),
+			task_created_at: i.string().optional(),
 		})
 
 	},

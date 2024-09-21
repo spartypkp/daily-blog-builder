@@ -12,6 +12,7 @@ import 'quill/dist/quill.snow.css'; // Add css for snow theme
 import { Button } from "@/components/ui/button";
 import { getAllBlogs } from "@/lib/sqlConversion";
 import { EditBlogDialog } from "@/components/editBlogDialog";
+import { AnnotateBlogDialog } from "@/components/annotateBlogDialog";
 // ID for app: Instant Tutorial Todo App
 const APP_ID = '3b4a73a0-ffc6-488a-b883-550004ff6e0a';
 
@@ -108,9 +109,9 @@ function App() {
 	}
 
 	const selectedBlog: ({ id: string; } & DailyBlog) | undefined = useMemo(() => {
-		
+
 		const blog = dailyBlogs?.find((b) => b.date === selectedDate);
-		console.log(`selectedBlog changing to: Day ${blog?.day_count} - ${blog?.date}`)
+		console.log(`selectedBlog changing to: Day ${blog?.day_count} - ${blog?.date}`);
 		return blog;
 	}, [selectedDate, activeTask]);
 
@@ -136,6 +137,16 @@ function App() {
 		setSelectedDate(newDate);
 	};
 
+	const handleAddAnnotations = () => {
+		// Logic to add Dave Annotations
+		console.log('Adding Dave annotations...');
+	};
+
+	const handlePublishBlog = () => {
+		// Logic to publish the blog
+		console.log('Publishing blog...');
+	};
+
 	if (isLoading) {
 		return <p>loading</p>;
 	}
@@ -145,28 +156,31 @@ function App() {
 			<header className="flex flex-col justify-center items-center text-center mb-6">
 				<h1 className="text-5xl font-bold">Daily Blog Builder</h1>
 				<DateSelector dailyBlogs={dailyBlogs!} handleDateChange={handleDateChange} />
-				<div className="mt-4 bg-white rounded-lg p-4">
-					<h2 className="text-3xl font-bold text-gray-800 text-center">Day Number</h2>
-					<p id="day_count" className="text-m  text-gray-800 text-center"></p>
-					<h2 className="text-3xl font-bold text-gray-800 text-center">Blog Title</h2>
-					<p id="blog_title" className="text-m  text-gray-800 text-center"></p>
-					<h2 className="text-3xl font-bold text-gray-800 text-center">Blog Description</h2>
-					<p id="blog_description" className="text-m  text-gray-800 text-center"></p>
-
-				</div>
-				
-
-
 			</header>
 
 			{selectedBlog && (
-				
-				<div>
-					<EditBlogDialog selectedBlogId={selectedBlog.id} />
-					<section className="goals mb-8 bg-gray-200 shadow-md rounded-lg p-6">
-						<div className="flex justify-between items-center">
 
-						</div>
+				<div>
+
+					<section className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6">
+						<h1 className="text-4xl font-bold text-black">{`Day ${selectedBlog?.day_count}: ${selectedBlog?.blog_title}`}</h1>
+						<p className="mb-4">{`Date: ${selectedBlog?.date}`}</p>
+						<p>{selectedBlog?.blog_description}</p>
+
+					</section>
+
+					<div className="bg-gray-100 p-4 rounded shadow-md flex items-center justify-left">
+						<EditBlogDialog selectedBlogId={selectedBlog.id} activeTask={activeTask} setActiveTask={setActiveTask} />
+						<AnnotateBlogDialog selectedBlogId={selectedBlog.id} activeTask={activeTask} setActiveTask={setActiveTask} />
+						<Button onClick={handlePublishBlog} className="mx-2 bg-purple-400">
+							Publish Blog
+						</Button>
+					</div>
+
+					
+
+
+					<section className="goals mb-8 bg-gray-200 shadow-md rounded-lg p-6">
 						<IntroductionSection selectedBlog={selectedBlog!} db={db} tx={tx} />
 
 					</section>
@@ -219,19 +233,8 @@ function App() {
 
 
 					<section className="reflection mb-8 bg-gray-200 shadow-md rounded-lg p-6">
-						<div className="flex justify-between items-center">
-
-						</div>
 						<ReflectionSection selectedBlog={selectedBlog!} db={db} tx={tx} />
 					</section>
-
-
-
-					<footer className="text-center">
-
-						<button type="button" onClick={(e) => publish_blog()}
-							className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">Publish Blog</button>
-					</footer>
 				</div>
 			)}
 
@@ -242,20 +245,20 @@ function App() {
 }
 
 function test_connection() {
-    fetch("http://localhost:8080/api/home")  // Use http if it's not over SSL
-        .then(response => {
-            // Check if the response is successful
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();  // Parse JSON from the response
-        })
-        .then(data => {
-            console.log(data.message);  // Log the message from the response
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
-        });
+	fetch("http://localhost:8080/api/home")  // Use http if it's not over SSL
+		.then(response => {
+			// Check if the response is successful
+			if (!response.ok) {
+				throw new Error('Network response was not ok');
+			}
+			return response.json();  // Parse JSON from the response
+		})
+		.then(data => {
+			console.log(data.message);  // Log the message from the response
+		})
+		.catch(error => {
+			console.error('There was a problem with the fetch operation:', error);
+		});
 }
 
 function edit_blog() {

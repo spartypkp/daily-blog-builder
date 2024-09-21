@@ -17,9 +17,11 @@ import { DailyBlog, Introduction, Reflection, Task } from '@/lib/types';
 
 interface EditBlogDialogProps {
 	selectedBlogId: string; // Add more properties to this type as needed
+	setActiveTask: (taskId: string | null) => void;
+	activeTask: string | null;
 }
 
-export const EditBlogDialog: React.FC<EditBlogDialogProps> = ({ selectedBlogId }) => {
+export const EditBlogDialog: React.FC<EditBlogDialogProps> = ({ selectedBlogId, setActiveTask, activeTask }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [statusMessage, setStatusMessage] = useState('');
 	const [editingInProgress, setEditingInProgress] = useState(false);
@@ -50,22 +52,12 @@ export const EditBlogDialog: React.FC<EditBlogDialogProps> = ({ selectedBlogId }
 	const handleClose = () => {
 		setIsOpen(false);
 		setStatusMessage('');
+		const task_to_reset = activeTask;
+		setActiveTask(null)
+		setTimeout(() => {
+			setActiveTask(task_to_reset);
+		}, 1000); // Delay in milliseconds
 	};
-
-	// export interface DailyBlog {
-	// 	id?: string;
-	// 	date: string;
-	// 	day_count: number;
-	// 	blog_title: string;
-	// 	blog_description: string;
-	// 	blog_tags: any;
-	// 	introduction?: Introduction;
-	// 	tasks?: ({ id: string; } & Task)[];
-	// 	reflection?: Reflection;
-	// 	status: string | null;
-	// 	created_at?: string;
-	// 	updated_at?: string;
-	// }
 
 	const handleEdit = async () => {
 		setIsOpen(true);
@@ -83,8 +75,8 @@ export const EditBlogDialog: React.FC<EditBlogDialogProps> = ({ selectedBlogId }
 			});
 			const introData: Introduction = await introResponse.json(); // Assuming response is in JSON format
 			if (introResponse.ok) {
-				// db.transact([tx.dailyBlogs[selectedBlog.id].update({"introduction": introData})]);
-				console.log(JSON.stringify(introData))
+				db.transact([tx.dailyBlogs[selectedBlog.id].update({"introduction": introData})]);
+				//console.log(JSON.stringify(introData))
 				setStatusMessage('Introduction updated. Now updating the task...');
 			} else {
 				throw new Error('Failed to update introduction');
@@ -98,8 +90,8 @@ export const EditBlogDialog: React.FC<EditBlogDialogProps> = ({ selectedBlogId }
 			const taskData: Task[] = await taskResponse.json(); // Assuming response is in JSON format
 			if (taskResponse.ok) {
 				taskData.map((task) => {
-					console.log(JSON.stringify(task))
-					// db.transact([tx.tasks[task.id].update(task)]);
+					//console.log(JSON.stringify(task))
+					db.transact([tx.task[task.id].update(task)]);
 				})
 				
 				setStatusMessage('Tasks are editing. Now updating reflection...');
@@ -122,10 +114,15 @@ export const EditBlogDialog: React.FC<EditBlogDialogProps> = ({ selectedBlogId }
 					updated_at: selectedBlog.updated_at!
 				})
 			});
-			const reflectionData: Reflection = await reflectionResponse.json(); // Assuming response is in JSON format
+			const reflectionData = await reflectionResponse.json(); // Assuming response is in JSON format
 			if (reflectionResponse.ok) {
 				console.log(JSON.stringify(reflectionData))
-				// db.transact([tx.dailyBlogs[selectedBlog.id].update({"reflection": reflectionData})]);
+				db.transact([
+					tx.dailyBlogs[selectedBlog.id].update({"reflection": reflectionData['reflection']}),
+					tx.dailyBlogs[selectedBlog.id].update({"blog_title": reflectionData['blog_title']}),
+					tx.dailyBlogs[selectedBlog.id].update({"blog_description": reflectionData['blog_description']}),
+					tx.dailyBlogs[selectedBlog.id].update({"blog_tags": reflectionData['blog_tags']}),
+				]);
 				setStatusMessage('Reflection updated. All updates completed.');
 			} else {
 				throw new Error('Failed to update reflection');
@@ -152,18 +149,18 @@ export const EditBlogDialog: React.FC<EditBlogDialogProps> = ({ selectedBlogId }
 	return (
 		<AlertDialog open={isOpen} onOpenChange={setIsOpen}>
 			<AlertDialogTrigger asChild>
-				<Button variant="outline">Edit Blog</Button>
+				<Button className="mx-2 bg-purple-400">Edit Blog</Button>
 			</AlertDialogTrigger>
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>Have Dave Edit Today's Blog</AlertDialogTitle>
 					<AlertDialogDescription>
-						<p>{statusMessage}</p>
+						{statusMessage}
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
 					<AlertDialogCancel onClick={handleClose}>Cancel Editing</AlertDialogCancel>
-					{!editingInProgress && (<Button onClick={handleEdit}>Start Editing</Button>)}
+					{!editingInProgress && (<Button onClick={handleEdit} >Start Editing</Button>)}
 					
 				</AlertDialogFooter>
 				

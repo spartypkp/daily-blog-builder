@@ -268,12 +268,12 @@ class Reflection(BaseModel):
 # Main model for the Daily Blog
 class DailyBlog(BaseModel):
     id: str = Field(..., description="id of the blog")
-    date: datetime.date = Field(..., description="Date of the blog entry.")
+    date: str = Field(..., description="Date of the blog entry.")
     introduction: Optional[Introduction] = Field(default=Introduction(), description="The introduction to Will's daily blog.")
     tasks: List[Task] = Field(default_factory=lambda: [Task()], description="List of technical tasks Will completed for the day.")
     reflection: Optional[Reflection] = Field(default=Reflection(), description="The reflection portion of Will's daily blog")
-    created_at: Optional[datetime.datetime] = Field(default=None, description="Timestamp for when the blog was created.")
-    updated_at: Optional[datetime.datetime] = Field(default=None, description="Timestamp for the last update.")
+    created_at: Optional[str] = Field(default=None, description="Timestamp for when the blog was created.")
+    updated_at: Optional[str] = Field(default=None, description="Timestamp for the last update.")
     status: Optional[str] = Field(default=None, description="Indicates the publication status of the blog.")
     day_count: Optional[int] = Field(default=None, description="Number of days since I started my journey.")
     # AI Generated 

@@ -22,6 +22,7 @@ interface EditBlogDialogProps {
 export const EditBlogDialog: React.FC<EditBlogDialogProps> = ({ selectedBlogId }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [statusMessage, setStatusMessage] = useState('');
+	const [editingInProgress, setEditingInProgress] = useState(false);
 	
 
 	const APP_ID = '3b4a73a0-ffc6-488a-b883-550004ff6e0a';
@@ -71,25 +72,28 @@ export const EditBlogDialog: React.FC<EditBlogDialogProps> = ({ selectedBlogId }
 		if (!selectedBlog) {
 			throw new Error("SelectedBlog is null!");
 		}
+		setEditingInProgress(true)
 	
 		try {
 			setStatusMessage('Dave is editing the introduction...');
-			const introResponse = await fetch(`/api/edit_introduction`, { 
+			const introResponse = await fetch(`http://localhost:8080/api/edit_introduction`, { 
 				method: 'POST', 
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(selectedBlog.introduction!)
 			});
 			const introData: Introduction = await introResponse.json(); // Assuming response is in JSON format
 			if (introResponse.ok) {
 				// db.transact([tx.dailyBlogs[selectedBlog.id].update({"introduction": introData})]);
 				console.log(JSON.stringify(introData))
-				setStatusMessage('Introduction updated. Dave updating the task...');
+				setStatusMessage('Introduction updated. Now updating the task...');
 			} else {
 				throw new Error('Failed to update introduction');
 			}
 	
-			const taskResponse = await fetch(`/api/edit_task`, {
+			const taskResponse = await fetch(`http://localhost:8080/api/edit_task`, {
 				method: 'POST',
-				body: JSON.stringify(selectedBlog.tasks!)
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({tasks: selectedBlog.tasks!})
 			});
 			const taskData: Task[] = await taskResponse.json(); // Assuming response is in JSON format
 			if (taskResponse.ok) {
@@ -98,13 +102,14 @@ export const EditBlogDialog: React.FC<EditBlogDialogProps> = ({ selectedBlogId }
 					// db.transact([tx.tasks[task.id].update(task)]);
 				})
 				
-				setStatusMessage('Task updated. Updating reflection...');
+				setStatusMessage('Tasks are editing. Now updating reflection...');
 			} else {
 				throw new Error('Failed to update task');
 			}
 	
-			const reflectionResponse = await fetch(`/api/edit_reflection`, {
+			const reflectionResponse = await fetch(`http://localhost:8080/api/edit_reflection`, {
 				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					id: selectedBlog.id,
 					date: selectedBlog.date,
@@ -132,6 +137,7 @@ export const EditBlogDialog: React.FC<EditBlogDialogProps> = ({ selectedBlogId }
 			setStatusMessage('Error during update. Please try again.');
 			console.error('Editing error:', error);
 		}
+		setEditingInProgress(false)
 	};
 	
 	const selectedBlog: ({ id: string; } & DailyBlog) | undefined = useMemo(() => {
@@ -150,16 +156,17 @@ export const EditBlogDialog: React.FC<EditBlogDialogProps> = ({ selectedBlogId }
 			</AlertDialogTrigger>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<AlertDialogTitle>AI Editing</AlertDialogTitle>
+					<AlertDialogTitle>Have Dave Edit Today's Blog</AlertDialogTitle>
 					<AlertDialogDescription>
-						Edit blog sections with Dave. Please wait for the process to complete.
+						<p>{statusMessage}</p>
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
 					<AlertDialogCancel onClick={handleClose}>Cancel Editing</AlertDialogCancel>
-					<Button onClick={handleEdit}>Start Editing</Button>
+					{!editingInProgress && (<Button onClick={handleEdit}>Start Editing</Button>)}
+					
 				</AlertDialogFooter>
-				<p>{statusMessage}</p>
+				
 			</AlertDialogContent>
 		</AlertDialog>
 	);

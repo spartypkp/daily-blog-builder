@@ -76,6 +76,7 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ selectedBlog,
 				break;
 		}
 	};
+	const createMarkup = (htmlString: string) => ({ __html: htmlString });
 
 	let intro = selectedBlog.introduction;
 	if (!intro) {
@@ -350,10 +351,9 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ selectedBlog,
 
 					</div>
 
-					<div className="mt-4 bg-white rounded-lg p-4">
+					<div className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6">
 						<h2 className="text-3xl font-bold text-gray-800 text-center">Introduction Summary and Teaser</h2>
-						<div id="introduction_summary" className="min-h-[150px] bg-gray-50 p-4 rounded border">
-							{intro.introduction_summary || ''}
+						<div id="introduction_summary" className="min-h-[150px]" dangerouslySetInnerHTML={createMarkup(intro.introduction_summary || '')}>
 						</div>
 					</div>
 

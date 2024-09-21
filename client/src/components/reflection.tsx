@@ -66,7 +66,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 	}
 
 	
-
+	const createMarkup = (htmlString: string) => ({ __html: htmlString });
 	
 
 	const getColor = (value: number, id: string) => {
@@ -312,34 +312,31 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 				</div>
 			</div>
 			<h1> AI Generated Reflection</h1>
-
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 text-center">Summary of Entire Blog</h2>
-				<div id="entire_blog_summary" className="min-h-[150px] bg-gray-50 p-4 rounded border">
-					{reflection.entire_blog_summary || ''}
+				<div id="entire_blog_summary" className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(reflection.entire_blog_summary || '')}>
 				</div>
 			</div>
 
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 text-center">Technical Challenges</h2>
-				<div id="technical_challenges" className="min-h-[150px] bg-gray-50 p-4 rounded border">
-					{reflection.technical_challenges || ''}
+				<div id="technical_challenges" className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(reflection.technical_challenges || '')}>
+					
 				</div>
 			</div>
 
 
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 text-center">Interesting Bugs</h2>
-				<div id="interesting_bugs" className="min-h-[150px] bg-gray-50 p-4 rounded border">
-					{reflection.interesting_bugs || ''}
+				<div id="interesting_bugs" className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(reflection.interesting_bugs || '')}>
+					
 				</div>
 			</div>
 
 
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 text-center">Unanswered Questions</h2>
-				<div id="unanswered_questions" className="min-h-[150px] bg-gray-50 p-4 rounded border">
-					{reflection.unanswered_questions || ''}
+				<div id="unanswered_questions" className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(reflection.unanswered_questions || '')}>
 				</div>
 			</div>
 

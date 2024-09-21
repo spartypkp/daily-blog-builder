@@ -90,6 +90,9 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 		}
 	};
 
+	const createMarkup = (htmlString: string) => ({ __html: htmlString });
+
+
 	const { quill: quill_task_goal, quillRef: quillRef_task_goal } = useQuill({ theme, modules });
 	useEffect(() => {
 		if (quill_task_goal && task) {
@@ -292,8 +295,10 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 				<h3 className="font-bold mt-2">Planned Approach:</h3>
 				<div id={`task_planned_approach${task.id}`} className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_task_planned_approach}></div>
 
-				<h3 className="font-bold mt-4">Dave's Task Summary:</h3>
-				<div id={`task_start_summary${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.task_start_summary}</div>
+				<h3 className="font-bold mt-10">Dave's Task Summary:</h3>
+				<div id={`task_reflection_summary${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6"dangerouslySetInnerHTML={createMarkup(task.task_reflection_summary || '')}></div>
+
+				
 			</div>
 
 
@@ -307,7 +312,7 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 
 
 			<div id={`task-reflection${task.id}`} className="mb-4 bg-white p-4 border rounded">
-				<h3 className="font-bold mt-4">Time Spent Coding: {timeSpentCoding}</h3>
+				<h3 className="font-bold mt-4">Hours Spent Coding: {timeSpentCoding}</h3>
 				<Slider
 					key="time_spent_coding"
 					aria-label="time_spent_coding"
@@ -366,29 +371,28 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 
 
 				
-				<h3 className="font-bold mt-10">AI Reflection Summary:</h3>
-				<div id={`task_reflection_summary${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.task_reflection_summary}</div>
+				
 
 				<h3 className="font-bold mt-4">Output or Result:</h3>
-				<div id={`output_or_result${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.output_or_result}</div>
+				<div id={`output_or_result${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6"dangerouslySetInnerHTML={createMarkup(task.output_or_results || '')}></div>
 
 				<h3 className="font-bold mt-4">Challenges Encountered:</h3>
-				<div id={`challenges_encountered${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.challenges_encountered}</div>
+				<div id={`challenges_encountered${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6"dangerouslySetInnerHTML={createMarkup(task.challenges_encountered || '')}></div>
 
 				<h3 className="font-bold mt-4">Follow-Up Tasks:</h3>
-				<div id={`follow_up_tasks${task.id}`} className="min-h-[150px] bg-gray-50 p-4 rounded border">{task.follow_up_tasks}</div>
+				<div id={`follow_up_tasks${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6"dangerouslySetInnerHTML={createMarkup(task.follow_up_tasks || '')}></div>
 
 				<h3 className="font-bold mt-4">Successes:</h3>
-				<div id={`reflection_successes${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.reflection_successes}</div>
+				<div id={`reflection_successes${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6"dangerouslySetInnerHTML={createMarkup(task.reflection_successes || '')}></div>
 
 				<h3 className="font-bold mt-4">Failures or Shortcomings:</h3>
-				<div id={`reflection_failures${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.reflection_failures}</div>
+				<div id={`reflection_failures${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(task.reflection_failures || '')}></div>
 
 				<h3 className="font-bold mt-4">Research Questions:</h3>
-				<div id={`research_questions${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.research_questions}</div>
+				<div id={`research_questions${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(task.research_questions || '')}></div>
 
 				<h3 className="font-bold mt-4">Tools Used:</h3>
-				<div id={`tools_used${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.tools_used}</div>
+				<div id={`tools_used${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(task.tools_used || '')}></div>
 			</div>
 
 			<Button onClick={() => deleteTask(task)}

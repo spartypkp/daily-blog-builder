@@ -4,7 +4,7 @@ import { init, tx, id, InstantReactWeb } from '@instantdb/react';
 import { TxChunk } from '@instantdb/core/src/instatx';
 import { InstantGraph } from '@instantdb/core/src/schemaTypes';
 import { DailyBlog } from "@/lib/types";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { useQuill } from 'react-quilljs';
 import { selectLocalImage } from "@/lib/quillHelpers";
 import { Slider } from "@nextui-org/slider";
@@ -24,6 +24,13 @@ interface IntroductionSectionProps {
 }
 
 const IntroductionSection: React.FC<IntroductionSectionProps> = ({ selectedBlog, db, tx }) => {
+
+	const [enthusiasmLevel, setEnthusiasmLevel] = useState(selectedBlog?.introduction?.enthusiasm_level || 50);
+	const [burnoutLevel, setBurnoutLevel] = useState(selectedBlog?.introduction?.burnout_level || 50);
+	const [leetcodeHatredLevel, setLeetcodeHatredLevel] = useState(selectedBlog?.introduction?.leetcode_hatred_level || 50);
+	const [focusLevel, setFocusLevel] = useState(selectedBlog?.introduction?.focus_level || 50);
+
+
 
 	function mergeField(id: string, field_name: string, field_value: string) {
 		db.transact([
@@ -47,6 +54,29 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ selectedBlog,
 			}),
 		]);
 	}
+
+	const updateSliderValue = (fieldName: string,  value: number | number[]) => {
+		// Here you'd call a function to merge this value back to your backend or state management
+		if (typeof(value) !== "number") {
+			value = value[0]
+		}
+
+		switch (fieldName) {
+			case "enthusiasm_level":
+				setEnthusiasmLevel(value);
+				break;
+			case "burnout_level":
+				setBurnoutLevel(value);
+				break;
+			case "leetcode_hatred_level":
+				setLeetcodeHatredLevel(value);
+				break;
+			case "focus_level":
+				setFocusLevel(value);
+				break;
+		}
+	};
+	const createMarkup = (htmlString: string) => ({ __html: htmlString });
 
 	let intro = selectedBlog.introduction;
 	if (!intro) {
@@ -80,23 +110,7 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ selectedBlog,
 		}
 	};
 
-	const getColor = (val: number, id: string) => {
-		switch (id) {
-			case 'enthusiasm_level':
-				return val > 66 ? 'bg-green-500' : val > 33 ? 'bg-yellow-500' : 'bg-red-500';
-			case 'burnout_level':
-				return val > 66 ? 'bg-red-500' : val > 33 ? 'bg-yellow-500' : 'bg-green-500';
-			case 'leetcode_hatred_level':
-				return val > 66 ? 'bg-red-500' : val > 33 ? 'bg-purple-500' : 'bg-blue-500';
-			case 'focus_level':
-				return val > 66 ? 'bg-green-500' : val > 33 ? 'bg-orange-500' : 'bg-red-500';
-			default:
-				return 'bg-gray-200'; // Default color if none of the cases match
-		}
-	};
-
 	const { quill: quill_personal_context, quillRef: quillRef_personal_context } = useQuill({ theme, modules });
-
 	useEffect(() => {
 		if (quill_personal_context && intro) {
 			// Add custom image handler, which provides the quill object to embed image back into once saving
@@ -221,138 +235,151 @@ const IntroductionSection: React.FC<IntroductionSectionProps> = ({ selectedBlog,
 		// Ensure that this effect runs only when necessary
 	}, [quill_plan_of_action, selectedBlog.id]);
 
-
-	// Resetting normal console warning functionality
-
-	useMemo(() => {
-		if (intro) {
-			if (intro.personal_context && quill_personal_context) {
-				quill_personal_context.clipboard.dangerouslyPasteHTML(intro.personal_context);
-			}
-			if (quill_daily_goals && intro.daily_goals) {
-				quill_daily_goals.clipboard.dangerouslyPasteHTML(intro.daily_goals);
-			}
-			if (quill_learning_focus && intro.learning_focus) {
-				quill_learning_focus.clipboard.dangerouslyPasteHTML(intro.learning_focus);
-			}
-			if (intro.challenges && quill_challenges) {
-				quill_challenges.clipboard.dangerouslyPasteHTML(intro.challenges);
-			}
-			if (quill_plan_of_action && intro.plan_of_action) {
-				quill_plan_of_action.clipboard.dangerouslyPasteHTML(intro.plan_of_action);
-			}
-
-		}
-
-	}, [selectedBlog.id]);
+	useEffect(() => {
+        setEnthusiasmLevel(selectedBlog?.introduction?.enthusiasm_level || 50)
+		setBurnoutLevel(selectedBlog?.introduction?.burnout_level || 50)
+		setLeetcodeHatredLevel(selectedBlog?.introduction?.leetcode_hatred_level || 50)
+		setFocusLevel(selectedBlog?.introduction?.focus_level || 50);
+    }, [selectedBlog.id]);
+	
 
 
 	return (
-		<div>
-			<div className="mt-4 bg-white rounded-lg p-4">
-				<h2 className="text-3xl font-bold text-gray-800 pb-4">Context for the Day</h2>
-				<div id="personal_context" className="min-h-[100px] bg-gray-50 p-4 rounded border mt-4" ref={quillRef_personal_context}>
+		<>
+			{intro && (
+				<div>
+
+					<div className="mt-4 bg-white rounded-lg p-4">
+						<h2 className="text-3xl font-bold text-gray-800 pb-4">Context for the Day</h2>
+						<div id="personal_context" className="min-h-[100px] bg-gray-50 p-4 rounded border mt-4" ref={quillRef_personal_context}>
+
+						</div>
+					</div>
+
+					<div className="mt-4 bg-white rounded-lg p-4">
+						<h2 className="text-3xl font-bold text-gray-800 pb-4">Daily Goals</h2>
+						<div id="daily_goals" className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_daily_goals}>
+
+						</div>
+					</div>
+					<div className="mt-4 bg-white rounded-lg p-4">
+						<h2 className="text-3xl font-bold text-gray-800 pb-4">Learning Focus</h2>
+						<div id="learning_focus" className="min-h-[100px] bg-gray-50 p-4 rounded border" ref={quillRef_learning_focus}>
+
+						</div>
+					</div>
+					<div className="mt-4 bg-white rounded-lg p-4">
+						<h2 className="text-3xl font-bold text-gray-800 pb-4">Anticipated Challenges</h2>
+						<div id="challenges" className="min-h-[100px] bg-gray-50 p-4 rounded border" ref={quillRef_challenges}></div>
+					</div>
+					<div className="mt-4 bg-white rounded-lg p-4">
+						<h2 className="text-3xl font-bold text-gray-800 pb-4">Plan of Action</h2>
+						<div id="plan_of_action" className="min-h-[100px] bg-gray-50 p-4 rounded border" ref={quillRef_plan_of_action}></div>
+					</div>
+					<div className="mt-4 bg-white rounded-lg p-4">
+
+						<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">Enthusiasm Level</h2>
+
+						<Slider
+							key="enthusiasm_level"
+							aria-label="enthusiasm_level"
+							minValue={0}
+							step={1}
+							maxValue={100}
+							value={enthusiasmLevel}
+							classNames={{
+								base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
+								filler: `${getColor(enthusiasmLevel, "enthusiasm_level")}`,
+								thumb: `transition-transform ${getColor(enthusiasmLevel, "enthusiasm_level")} shadow-small rounded-full w-5 h-5`
+							}}
+							onChange={(value) => updateSliderValue( "enthusiasm_level", value)}
+							onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "enthusiasm_level", value)}
+							>
+							</Slider>
+
+						<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">Burnout Level</h2>
+						<Slider
+							key="burnout_level"
+							aria-label="burnout_level"
+							minValue={0}
+							step={1}
+							maxValue={100}
+							value={burnoutLevel}
+							classNames={{
+								base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
+								filler: `${getColor(burnoutLevel, "burnout_level")}`,
+								thumb: `transition-transform ${getColor(burnoutLevel, "burnout_level")} shadow-small rounded-full w-5 h-5`
+							}}
+							onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "burnout_level", value)}
+							onChange={(value) => updateSliderValue( "burnout_level", value)}></Slider>
+
+						<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">LeetCode Hatred</h2>
+						<Slider
+							key="leetcode_hatred_level"
+							aria-label="leetcode_hatred_level"
+							minValue={0}
+							step={1}
+							maxValue={100}
+							value={leetcodeHatredLevel}
+							classNames={{
+								base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
+								filler: `${getColor(leetcodeHatredLevel, "leetcode_hatred_level")}`,
+								thumb: `transition-transform ${getColor(leetcodeHatredLevel, "leetcode_hatred_level")} shadow-small rounded-full w-5 h-5`
+							}}
+							onChange={(value) => updateSliderValue( "leetcode_hatred_level", value)}
+							onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "leetcode_hatred_level", value)}
+							></Slider>
+
+						<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">Focus Level</h2>
+						<Slider
+							key="focus_level"
+							aria-label="focus_level"
+							minValue={0}
+							step={1}
+							maxValue={100}
+							value={focusLevel}
+							classNames={{
+								base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
+								filler: `${getColor(intro.focus_level || 50, "focus_level")}`,
+								thumb: `transition-transform ${getColor(intro.focus_level || 50, "focus_level")} shadow-small rounded-full w-5 h-5`
+							}}
+							onChange={(value) => updateSliderValue( "focus_level", value)}
+							onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "focus_level", value)}
+							>
+						</Slider>
+
+
+					</div>
+
+					<div className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6">
+						<h2 className="text-3xl font-bold text-gray-800 text-center">Introduction Summary and Teaser</h2>
+						<div id="introduction_summary" className="min-h-[150px]" dangerouslySetInnerHTML={createMarkup(intro.introduction_summary || '')}>
+						</div>
+					</div>
 
 				</div>
-			</div>
 
-			<div className="mt-4 bg-white rounded-lg p-4">
-				<h2 className="text-3xl font-bold text-gray-800 pb-4">Daily Goals</h2>
-				<div id="daily_goals" className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_daily_goals}>
+			)}
 
-				</div>
-			</div>
-			<div className="mt-4 bg-white rounded-lg p-4">
-				<h2 className="text-3xl font-bold text-gray-800 pb-4">Learning Focus</h2>
-				<div id="learning_focus" className="min-h-[100px] bg-gray-50 p-4 rounded border" ref={quillRef_learning_focus}>
+		</>
 
-				</div>
-			</div>
-			<div className="mt-4 bg-white rounded-lg p-4">
-				<h2 className="text-3xl font-bold text-gray-800 pb-4">Anticipated Challenges</h2>
-				<div id="challenges" className="min-h-[100px] bg-gray-50 p-4 rounded border" ref={quillRef_challenges}></div>
-			</div>
-			<div className="mt-4 bg-white rounded-lg p-4">
-				<h2 className="text-3xl font-bold text-gray-800 pb-4">Plan of Action</h2>
-				<div id="plan_of_action" className="min-h-[100px] bg-gray-50 p-4 rounded border" ref={quillRef_plan_of_action}></div>
-			</div>
-			<div className="mt-4 bg-white rounded-lg p-4">
-
-				<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">Enthusiasm Level</h2>
-				<Slider
-					key="enthusiasm_level"
-					aria-label="enthusiasm_level"
-					minValue={0}
-					step={1}
-					maxValue={100}
-					defaultValue={intro.enthusiasm_level || 50}
-					classNames={{
-						base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
-						filler: `${getColor(intro.enthusiasm_level || 50, "enthusiasm_level")}`,
-						thumb: `transition-transform ${getColor(intro.enthusiasm_level || 50, "enthusiasm_level")} shadow-small rounded-full w-5 h-5`
-					}}
-					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "enthusiasm_level", value)}></Slider>
-
-				<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">Burnout Level</h2>
-				<Slider
-					key="burnout_level"
-					aria-label="burnout_level"
-					minValue={0}
-					step={1}
-					maxValue={100}
-					defaultValue={intro.burnout_level || 50}
-					classNames={{
-						base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
-						filler: `${getColor(intro.burnout_level || 50, "burnout_level")}`,
-						thumb: `transition-transform ${getColor(intro.burnout_level || 50, "burnout_level")} shadow-small rounded-full w-5 h-5`
-					}}
-					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "burnout_level", value)}></Slider>
-
-				<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">LeetCode Hatred</h2>
-				<Slider
-					key="leetcode_hatred_level"
-					aria-label="leetcode_hatred_level"
-					minValue={0}
-					step={1}
-					maxValue={100}
-					defaultValue={intro.leetcode_hatred_level || 50}
-					classNames={{
-						base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
-						filler: `${getColor(intro.leetcode_hatred_level || 50, "leetcode_hatred_level")}`,
-						thumb: `transition-transform ${getColor(intro.leetcode_hatred_level || 50, "leetcode_hatred_level")} shadow-small rounded-full w-5 h-5`
-					}}
-					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "leetcode_hatred_level", value)}></Slider>
-
-				<h2 className="text-2xl font-bold text-gray-800 text-center mt-4">Focus Level</h2>
-				<Slider
-					key="focus_level"
-					aria-label="focus_level"
-					minValue={0}
-					step={1}
-					maxValue={100}
-					defaultValue={intro.focus_level || 50}
-
-					classNames={{
-						base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
-						filler: `${getColor(intro.focus_level || 50, "focus_level")}`,
-						thumb: `transition-transform ${getColor(intro.focus_level || 50, "focus_level")} shadow-small rounded-full w-5 h-5`
-					}}
-					onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "focus_level", value)}>
-				</Slider>
-
-
-			</div>
-
-			<div className="mt-4 bg-white rounded-lg p-4">
-				<h2 className="text-3xl font-bold text-gray-800 text-center">Introduction Summary and Teaser</h2>
-				<div id="introduction_summary" className="min-h-[150px] bg-gray-50 p-4 rounded border">
-					{intro.introduction_summary || ''}
-				</div>
-			</div>
-
-		</div>
 
 
 	);
 };
 export default IntroductionSection;
+
+const getColor = (val: number, id: string) => {
+	switch (id) {
+		case 'enthusiasm_level':
+			return val > 66 ? 'bg-green-500' : val > 33 ? 'bg-yellow-500' : 'bg-red-500';
+		case 'burnout_level':
+			return val > 66 ? 'bg-red-500' : val > 33 ? 'bg-yellow-500' : 'bg-green-500';
+		case 'leetcode_hatred_level':
+			return val > 66 ? 'bg-red-500' : val > 33 ? 'bg-purple-500' : 'bg-blue-500';
+		case 'focus_level':
+			return val > 66 ? 'bg-green-500' : val > 33 ? 'bg-orange-500' : 'bg-red-500';
+		default:
+			return 'bg-gray-200'; // Default color if none of the cases match
+	}
+};

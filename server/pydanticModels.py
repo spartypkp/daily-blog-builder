@@ -206,18 +206,20 @@ class ReflectionContent(BaseModel):
 # Submodel for Task
 class Task(BaseModel):
     # Task Start - Human Input
+    id: str = Field(..., description="ID of the task")
+    task_name: Optional[str] = Field("", description="Name for the task given by Will.")
     task_goal: Optional[str] = Field("", description="Desired outcome or goal for the task.")
     task_description: Optional[str] = Field("", description="Description of the task or problem.")
     task_expected_difficulty: Optional[int] = Field(50, description="Focus level (0-100).", ge=0, le=100)
     task_planned_approach: Optional[str] = Field("", description="Method or strategy Will plans to use to tackle the problem.")
 
     # Task Work - Ongoing throughout day
-    task_progress_notes: Optional[str] = Field("", description="Main writing area for Will to document  his progress.")
+    task_progress_notes: Optional[str] = Field("", description="Main writing area for Will to document his progress.")
 
-    # Task Reflection - Human Input
-    time_spent_coding: Optional[str] = Field("", description="Time spent actively coding (e.g., '2 hours').")
-    time_spent_researching: Optional[str] = Field("", description="Time spent researching (e.g., '30 minutes').")
-    time_spent_debugging: Optional[str] = Field("", description="Time spent debugging (e.g., '45 minutes').")
+    # Task Reflection - Human Inputå
+    time_spent_coding: Optional[str] = Field("", description="Time spent actively coding.")
+    time_spent_researching: Optional[str] = Field("", description="Time spent researching .")
+    time_spent_debugging: Optional[str] = Field("", description="Time spent debugging .")
     # Task Reflection - AI Generated
     task_reflection_summary: Optional[str] = Field(default=None, description="AI summary of how the task went.")
     output_or_result: Optional[str] = Field("", description="The outcome or deliverable from this task (e.g., code, documentation).")
@@ -265,18 +267,19 @@ class Reflection(BaseModel):
 
 # Main model for the Daily Blog
 class DailyBlog(BaseModel):
-    date: datetime.date = Field(..., description="Date of the blog entry.")
+    id: str = Field(..., description="id of the blog")
+    date: str = Field(..., description="Date of the blog entry.")
     introduction: Optional[Introduction] = Field(default=Introduction(), description="The introduction to Will's daily blog.")
     tasks: List[Task] = Field(default_factory=lambda: [Task()], description="List of technical tasks Will completed for the day.")
     reflection: Optional[Reflection] = Field(default=Reflection(), description="The reflection portion of Will's daily blog")
-    created_at: Optional[datetime.datetime] = Field(default=None, description="Timestamp for when the blog was created.")
-    updated_at: Optional[datetime.datetime] = Field(default=None, description="Timestamp for the last update.")
+    created_at: Optional[str] = Field(default=None, description="Timestamp for when the blog was created.")
+    updated_at: Optional[str] = Field(default=None, description="Timestamp for the last update.")
     status: Optional[str] = Field(default=None, description="Indicates the publication status of the blog.")
     day_count: Optional[int] = Field(default=None, description="Number of days since I started my journey.")
     # AI Generated 
     blog_title: Optional[str] = Field(default=None, description="AI Generated Title for the Daily Blog")
     blog_description: Optional[str] = Field(default=None, description="AI Generated description (1-2 sentences) about the blog content.")
-    blog_tags: Optional[Dict[str, Any]] = Field(default=None, description="AI Generated tags for a blog. TODO: Make into Pydantic model.")
+    blog_tags: Optional[List[str]] = Field(default=None, description="AI Generated tags for a blog. TODO: Make into Pydantic model.")
     
 
 

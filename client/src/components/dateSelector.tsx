@@ -22,7 +22,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 const FormSchema = z.object({
 	date: z
 		.string({
@@ -39,17 +39,20 @@ interface DateSelectorProps {
 
 const DateSelector: React.FC<DateSelectorProps> = ({ dailyBlogs, handleDateChange }) => {
 	const today = (new Date).toISOString().slice(0, 10);
+	
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 	});
 
-	const filteredBlogs = useMemo(() => 
-        dailyBlogs.filter(blog => blog.date !== today), 
-        [dailyBlogs, today]
-    );
+	const sortedAndFilteredBlogs = useMemo(() => {
+		// First, sort blogs by day_count descending
+		const sortedBlogs = [...dailyBlogs].sort((a, b) => b.day_count - a.day_count);
+		// Then, filter out today's date if it exists to avoid duplications
+		return sortedBlogs.filter(blog => blog.date !== today);
+	}, [dailyBlogs, today]);
 
 	function onSubmit(data: z.infer<typeof FormSchema>) {
-		console.log(`Inside onSubmit, calling handleDateChange with ${data.date}`)
+		console.log(`Inside onSubmit, calling handleDateChange with ${data.date}`);
 		handleDateChange(data.date);
 
 	}
@@ -71,15 +74,19 @@ const DateSelector: React.FC<DateSelectorProps> = ({ dailyBlogs, handleDateChang
 								</FormControl>
 								<SelectContent>
 									{/* Ensure today's date is always listed first */}
-                                    <SelectItem key={today} value={today}>
-                                        {today}
-                                    </SelectItem>
-                                    {/* Map through the filtered list of blogs */}
-                                    {filteredBlogs.map((blog) => (
-                                        <SelectItem key={blog.date} value={blog.date}>
-                                            {blog.date}
-                                        </SelectItem>
-                                    ))}
+
+									<SelectItem key={today} value={today}>
+										{today}
+									</SelectItem>
+
+
+
+									{/* Map through the filtered list of blogs */}
+									{sortedAndFilteredBlogs.map((blog) => (
+										<SelectItem key={blog.date} value={blog.date}>
+											{blog.date}
+										</SelectItem>
+									))}
 
 								</SelectContent>
 							</Select>
@@ -87,7 +94,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({ dailyBlogs, handleDateChang
 						</FormItem>
 					)}
 				/>
-				<Button type="submit">Load Blog</Button>
+				<Button className="bg-green-500" type="submit">Load Blog</Button>
 			</form>
 		</Form>
 	);

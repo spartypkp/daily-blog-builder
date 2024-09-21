@@ -4,7 +4,7 @@ import { init, tx, id, InstantReactWeb } from '@instantdb/react';
 import { TxChunk } from '@instantdb/core/src/instatx';
 import { InstantGraph } from '@instantdb/core/src/schemaTypes';
 import { DailyBlog } from "@/lib/types";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { useQuill } from 'react-quilljs';
 import { Slider } from "@nextui-org/slider";
 import { selectLocalImage } from "@/lib/quillHelpers";
@@ -46,6 +46,11 @@ const FormSchema = z.object({
 
 const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, setActiveTask }) => {
 
+	const [taskExpectedDifficulty, setTaskExpectedDifficulty] = useState(Number(task.task_expected_difficulty) || 50);
+	const [timeSpentCoding, setTimeSpentCoding] = useState(Number(task.time_spent_coding) || 0);
+	const [timeSpentDebugging, setTimeSpentDebugging] = useState(Number(task.time_spent_debugging) || 0);
+	const [timeSpentResearching, setTimeSpentResearching] = useState(Number(task.time_spent_researching) || 0);
+
 
 
 	function mergeField(taskId: string, field_name: string, field_value: string) {
@@ -84,6 +89,9 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 			}
 		}
 	};
+
+	const createMarkup = (htmlString: string) => ({ __html: htmlString });
+
 
 	const { quill: quill_task_goal, quillRef: quillRef_task_goal } = useQuill({ theme, modules });
 	useEffect(() => {
@@ -220,6 +228,13 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 		}, 1000); // Delay in milliseconds
 	}
 
+	useEffect(() => {
+        setTaskExpectedDifficulty(task.task_expected_difficulty || 50)
+		setTimeSpentCoding(Number(task.time_spent_coding) || 0)
+		setTimeSpentResearching(Number(task.time_spent_researching) || 0)
+		setTimeSpentDebugging(Number(task.time_spent_debugging) || 0);
+    }, [task.id]);
+
 
 	return (
 		<div>
@@ -265,22 +280,25 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 					minValue={0}
 					step={1}
 					maxValue={100}
-					defaultValue={task.task_expected_difficulty || 50}
+					value={taskExpectedDifficulty}
 
 					classNames={{
 						base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
-						filler: `bg-blue`,
-						thumb: `transition-transform bg-blue shadow-small rounded-full w-5 h-5`
+						filler: `bg-blue-500`,
+						thumb: `transition-transform bg-blue-500 shadow-small rounded-full w-5 h-5`
 					}}
-					onChangeEnd={(value) => mergeNumericField(task.id, "task_expected_difficulty", value)}>
+					onChangeEnd={(value) => mergeNumericField(task.id, "task_expected_difficulty", value)}
+					onChange={(value) => setTaskExpectedDifficulty(value as number)}>
 				</Slider>
 
 
 				<h3 className="font-bold mt-2">Planned Approach:</h3>
 				<div id={`task_planned_approach${task.id}`} className="min-h-[150px] bg-gray-50 p-4 rounded border" ref={quillRef_task_planned_approach}></div>
 
-				<h3 className="font-bold mt-4">Dave's Task Summary:</h3>
-				<div id={`task_start_summary${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.task_start_summary}</div>
+				<h3 className="font-bold mt-10">Dave's Task Summary:</h3>
+				<div id={`task_reflection_summary${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6"dangerouslySetInnerHTML={createMarkup(task.task_reflection_summary || '')}></div>
+
+				
 			</div>
 
 
@@ -294,42 +312,87 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 
 
 			<div id={`task-reflection${task.id}`} className="mb-4 bg-white p-4 border rounded">
+				<h3 className="font-bold mt-4">Hours Spent Coding: {timeSpentCoding}</h3>
+				<Slider
+					key="time_spent_coding"
+					aria-label="time_spent_coding"
+					minValue={0}
+					step={.25}
+					maxValue={10}
+					value={timeSpentCoding}
+					
+					classNames={{
+						base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
+						filler: `bg-blue-500`,
+						thumb: `transition-transform bg-blue-500 shadow-small rounded-full w-5 h-5`
+					}}
+					onChangeEnd={(value) => mergeField(task.id, "time_spent_coding", value.toString())}
+					onChange={(value) => setTimeSpentCoding(value as number)}
+					>
+				</Slider>
 
-				<h2>Human Reflection</h2>
-				<h3 className="font-bold mt-4">Time Spent Coding:</h3>
-				<input aria-label={`time_spent_coding${task.id}`} onChange={(e) => mergeField(task.id, `time_spent_coding`, e.target.value)} type="text" id={`time_spent_coding${task.id}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_coding} />
+				<h3 className="font-bold mt-4">Hours Spent Researching: {timeSpentResearching}</h3>
+				<Slider
+					
+					key="time_spent_researching"
+					aria-label="time_spent_researching"
+					minValue={0}
+					step={.25}
+					maxValue={10}
+					value={timeSpentResearching}
 
-				<h3 className="font-bold mt-4">Time Spent Researching:</h3>
-				<input aria-label={`time_spent_researching${task.id}`} onChange={(e) => mergeField(task.id, `time_spent_researching`, e.target.value)} type="text" id={`time_spent_researching${task.id}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_researching} />
+					classNames={{
+						base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
+						filler: `bg-blue-500`,
+						thumb: `transition-transform bg-blue-500 shadow-small rounded-full w-5 h-5`
+					}}
+					onChangeEnd={(value) => mergeField(task.id, "time_spent_researching", value.toString())}
+					onChange={(value) => setTimeSpentResearching(value as number)}>
+				</Slider>
 
-				<h3 className="font-bold mt-4">Time Spent Debugging:</h3>
-				<input aria-label={`time_spent_debugging${task.id}`} onChange={(e) => mergeField(task.id, `time_spent_debugging`, e.target.value)} type="text" id={`time_spent_debugging${task.id}`} className="w-full p-2 border border-gray-300 rounded" value={task.time_spent_debugging} />
+				<h3 className="font-bold mt-4">Hours Spent Debugging: {timeSpentDebugging}</h3>
+				<Slider
+					key="time_spent_debugging"
+					aria-label="time_spent_debugging"
+					minValue={0}
+					step={.25}
+					maxValue={10}
+					value={timeSpentDebugging}
+
+					classNames={{
+						base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
+						filler: `bg-blue-500`,
+						thumb: `transition-transform bg-blue-500 shadow-small rounded-full w-5 h-5`
+					}}
+					onChangeEnd={(value) => mergeField(task.id, "time_spent_debugging", value.toString())}
+					onChange={(value) => setTimeSpentDebugging(value as number)}>
+					
+				</Slider>
 
 
-				<h2>AI Generated Task Reflection</h2>
-				<h3 className="font-bold">AI Reflection Summary:</h3>
-				<div id={`task_reflection_summary${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.task_reflection_summary}</div>
+				
+				
 
 				<h3 className="font-bold mt-4">Output or Result:</h3>
-				<div id={`output_or_result${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.output_or_result}</div>
+				<div id={`output_or_result${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6"dangerouslySetInnerHTML={createMarkup(task.output_or_results || '')}></div>
 
 				<h3 className="font-bold mt-4">Challenges Encountered:</h3>
-				<div id={`challenges_encountered${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.challenges_encountered}</div>
+				<div id={`challenges_encountered${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6"dangerouslySetInnerHTML={createMarkup(task.challenges_encountered || '')}></div>
 
 				<h3 className="font-bold mt-4">Follow-Up Tasks:</h3>
-				<div id={`follow_up_tasks${task.id}`} className="min-h-[150px] bg-gray-50 p-4 rounded border">{task.follow_up_tasks}</div>
+				<div id={`follow_up_tasks${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6"dangerouslySetInnerHTML={createMarkup(task.follow_up_tasks || '')}></div>
 
 				<h3 className="font-bold mt-4">Successes:</h3>
-				<div id={`reflection_successes${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.reflection_successes}</div>
+				<div id={`reflection_successes${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6"dangerouslySetInnerHTML={createMarkup(task.reflection_successes || '')}></div>
 
 				<h3 className="font-bold mt-4">Failures or Shortcomings:</h3>
-				<div id={`reflection_failures${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.reflection_failures}</div>
+				<div id={`reflection_failures${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(task.reflection_failures || '')}></div>
 
 				<h3 className="font-bold mt-4">Research Questions:</h3>
-				<div id={`research_questions${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.research_questions}</div>
+				<div id={`research_questions${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(task.research_questions || '')}></div>
 
 				<h3 className="font-bold mt-4">Tools Used:</h3>
-				<div id={`tools_used${task.id}`} className="min-h-[150px] bg-gray-100 p-4 rounded border">{task.tools_used}</div>
+				<div id={`tools_used${task.id}`} className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(task.tools_used || '')}></div>
 			</div>
 
 			<Button onClick={() => deleteTask(task)}

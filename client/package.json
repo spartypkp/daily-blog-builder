@@ -3,7 +3,9 @@
   "scripts": {
     "dev": "next dev --turbo",
     "build": "next build",
-    "start": "next start"
+    "start-flask": "cd ../server && . venv/bin/activate && flask run --port=8080",
+    "start-next": "next dev --turbo",
+    "start": "npm-run-all --parallel start-next start-flask"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
@@ -106,6 +108,7 @@
     "eslint": "^8",
     "eslint-config-next": "^14.2.13",
     "eslint-plugin-react-hooks": "^4.6.2",
+    "npm-run-all": "^4.1.5",
     "postcss": "^8",
     "prettier": "^3.3.2",
     "tailwindcss": "^3",

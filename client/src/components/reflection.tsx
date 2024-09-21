@@ -4,7 +4,7 @@ import { init, tx, id, InstantReactWeb } from '@instantdb/react';
 import { TxChunk } from '@instantdb/core/src/instatx';
 import { InstantGraph } from '@instantdb/core/src/schemaTypes';
 import { DailyBlog } from "@/lib/types";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { useQuill } from 'react-quilljs';
 import { Slider } from "@nextui-org/slider";
 import { selectLocalImage } from "@/lib/quillHelpers";
@@ -18,6 +18,11 @@ interface ReflectionSectionProps {
 }
 
 const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db, tx }) => {
+
+	const [productivityLevel, setProductivityLevel] = useState(selectedBlog?.reflection?.productivity_level || 50);
+	const [distractionLevel, setDistractionLevel] = useState(selectedBlog?.reflection?.distraction_level || 50);
+	const [desireToPlaySteamGamesLevel, setDesireToPlaySteamGamesLevel] = useState(selectedBlog?.reflection?.desire_to_play_steam_games_level || 50);
+	const [overallFrustrationLevel, setOverallFrustrationLevel] = useState(selectedBlog?.reflection?.overall_frustration_level || 50);
 
 	function mergeField(id: string, field_name: string, field_value: string) {
 		db.transact([
@@ -61,7 +66,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 	}
 
 	
-
+	const createMarkup = (htmlString: string) => ({ __html: htmlString });
 	
 
 	const getColor = (value: number, id: string) => {
@@ -192,9 +197,12 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 
 	}, [selectedBlog.id]);
 
-
-
-
+	useEffect(() => {
+        setProductivityLevel(selectedBlog?.reflection?.productivity_level || 50)
+		setDesireToPlaySteamGamesLevel(selectedBlog?.reflection?.desire_to_play_steam_games_level || 50)
+		setDistractionLevel(selectedBlog?.reflection?.distraction_level || 50)
+		setOverallFrustrationLevel(selectedBlog?.reflection?.overall_frustration_level || 50);
+    }, [selectedBlog.id]);
 
 	return (
 		<div>
@@ -233,13 +241,14 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 							minValue={0}
 							step={1}
 							maxValue={100}
-							defaultValue={reflection.productivity_level || 50}
+							value={productivityLevel}
 
 							classNames={{
 								base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
 								filler: `${getColor(reflection.productivity_level || 50, "productivity_level")}`,
 								thumb: `transition-transform ${getColor(reflection.productivity_level || 50, "productivity_level")} shadow-small rounded-full w-5 h-5`
 							}}
+							onChange={(value) => setProductivityLevel(value as number)}
 							onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "productivity_level", value)}>
 						</Slider>
 					</div>
@@ -251,13 +260,14 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 							minValue={0}
 							step={1}
 							maxValue={100}
-							defaultValue={reflection.distraction_level || 50}
+							value={distractionLevel}
 
 							classNames={{
 								base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
-								filler: `${getColor(reflection.distraction_level || 50, "distraction_level")}`,
-								thumb: `transition-transform ${getColor(reflection.distraction_level || 50, "distraction_level")} shadow-small rounded-full w-5 h-5`
+								filler: `${getColor(distractionLevel, "distraction_level")}`,
+								thumb: `transition-transform ${getColor(distractionLevel, "distraction_level")} shadow-small rounded-full w-5 h-5`
 							}}
+							onChange={(value) => setDistractionLevel(value as number)}
 							onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "distraction_level", value)}>
 						</Slider>
 					</div>
@@ -269,13 +279,14 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 							minValue={0}
 							step={1}
 							maxValue={100}
-							defaultValue={reflection.desire_to_play_steam_games_level || 50}
+							value={desireToPlaySteamGamesLevel}
 
 							classNames={{
 								base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
-								filler: `${getColor(reflection.desire_to_play_steam_games_level || 50, "desire_to_play_steam_games_level")}`,
-								thumb: `transition-transform ${getColor(reflection.desire_to_play_steam_games_level || 50, "desire_to_play_steam_games_level")} shadow-small rounded-full w-5 h-5`
+								filler: `${getColor(desireToPlaySteamGamesLevel, "desire_to_play_steam_games_level")}`,
+								thumb: `transition-transform ${getColor(desireToPlaySteamGamesLevel, "desire_to_play_steam_games_level")} shadow-small rounded-full w-5 h-5`
 							}}
+							onChange={(value) => setDesireToPlaySteamGamesLevel(value as number)}
 							onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "desire_to_play_steam_games_level", value)}>
 						</Slider>
 					</div>
@@ -287,47 +298,45 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 							minValue={0}
 							step={1}
 							maxValue={100}
-							defaultValue={reflection.overall_frustration_level || 50}
+							value={overallFrustrationLevel}
 
 							classNames={{
 								base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
-								filler: `${getColor(reflection.overall_frustration_level || 50, "overall_frustration_level")}`,
-								thumb: `transition-transform ${getColor(reflection.overall_frustration_level || 50, "overall_frustration_level")} shadow-small rounded-full w-5 h-5`
+								filler: `${getColor(overallFrustrationLevel, "overall_frustration_level")}`,
+								thumb: `transition-transform ${getColor(overallFrustrationLevel, "overall_frustration_level")} shadow-small rounded-full w-5 h-5`
 							}}
+							onChange={(value) => setOverallFrustrationLevel(value as number)}
 							onChangeEnd={(value) => mergeNumericField(selectedBlog.id, "overall_frustration_level", value)}>
 						</Slider>
 					</div>
 				</div>
 			</div>
 			<h1> AI Generated Reflection</h1>
-
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 text-center">Summary of Entire Blog</h2>
-				<div id="entire_blog_summary" className="min-h-[150px] bg-gray-50 p-4 rounded border">
-					{reflection.entire_blog_summary || ''}
+				<div id="entire_blog_summary" className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(reflection.entire_blog_summary || '')}>
 				</div>
 			</div>
 
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 text-center">Technical Challenges</h2>
-				<div id="technical_challenges" className="min-h-[150px] bg-gray-50 p-4 rounded border">
-					{reflection.technical_challenges || ''}
+				<div id="technical_challenges" className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(reflection.technical_challenges || '')}>
+					
 				</div>
 			</div>
 
 
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 text-center">Interesting Bugs</h2>
-				<div id="interesting_bugs" className="min-h-[150px] bg-gray-50 p-4 rounded border">
-					{reflection.interesting_bugs || ''}
+				<div id="interesting_bugs" className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(reflection.interesting_bugs || '')}>
+					
 				</div>
 			</div>
 
 
 			<div className="mt-4 bg-white rounded-lg p-4">
 				<h2 className="text-3xl font-bold text-gray-800 text-center">Unanswered Questions</h2>
-				<div id="unanswered_questions" className="min-h-[150px] bg-gray-50 p-4 rounded border">
-					{reflection.unanswered_questions || ''}
+				<div id="unanswered_questions" className="mb-8 rounded lg border border-gray-400 bg-blue-100 text-black p-4 mt-6" dangerouslySetInnerHTML={createMarkup(reflection.unanswered_questions || '')}>
 				</div>
 			</div>
 

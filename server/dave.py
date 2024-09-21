@@ -230,7 +230,7 @@ def ai_add_custom_components(blog: DailyBlog):
         reflection_dict[field_name] = updated_field_text
     blog.reflection = Reflection(**reflection_dict)
 
-    util.pydantic_update("daily_blogs", [blog], "date")
+    return blog
     
 
 

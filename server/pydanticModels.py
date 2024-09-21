@@ -206,15 +206,17 @@ class ReflectionContent(BaseModel):
 # Submodel for Task
 class Task(BaseModel):
     # Task Start - Human Input
+    id: str = Field(..., description="ID of the task")
+    task_name: Optional[str] = Field("", description="Name for the task given by Will.")
     task_goal: Optional[str] = Field("", description="Desired outcome or goal for the task.")
     task_description: Optional[str] = Field("", description="Description of the task or problem.")
     task_expected_difficulty: Optional[int] = Field(50, description="Focus level (0-100).", ge=0, le=100)
     task_planned_approach: Optional[str] = Field("", description="Method or strategy Will plans to use to tackle the problem.")
 
     # Task Work - Ongoing throughout day
-    task_progress_notes: Optional[str] = Field("", description="Main writing area for Will to document  his progress.")
+    task_progress_notes: Optional[str] = Field("", description="Main writing area for Will to document his progress.")
 
-    # Task Reflection - Human Input
+    # Task Reflection - Human Inputå
     time_spent_coding: Optional[str] = Field("", description="Time spent actively coding (e.g., '2 hours').")
     time_spent_researching: Optional[str] = Field("", description="Time spent researching (e.g., '30 minutes').")
     time_spent_debugging: Optional[str] = Field("", description="Time spent debugging (e.g., '45 minutes').")
@@ -265,6 +267,7 @@ class Reflection(BaseModel):
 
 # Main model for the Daily Blog
 class DailyBlog(BaseModel):
+    id: str = Field(..., description="id of the blog")
     date: datetime.date = Field(..., description="Date of the blog entry.")
     introduction: Optional[Introduction] = Field(default=Introduction(), description="The introduction to Will's daily blog.")
     tasks: List[Task] = Field(default_factory=lambda: [Task()], description="List of technical tasks Will completed for the day.")

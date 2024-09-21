@@ -11,7 +11,7 @@ import DateSelector from "@/components/dateSelector";
 import 'quill/dist/quill.snow.css'; // Add css for snow theme
 import { Button } from "@/components/ui/button";
 import { getAllBlogs } from "@/lib/sqlConversion";
-
+import { EditBlogDialog } from "@/components/editBlogDialog";
 // ID for app: Instant Tutorial Todo App
 const APP_ID = '3b4a73a0-ffc6-488a-b883-550004ff6e0a';
 
@@ -154,14 +154,15 @@ function App() {
 					<p id="blog_description" className="text-m  text-gray-800 text-center"></p>
 
 				</div>
-				<button type="button" onClick={(e) => edit_blog()}
-					className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Edit Blog</button>
+				
 
 
 			</header>
 
 			{selectedBlog && (
+				
 				<div>
+					<EditBlogDialog selectedBlogId={selectedBlog.id} />
 					<section className="goals mb-8 bg-gray-200 shadow-md rounded-lg p-6">
 						<div className="flex justify-between items-center">
 
@@ -240,8 +241,25 @@ function App() {
 	);
 }
 
+function test_connection() {
+    fetch("http://localhost:8080/api/home")  // Use http if it's not over SSL
+        .then(response => {
+            // Check if the response is successful
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();  // Parse JSON from the response
+        })
+        .then(data => {
+            console.log(data.message);  // Log the message from the response
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+}
+
 function edit_blog() {
-	fetch("https://localhost:8080/api/edit_introduction");
+	fetch("https://localhost:8080/api/home");
 }
 
 

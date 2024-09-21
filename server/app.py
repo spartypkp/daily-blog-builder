@@ -9,11 +9,11 @@ from pydanticModels import DailyBlog, Task, Introduction, Reflection
 from utilityFunctions import pydantic_upsert, pydantic_select, upload_to_supabase, pydantic_update
 from typing import List, Optional
 from dave import ai_edit_introduction, ai_edit_task, ai_edit_reflection
-from pydantic import parse_obj_as 
+from flask_cors import CORS
 
 # If localhost won't connect: chrome://net-internals/#sockets
 app = Flask(__name__)
-
+CORS(app)
 
 
 @app.route("/api/home", methods=['GET'])
@@ -39,16 +39,16 @@ def return_home():
 
 
 
-@app.route('api/edit_introduction', methods=['POST'])
+@app.route('/api/edit_introduction', methods=['POST'])
 def edit_introduction():
-    return jsonify({"message": "WHATUP BITCH"})
-    # data = request.get_json()
-    # intro_model = Introduction(**data)
-    # updated_intro = ai_edit_introduction(intro_model)
+    
+    data = request.get_json()
+    intro_model = Introduction(**data)
+    updated_intro = ai_edit_introduction(intro_model)
 
-    # return jsonify(updated_intro.dict())
+    return jsonify(updated_intro.dict())
 
-@app.route('api/edit_task', methods=['POST'])
+@app.route('/api/edit_task', methods=['POST'])
 def edit_task():
     data = request.get_json()
     
@@ -63,7 +63,7 @@ def edit_task():
     # Convert list of updated Task models back to JSON
     return jsonify(updated_tasks)
 
-@app.route('api/edit_reflection', methods=['POST'])
+@app.route('/api/edit_reflection', methods=['POST'])
 def edit_reflection():
     data = request.get_json()
     reflection_model = DailyBlog(**data)

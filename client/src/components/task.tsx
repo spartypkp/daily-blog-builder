@@ -265,7 +265,7 @@ const TaskSection: React.FC<TaskSectionProps> = ({ task, db, tx, deleteTask, set
 					minValue={0}
 					step={1}
 					maxValue={100}
-					defaultValue={task.task_expected_difficulty || 50}
+					value={task.task_expected_difficulty || 50}
 
 					classNames={{
 						base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,

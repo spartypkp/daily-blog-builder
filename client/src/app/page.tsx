@@ -25,7 +25,7 @@ const query = {
 	dailyBlogs: {
 		tasks: {},
 	},
-	
+
 };
 
 function App() {
@@ -33,7 +33,7 @@ function App() {
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
 	const { isLoading, error, data } = db.useQuery(query);
 	const [activeTask, setActiveTask] = useState<string | null>(null);
-	
+
 	const dailyBlogs = data?.dailyBlogs;
 
 	function addTask(selectedBlog: { id: string; } & DailyBlog) {
@@ -59,13 +59,13 @@ function App() {
 			task_created_at: new Date(),
 		};
 		// Update the index to the new task
-		
+
 
 		// Update the database
-		const newTaskId = id()
+		const newTaskId = id();
 		db.transact([
 			tx.task[newTaskId].update(emptyTask),
-			tx.task[newTaskId].link({dailyBlogs: selectedBlog.id })
+			tx.task[newTaskId].link({ dailyBlogs: selectedBlog.id })
 
 		]);
 		setActiveTask(newTaskId);
@@ -75,32 +75,24 @@ function App() {
 	function deleteTask(task: { id: string; } & Task) {
 		if (selectedBlog?.tasks && selectedBlog.tasks.length == 1) {
 			// Pass if trying to delete the only Task
-			console.log(`Cannot delete a task when it's the only task for a blog!`)
+			console.log(`Cannot delete a task when it's the only task for a blog!`);
 		} else {
-			console.log(`Deleting task with id: ${task.id}`)
+			console.log(`Deleting task with id: ${task.id}`);
 			// Delete a task indicated by the taskIndex. Calls merge with a null value
 			db.transact([tx.task[task.id].delete()]);
 			// Select the first task that wasn't the deleted one. Should trigger re-render
 			selectedBlog!.tasks!.map((oldTask) => {
 				if (oldTask.id !== task.id) {
-					setActiveTask(oldTask.id)
+					setActiveTask(oldTask.id);
 					return;
 				}
-			})
+			});
 		}
-		
+
 	}
 
-	const selectedBlog: ({ id: string; } & DailyBlog) | undefined = useMemo(() => {
-
-		const blog = dailyBlogs?.find((b) => b.date === selectedDate);
-		return blog;
-	}, [selectedDate, activeTask]);
-
-	// iterate through dailyBlogs, finding the blog which has today's date (may not exist!). Set selectedBlog
-
-	if (!selectedBlog && !isLoading && selectedDate) {
-		const newId: string = id();
+	function createNewBlog(date: string) {
+		const newId = id();
 		let empty_blog = {
 			"id": newId,
 			"date": today,
@@ -112,19 +104,32 @@ function App() {
 			"blog_tags": {}
 
 		};
-
 		db.transact([tx.dailyBlogs[newId].update(empty_blog)]);
-		
-	} else if (selectedBlog) {
-		
-		if (selectedBlog.tasks && selectedBlog.tasks.length == 0) {
-			console.log("Adding task!")
-			addTask(selectedBlog)
-		} else if (activeTask === null) {
-			const firstActiveTask = selectedBlog.tasks![0].id;
-			setActiveTask(firstActiveTask);
-		}
 	}
+
+	const selectedBlog: ({ id: string; } & DailyBlog) | undefined = useMemo(() => {
+		
+		const blog = dailyBlogs?.find((b) => b.date === selectedDate);
+		console.log(`selectedBlog changing to: Day ${blog?.day_count} - ${blog?.date}`)
+		return blog;
+	}, [selectedDate, activeTask]);
+
+	// iterate through dailyBlogs, finding the blog which has today's date (may not exist!). Set selectedBlog
+	// Handle changes to selectedDate
+	useEffect(() => {
+		if (!selectedBlog && !isLoading && selectedDate) {
+			createNewBlog(selectedDate);
+		} else if (selectedBlog) {
+
+			if (!selectedBlog.tasks || !selectedBlog!.tasks!.length) {
+				addTask(selectedBlog);
+			} else {
+				const firstActiveTask = selectedBlog.tasks![0].id;
+				setActiveTask(firstActiveTask);
+			}
+		}
+	}, [selectedDate, selectedBlog, isLoading]);
+
 
 	const handleDateChange = (newDate: string) => {
 		console.log(`Handling date change! newDate: ${newDate}`);
@@ -150,7 +155,7 @@ function App() {
 
 				</div>
 				<button type="button" onClick={(e) => edit_blog()}
-							className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Edit Blog</button>
+					className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Edit Blog</button>
 
 
 			</header>
@@ -222,7 +227,7 @@ function App() {
 
 
 					<footer className="text-center">
-						
+
 						<button type="button" onClick={(e) => publish_blog()}
 							className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">Publish Blog</button>
 					</footer>
@@ -236,7 +241,7 @@ function App() {
 }
 
 function edit_blog() {
-	getAllBlogs();
+	fetch("https://localhost:8080/api/edit_introduction");
 }
 
 

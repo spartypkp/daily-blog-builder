@@ -251,7 +251,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 							minValue={0}
 							step={1}
 							maxValue={100}
-							defaultValue={reflection.distraction_level || 50}
+							value={reflection.distraction_level || 50}
 
 							classNames={{
 								base: `w-full h-2 bg-gray-200 rounded-lg  appearance-none cursor-pointer`,
@@ -268,7 +268,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 							aria-label="desire_to_play_steam_games_level"
 							minValue={0}
 							step={1}
-							maxValue={100}
+							value={100}
 							defaultValue={reflection.desire_to_play_steam_games_level || 50}
 
 							classNames={{
@@ -286,7 +286,7 @@ const ReflectionSection: React.FC<ReflectionSectionProps> = ({ selectedBlog, db,
 							aria-label="overall_frustration_level"
 							minValue={0}
 							step={1}
-							maxValue={100}
+							value={100}
 							defaultValue={reflection.overall_frustration_level || 50}
 
 							classNames={{
